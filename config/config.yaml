@@ -1,0 +1,75 @@
+# ===== Database =====
+database:
+  path: "./data/quant_data.db"
+  backup_path: "./data/parquet"
+
+# ===== Data Source =====
+data_source:
+  primary: akshare
+  fallback: tushare
+  fetch_schedule:
+    daily_bars: "16:05"
+    realtime: "9:30,10:30,11:30,13:00,14:00,14:30"
+
+# ===== Stock Universe =====
+universe:
+  exclude:
+    - ST股
+    - 上市不满N天: 60
+  min_daily_amount: 100_000_000
+
+# ===== Fees (A股实盘标准) =====
+fees:
+  stamp_tax: 0.001          # 印花税，卖出收0.1%
+  transfer_fee: 0.00002     # 过户费，沪市0.002%
+  commission: 0.0003         # 佣金，默认万三
+  min_commission: 5         # 最低佣金（元）
+  slippage: 0.0005          # 滑点，0.05%
+
+# ===== Risk =====
+risk:
+  max_position_pct: 0.15     # 单股最大仓位15%
+  max_total_position: 0.85  # 总仓位最大85%
+  max_single_loss: 0.05     # 单日最大亏损5%
+  stop_loss: 0.05           # 止损线-5%
+  take_profit: 0.12         # 止盈线+12%
+
+# ===== Backtest =====
+backtest:
+  initial_capital: 1_000_000
+  rebalance_freq: "1d"       # 日线调仓
+  start_date: "2020-01-01"
+  end_date: "2024-12-31"
+
+# ===== Factors =====
+factors:
+  technical:
+    - name: momentum_5
+      category: 动量
+      params:
+        window: 5
+    - name: momentum_20
+      category: 动量
+      params:
+        window: 20
+    - name: rsi_14
+      category: 超买超卖
+      params:
+        window: 14
+    - name: macd
+      category: 趋势
+      params:
+        fast: 12
+        slow: 26
+        signal: 9
+    - name: boll_position
+      category: 趋势
+      params:
+        window: 20
+        std: 2
+    - name: volume_ratio
+      category: 成交量
+      params:
+        window: 20
+  min_ic_threshold: 0.02
+  min_ir_threshold: 0.3
