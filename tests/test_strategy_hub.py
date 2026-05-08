@@ -17,7 +17,7 @@ if _ROOT not in sys.path:
 import pytest
 
 import strategies  # noqa: F401  触发注册
-from core.strategy_hub import StrategyHub
+from core.strategy_hub import create, get_meta, list_all, list_by_category, categories, describe
 from core.strategy import QuantStrategy
 
 
@@ -31,32 +31,32 @@ REQUIRED_STRATEGIES = (
 
 
 def test_all_required_strategies_registered():
-    names = StrategyHub.list_all()
+    names = list_all()
     for s in REQUIRED_STRATEGIES:
         assert s in names, f"strategy not registered: {s}"
 
 
 def test_create_static_strategy_momentum():
-    strat = StrategyHub.create("momentum_top50", top_n=20)
+    strat = create("momentum_top50", top_n=20)
     assert isinstance(strat, QuantStrategy)
     assert strat.top_n == 20
     assert hasattr(strat.selector, "select")
 
 
 def test_create_static_strategy_low_vol():
-    strat = StrategyHub.create("low_vol_top50", top_n=15)
+    strat = create("low_vol_top50", top_n=15)
     assert isinstance(strat, QuantStrategy)
     assert strat.top_n == 15
 
 
 def test_alpha101_walk_forward_requires_eval_summary():
     with pytest.raises(ValueError):
-        StrategyHub.create("alpha101_walk_forward", db=None,
-                           eval_summary=None, top_n=10)
+        create("alpha101_walk_forward", db=None,
+               eval_summary=None, top_n=10)
 
 
 def test_alpha101_walk_forward_meta_filter():
-    meta = StrategyHub.get_meta("alpha101_walk_forward")
+    meta = get_meta("alpha101_walk_forward")
     assert meta.requires_evaluation is True
     assert meta.eval_factor_filter == "alpha"
     assert meta.timing_factors  # 非空

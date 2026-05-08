@@ -10,13 +10,13 @@
 1) 静态参数化策略(requires_evaluation=False,默认):
    - 权重/因子在代码里写死或由调用方传入
    - factory 签名:`def factory(db=None, top_n=50, **kwargs) -> QuantStrategy`
-   - 调用:`StrategyHub.create("momentum_top50", db=db, top_n=30)`
+   - 调用:`strategy_hub.create("momentum_top50", db=db, top_n=30)`
 
 2) 评估驱动策略(requires_evaluation=True):
    - 需要先跑因子评估(IC/IR)才能确定权重 —— 典型:Alpha101 walk-forward
    - factory 签名:`def factory(db, eval_summary, top_n=50, **kwargs) -> QuantStrategy`
      * `eval_summary`: FactorEvaluator.evaluate_all() 的返回 DataFrame
-   - 调用:`StrategyHub.create(name, db=db, eval_summary=summary, top_n=30)`
+   - 调用:`strategy_hub.create(name, db=db, eval_summary=summary, top_n=30)`
    - 元信息上声明 timing_factors 帮助调用方一并拉取择时所需数据
 
 用法示例
@@ -61,15 +61,15 @@ class StrategyMeta:
 
 
 class StrategyHub:
-    """策略注册中心。"""
+    """策略注册中心，支持多实例。"""
 
-    _registry: Dict[str, StrategyMeta] = {}
+    def __init__(self):
+        self._registry: Dict[str, StrategyMeta] = {}
 
     # ---- 注册 -----------------------------------------------------------
 
-    @classmethod
     def register(
-        cls,
+        self,
         name: str,
         category: str = "default",
         description: str = "",
@@ -88,7 +88,7 @@ class StrategyHub:
             eval_factor_filter:   评估候选因子前缀(如 "alpha"),仅 requires_evaluation 时生效
         """
         def deco(func):
-            cls._registry[name] = StrategyMeta(
+            self._registry[name] = StrategyMeta(
                 name=name,
                 category=category,
                 factory=func,
@@ -102,40 +102,45 @@ class StrategyHub:
 
     # ---- 创建 -----------------------------------------------------------
 
-    @classmethod
-    def create(cls, name: str, **kwargs):
+    def create(self, name: str, **kwargs):
         """按名字构造策略实例。kwargs 透传给 factory。"""
-        if name not in cls._registry:
+        if name not in self._registry:
             raise KeyError(
                 f"strategy not registered: {name}\n"
-                f"available: {cls.list_all()}"
+                f"available: {self.list_all()}"
             )
-        return cls._registry[name].factory(**kwargs)
+        return self._registry[name].factory(**kwargs)
 
     # ---- 查询 -----------------------------------------------------------
 
-    @classmethod
-    def get_meta(cls, name: str) -> StrategyMeta:
-        return cls._registry[name]
+    def get_meta(self, name: str) -> StrategyMeta:
+        return self._registry[name]
 
-    @classmethod
-    def list_all(cls) -> List[str]:
-        return sorted(cls._registry.keys())
+    def list_all(self) -> List[str]:
+        return sorted(self._registry.keys())
 
-    @classmethod
-    def list_by_category(cls, category: str) -> List[str]:
-        return sorted(n for n, m in cls._registry.items() if m.category == category)
+    def list_by_category(self, category: str) -> List[str]:
+        return sorted(n for n, m in self._registry.items() if m.category == category)
 
-    @classmethod
-    def categories(cls) -> List[str]:
-        return sorted(set(m.category for m in cls._registry.values()))
+    def categories(self) -> List[str]:
+        return sorted(set(m.category for m in self._registry.values()))
 
-    @classmethod
-    def describe(cls, name: str) -> str:
-        m = cls.get_meta(name)
+    def describe(self, name: str) -> str:
+        m = self.get_meta(name)
         tag = " [需评估]" if m.requires_evaluation else ""
         return f"[{m.category}]{tag} {m.name}: {m.description}"
 
 
-# 便捷别名
-register_strategy = StrategyHub.register
+# 默认全局实例，保持向后兼容
+_strategy_hub = StrategyHub()
+
+# 便捷别名（绑定到默认全局实例）
+register_strategy = _strategy_hub.register
+
+# 为了兼容旧的类级调用方式，暴露默认实例的方法作为模块级函数
+create = _strategy_hub.create
+get_meta = _strategy_hub.get_meta
+list_all = _strategy_hub.list_all
+list_by_category = _strategy_hub.list_by_category
+categories = _strategy_hub.categories
+describe = _strategy_hub.describe

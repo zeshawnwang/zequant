@@ -94,9 +94,10 @@ def test_check_stops_skips_same_day_buy():
         {"date": date, "symbol": "600001", "close": 8.9,
          "pct_change": -11.0, "volume": 1_000_000},
     ])
-    eng._check_stops(today_bars, date=date)
-    # 同日买入,T+1 锁应阻止止损
+    stop_orders = eng._check_stops(today_bars, date=date)
+    # 同日买入,T+1 锁应阻止止损,返回空列表
     assert "600001" in eng.positions
+    assert len(stop_orders) == 0
 
 
 if __name__ == "__main__":

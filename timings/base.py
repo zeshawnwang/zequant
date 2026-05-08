@@ -17,5 +17,5 @@ class ITimingGenerator:
     """
 
     def generate(self, factor_data: pd.DataFrame,
-                 positions: List[str], cash: float) -> List:
+                 positions: List[str], cash: float, date=None) -> List:
         raise NotImplementedError

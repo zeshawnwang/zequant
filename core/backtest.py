@@ -159,6 +159,8 @@ class BacktestEngine:
         self._strategy_ref: Optional[QuantStrategy] = None
         self._start_date: str = ""
         self._end_date: str = ""
+        # 延迟到次日开盘执行的订单队列
+        self._pending_orders: List[Order] = []
 
     def run(self,
             strategy: QuantStrategy,
@@ -189,6 +191,18 @@ class BacktestEngine:
             today_only = df[df['date'] == current_date]
             date_str = str(pd.Timestamp(current_date).date())
 
+            # === 执行前一日 pending 订单(用今日开盘价) ===
+            if self._pending_orders:
+                open_map = dict(zip(today_only['symbol'], today_only['open'])) if today_only is not None and not today_only.empty else {}
+                executed = []
+                for order in self._pending_orders:
+                    exec_price = open_map.get(order.symbol)
+                    if exec_price is not None and not pd.isna(exec_price) and exec_price > 0:
+                        order.price = float(exec_price)
+                        self._execute_order(order, date_str)
+                        executed.append(order)
+                self._pending_orders = [o for o in self._pending_orders if o not in executed]
+
             # Universe 过滤:仅让【可买入】的样本 + 当前持仓进入策略视野
             buyable_today = None
             if self.universe is not None:
@@ -198,8 +212,9 @@ class BacktestEngine:
                 visible = buyable_today | set(self.positions.keys())
                 day_slice = day_slice[day_slice['symbol'].isin(visible)]
 
-            # Step 1: 止损止盈
-            self._check_stops(today_only, date_str)
+            # Step 1: 止损止盈(生成订单,延迟到次日开盘执行)
+            stop_orders = self._check_stops(today_only, date_str)
+            self._pending_orders.extend(stop_orders)
 
             # Step 2: 策略下单
             orders = strategy.generate_orders(
@@ -232,7 +247,7 @@ class BacktestEngine:
                         and not self.universe.is_sellable(order.symbol, today_only)
                     ):
                         continue
-                self._execute_order(order, date_str)
+                self._pending_orders.append(order)
 
             # Step 3: 每日净值
             portfolio_value = self._calc_portfolio_value(today_only)
@@ -322,10 +337,11 @@ class BacktestEngine:
                 commission=self.fee_calc.calc_sell(order.symbol, exec_price, sell_qty).total,
             ))
 
-    def _check_stops(self, today_only: pd.DataFrame, date: str):
-        """止损止盈,T+1 + 跌停 + 停牌日不强制平仓。"""
+    def _check_stops(self, today_only: pd.DataFrame, date: str) -> List[Order]:
+        """止损止盈,T+1 + 跌停 + 停牌日不强制平仓。返回待执行订单列表。"""
+        orders: List[Order] = []
         if today_only is None or today_only.empty or not self.positions:
-            return
+            return orders
         price_map = dict(zip(today_only['symbol'], today_only['close']))
         to_sell = []
         for symbol, pos in self.positions.items():
@@ -348,12 +364,12 @@ class BacktestEngine:
                 continue
             to_sell.append((symbol, cp, reason))
         for symbol, cp, reason in to_sell:
-            self._execute_order(
+            orders.append(
                 Order(symbol=symbol, direction='SELL',
                       quantity=self.positions[symbol].quantity,
-                      price=cp, reason=reason),
-                date,
+                      price=cp, reason=reason)
             )
+        return orders
 
     def _calc_portfolio_value(self, today_only: pd.DataFrame) -> float:
         if today_only is None or today_only.empty:

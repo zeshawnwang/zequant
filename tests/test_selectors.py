@@ -33,14 +33,15 @@ def _build_factor_panel() -> pd.DataFrame:
 def test_factor_rank_descending_top3():
     df = _build_factor_panel()
     sel = FactorRankSelector("factor_a", ascending=False, top_n=3)
-    picks = sel.select(df, date=pd.Timestamp("2024-03-01"), top_n=3)
+    # date 设为数据次日,确保数据能被选中(只用 date 之前的数据)
+    picks = sel.select(df, date=pd.Timestamp("2024-03-02"), top_n=3)
     assert picks == ["E", "D", "C"]
 
 
 def test_factor_rank_ascending_top2():
     df = _build_factor_panel()
     sel = FactorRankSelector("factor_a", ascending=True, top_n=2)
-    picks = sel.select(df, date=pd.Timestamp("2024-03-01"), top_n=2)
+    picks = sel.select(df, date=pd.Timestamp("2024-03-02"), top_n=2)
     assert picks == ["A", "B"]
 
 
@@ -50,7 +51,7 @@ def test_multi_factor_positive_weight_picks_high_combined():
     # zscore 后排序效果一致:E > D > C > B > A
     sel = MultiFactorSelector({"factor_a": 1.0, "factor_b": 1.0}, top_n=3,
                               winsorize=0.0)
-    picks = sel.select(df, date=pd.Timestamp("2024-03-01"), top_n=3)
+    picks = sel.select(df, date=pd.Timestamp("2024-03-02"), top_n=3)
     assert picks[0] == "E"
     assert "D" in picks[:3]
     assert "A" not in picks[:3]
@@ -60,7 +61,7 @@ def test_multi_factor_negative_weight_flips_direction():
     df = _build_factor_panel()
     # 给 factor_a 负权重,应选出 factor_a 最低的几只
     sel = MultiFactorSelector({"factor_a": -1.0}, top_n=2, winsorize=0.0)
-    picks = sel.select(df, date=pd.Timestamp("2024-03-01"), top_n=2)
+    picks = sel.select(df, date=pd.Timestamp("2024-03-02"), top_n=2)
     assert picks == ["A", "B"]
 
 

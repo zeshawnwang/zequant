@@ -103,11 +103,14 @@ class QuantStrategy:
 
         pool_data = factor_data[factor_data['symbol'].isin(candidate_pool)]
 
-        # Step 3: 择时
-        signals = self.timing.generate(pool_data, current_symbols, cash)
+        # Step 3: 择时(传入 date,让择时器只用 date 之前的数据)
+        signals = self.timing.generate(pool_data, current_symbols, cash, date)
         signal_by_symbol = {s.symbol: s for s in signals}
 
         # Step 4: 仓位分配(基于 BUY 信号)
+        # 如果 portfolio builder 支持接收历史数据，则传入（用于 RiskParity 等需要协方差矩阵的分配器）
+        if hasattr(self.portfolio, 'set_factor_data'):
+            self.portfolio.set_factor_data(pool_data)
         allocation = self.portfolio.allocate(signals, cash, current_positions)
 
         # Step 5: 生成买入订单

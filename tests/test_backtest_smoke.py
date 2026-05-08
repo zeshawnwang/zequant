@@ -28,19 +28,19 @@ def _make_factor_panel() -> pd.DataFrame:
     rows = []
     for i, d in enumerate(dates):
         # A: 强趋势上行(macd > signal、动量正、RSI 60)
-        rows.append({"symbol": "A", "date": d, "close": 10.0 + 0.2 * i,
+        rows.append({"symbol": "A", "date": d, "open": 10.0 + 0.2 * i, "close": 10.0 + 0.2 * i,
                      "momentum_5": 0.05, "momentum_20": 0.10,
                      "macd": 0.30, "macd_signal": 0.10, "rsi_14": 60.0,
                      "volatility_20": 0.10, "volume_ratio": 1.0,
                      "boll_position": 0.6})
         # B: 趋势平庸(打分中性)
-        rows.append({"symbol": "B", "date": d, "close": 20.0 + 0.05 * i,
+        rows.append({"symbol": "B", "date": d, "open": 20.0 + 0.05 * i, "close": 20.0 + 0.05 * i,
                      "momentum_5": 0.01, "momentum_20": 0.01,
                      "macd": 0.05, "macd_signal": 0.05, "rsi_14": 50.0,
                      "volatility_20": 0.15, "volume_ratio": 1.0,
                      "boll_position": 0.5})
         # C: 趋势走弱(macd<signal、RSI 偏低)
-        rows.append({"symbol": "C", "date": d, "close": 30.0 - 0.2 * i,
+        rows.append({"symbol": "C", "date": d, "open": 30.0 - 0.2 * i, "close": 30.0 - 0.2 * i,
                      "momentum_5": -0.05, "momentum_20": -0.08,
                      "macd": -0.20, "macd_signal": 0.10, "rsi_14": 25.0,
                      "volatility_20": 0.30, "volume_ratio": 1.0,

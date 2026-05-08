@@ -38,16 +38,23 @@ class TrendTiming(ITimingGenerator):
         self.sell_threshold = sell_threshold
 
     def generate(self, factor_data: pd.DataFrame,
-                 positions: List[str], cash: float) -> List[Signal]:
+                 positions: List[str], cash: float, date=None) -> List[Signal]:
         if factor_data is None or factor_data.empty:
             return []
 
         signals: List[Signal] = []
         held = set(positions or [])
 
+        # 只用 date 之前的数据(严格小于),避免前视偏差
+        df = factor_data
+        if date is not None and 'date' in df.columns:
+            df = df[df['date'] < date]
+        if df.empty:
+            return []
+
         # 取每个 symbol 的最新一行用于打分
         latest = (
-            factor_data.sort_values('date')
+            df.sort_values('date')
             .groupby('symbol')
             .tail(1)
         )

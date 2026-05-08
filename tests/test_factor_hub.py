@@ -16,7 +16,7 @@ if _ROOT not in sys.path:
 import pandas as pd
 import pytest
 
-from core.factor_hub import FactorHub
+from core.factor_hub import list_all, list_by_category, compute_all, compute, get
 
 
 def _sample_bars() -> pd.DataFrame:
@@ -42,7 +42,7 @@ def _sample_bars() -> pd.DataFrame:
 def test_factor_registry_has_technical_factors():
     """import factors 后 FactorHub 至少应有 technical 类的 13 个因子。"""
     import factors  # noqa: F401  触发注册
-    techs = FactorHub.list_by_category("technical")
+    techs = list_by_category("technical")
     # 至少要有 returns / momentum_20 / rsi_14 / macd 这 4 个基准因子
     for need in ("returns", "momentum_20", "rsi_14", "macd"):
         assert need in techs, f"missing technical factor: {need}"
@@ -52,7 +52,7 @@ def test_compute_all_returns_long_schema():
     """compute_all 应返回 (date, symbol, factor_name, value) 长表。"""
     import factors  # noqa: F401
     bars = _sample_bars()
-    long_df = FactorHub.compute_all(
+    long_df = compute_all(
         bars, names=["momentum_20", "rsi_14"], verbose=False
     )
     assert set(long_df.columns) == {"date", "symbol", "factor_name", "value"}
@@ -66,7 +66,7 @@ def test_compute_single_factor_wide_shape():
     """compute 单因子返回 wide DataFrame,shape = (n_date, n_symbol)。"""
     import factors  # noqa: F401
     bars = _sample_bars()
-    wide = FactorHub.compute("momentum_20", bars, verbose=False)
+    wide = compute("momentum_20", bars, verbose=False)
     assert isinstance(wide, pd.DataFrame)
     # 至少有两列(两只股票),至少 10 天
     assert wide.shape[1] == 2
@@ -75,4 +75,4 @@ def test_compute_single_factor_wide_shape():
 
 def test_unregistered_factor_raises():
     with pytest.raises(KeyError):
-        FactorHub.get("factor_that_does_not_exist")
+        get("factor_that_does_not_exist")

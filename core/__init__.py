@@ -29,12 +29,16 @@ _setup_default_logger()
 # ----- 轻量类型(纯数据,加载零开销)-----
 from .database import Database
 from .data_checker import DataQualityChecker
+from .data_validator import DataValidator, ValidationReport, validate_data
 from .fee import FeeCalculator, RiskManager, TradeCost
 from .strategy import QuantStrategy, Order, Position, Signal, SignalType
 
 __all__ = [
     "Database",
     "DataQualityChecker",
+    "DataValidator",
+    "ValidationReport",
+    "validate_data",
     "FeeCalculator",
     "RiskManager",
     "TradeCost",

@@ -175,7 +175,7 @@ class MultiFactorSelector(IStockSelector):
             return []
         df = factor_data
         if "date" in df.columns:
-            df = df[df["date"] <= date]
+            df = df[df["date"] < date]
         if df.empty:
             return []
 

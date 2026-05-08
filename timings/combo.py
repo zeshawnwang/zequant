@@ -32,11 +32,11 @@ class CompositeTiming(ITimingGenerator):
         self.mode = mode
 
     def generate(self, factor_data: pd.DataFrame,
-                 positions: List[str], cash: float) -> List[Signal]:
+                 positions: List[str], cash: float, date=None) -> List[Signal]:
         # 1) 收集所有子择时器的信号,按 symbol 分桶
         bucket: dict = {}
         for timing in self.timings:
-            for sig in timing.generate(factor_data, positions, cash):
+            for sig in timing.generate(factor_data, positions, cash, date):
                 bucket.setdefault(sig.symbol, []).append(sig)
         if not bucket:
             return []

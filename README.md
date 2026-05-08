@@ -4,10 +4,13 @@ A 股横截面 / 多因子量化研究框架。**单文件数据库 + 注册中�
 
 核心特征:
 - 📦 **单文件 DuckDB**(数据/因子/评估/注册表) —— 无外部依赖
-- 🧮 **因子宽表 + [`FactorHub`](core/factor_hub.py:52) 注册中心** —— 101 个 WorldQuant Alpha + 13 个传统因子
-- 🧩 **[`StrategyHub`](core/strategy_hub.py:62) 统一策略入口** —— 静态策略 / 评估驱动策略 一条命令行拉起
-- 🔗 **可插拔三段式** —— 选股 → 择时 → 仓位,每段都有抽象基类,随意替换
+- 🧮 **因子宽表 + [`FactorHub`](core/factor_hub.py:52) 注册中心** —— 101 个 WorldQuant Alpha(已按原论文修正 alpha1 公式) + 13 个传统因子,支持 `n_jobs` 并行计算
+- 🧩 **[`StrategyHub`](core/strategy_hub.py:62) 统一策略入口** —— 静态策略 / 评估驱动策略 一条命令行拉起;FactorHub / StrategyHub 已改为实例级注册,杜绝测试污染并支持并行研究
+- 🔗 **可插拔三段式** —— 选股 → 择时 → 仓位,每段都有抽象基类,随意替换;择时与选股严格使用目标日期前数据,回测成交于次日开盘价,彻底消除前视偏差
+- ⚖️ **真风险平价仓位** —— [`RiskParityBuilder`](portfolios/risk_parity.py) 基于历史收益协方差矩阵,通过 Cyclical Coordinate Descent 求解真实风险平价权重(非简单逆波动率)
 - 🛡️ **A 股交易摩擦完整建模** —— T+1、板块分级涨跌停、印花税/过户费/滑点、止损止盈、流动性过滤
+- 🔍 **数据校验层** —— [`core/data_validator.py`](core/data_validator.py) 提供价格异常检测、缺失数据识别与质量指标,已嵌入数据拉取与因子计算流程
+- 📡 **实盘/模拟交易接口** —— `broker/` 目录提供 [`IBroker`](broker/base.py) 抽象基类、[`PaperBroker`](broker/paper.py) 模拟撮合、[`MockBroker`](broker/mock.py) 测试替身,配合 [`LiveEngine`](core/live_engine.py) 支持实盘/纸交易
 - ✅ **31 个单元测试 + 端到端冒烟** —— 重构改动都有守门
 
 ---
@@ -25,16 +28,34 @@ A 股横截面 / 多因子量化研究框架。**单文件数据库 + 注册中�
 ## 项目结构速览
 
 ```
-core/        数据库、回测引擎、配置加载、注册中心、Universe、风控、因子评估
+core/        数据库、回测引擎、配置加载、注册中心、Universe、风控、因子评估、数据校验、实盘引擎
 factors/     因子实现(@register_factor 注册到 FactorHub)
 screening/   选股器(IStockSelector)
 timings/     择时器(ITimingGenerator)
 portfolios/  仓位分配器(IPortfolioBuilder)
 strategies/  策略组装(@register_strategy 注册到 StrategyHub)
+broker/      交易接口抽象(IBroker) + 模拟/测试实现
 scripts/     拉数据 / 算因子 / 评估 / 回测 / 清库 命令行
 tests/       单元测试(31 个)
 config/      主配置 config.yaml(所有脚本都读它)
 ```
+
+---
+
+## 最近优化
+
+以下改进已合入主线,显著提升了回测真实性、计算效率与可维护性:
+
+| 优化项 | 说明 | 相关文件 |
+|---|---|---|
+| **Alpha1 公式修正** | 按 WorldQuant 原论文,`alpha001` 在 `ret >= 0` 分支使用 `std20`(20 日标准差),原错误实现为 `close`。 | [`factors/alpha101_full.py`](factors/alpha101_full.py) |
+| **实例级注册中心** | `FactorHub` 与 `StrategyHub` 从类级单例改为实例级注册,彻底消除测试间状态污染,支持多进程并行研究。 | [`core/factor_hub.py`](core/factor_hub.py) / [`core/strategy_hub.py`](core/strategy_hub.py) |
+| **消除前视偏差(信号)** | `TrendTiming`、`ComboTiming`、`FactorRankSelector`、`MultiFactorSelector` 统一改为严格使用目标日期**之前**的数据生成信号。 | `timings/*.py` / `screening/*.py` |
+| **消除前视偏差(成交)** | `BacktestEngine` 订单执行价从"当日收盘价"改为**下一交易日开盘价**,杜绝"看到收盘再交易"的不可能行为。 | [`core/backtest.py`](core/backtest.py) |
+| **真风险平价** | `RiskParityBuilder` 不再做简单逆波动率加权,而是计算历史收益协方差矩阵,用 Cyclical Coordinate Descent 迭代求解真实风险平价权重。 | [`portfolios/risk_parity.py`](portfolios/risk_parity.py) |
+| **并行因子计算** | `FactorHub.compute_all()` 新增 `n_jobs` 参数,通过 `ProcessPoolExecutor` 多进程并行计算因子,大幅缩短 101 Alpha 计算时间。 | [`core/factor_hub.py`](core/factor_hub.py) |
+| **数据校验层** | 新增 `core/data_validator.py`,提供价格异常(跳空、负值)、缺失数据检测与质量评分;已集成到 `fetch_data.py` 与 `compute_factors.py`。 | [`core/data_validator.py`](core/data_validator.py) |
+| **实盘交易接口抽象** | 新增 `broker/` 目录:`IBroker` 抽象基类定义统一下单/查持仓/查资金接口;`PaperBroker` 用于模拟撮合;`MockBroker` 用于单元测试。配合 `core/live_engine.py` 可直接驱动实盘/纸交易。 | `broker/*.py` / [`core/live_engine.py`](core/live_engine.py) |
 
 ---
 
@@ -327,7 +348,7 @@ zequant 内置 **5 个策略**,3 个静态 + 2 个评估驱动。所有策略走
 | 择时器 | [`TrendTiming`](timings/trend.py)(20 日均线之上才允许买入) |
 | 仓位器 | [`EqualWeightBuilder`](portfolios/equal_weight.py)(等权 5%) |
 
-**思路**:近 5 日涨幅最强的 20 只股,叠加均线趋势过滤。简单、抗过拟合,适合做 baseline。
+**思路**:近 5 日涨幅最强的 20 只股,叠加均线趋势过滤。择时器严格使用目标日期之前的数据判断趋势,回测成交于次日开盘价,彻底消除前视偏差。简单、抗过拟合,适合做 baseline。
 
 **参数**:无外部参数(所有阈值已写在策略 factory 里)。
 
@@ -394,7 +415,7 @@ python3 scripts/run_backtest.py --strategy multi_factor_evaluation_driven \
 | 文件 | [`strategies/alpha101_strategy.py`](strategies/alpha101_strategy.py) |
 | 选股器 | [`MultiFactorSelector`](screening/multi_factor.py:18)(默认用 alpha001/alpha002/alpha006,可改 factory 参数) |
 | 择时器 | [`ComboTiming`](timings/combo.py)(趋势 + 波动率双重过滤) |
-| 仓位器 | [`RiskParityBuilder`](portfolios/risk_parity.py)(基于 20 日波动率倒数加权) |
+| 仓位器 | [`RiskParityBuilder`](portfolios/risk_parity.py)(基于历史收益协方差矩阵的真实风险平价,CCD 求解) |
 
 **思路**:Alpha101 中相对稳健的几个,搭配双重择时与风险平价仓位。**学习用** —— 现实中应该用 3.5。
 
@@ -516,7 +537,8 @@ graph TB
     Config[config/config.yaml] --> Loader[core/config.py]
     Loader --> Scripts[scripts/*]
 
-    Scripts --> Fetch[fetch_data.py] --> DB[(DuckDB)]
+    Scripts --> Fetch[fetch_data.py] --> Validator[core/data_validator.py]
+    Validator --> DB[(DuckDB)]
     Scripts --> Compute[compute_factors.py / compute_alpha101_full.py]
     Compute --> FactorHub[FactorHub 注册中心]
     FactorHub --> Wide[factors_wide 宽表] --> DB
@@ -537,6 +559,9 @@ graph TB
     Engine --> Report[BacktestReport]
     Universe --> DB
     Engine --> DB
+
+    Broker[broker/ IBroker / PaperBroker / MockBroker] --> Live[core/live_engine.py]
+    Live --> Strategy
 ```
 
 ---

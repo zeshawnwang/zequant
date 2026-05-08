@@ -41,9 +41,9 @@ class FactorRankSelector(IStockSelector):
         if factor_data is None or factor_data.empty:
             return []
 
-        # 取每只股票在 date 之前的最后一条
+        # 取每只股票在 date 之前的最后一条(严格小于 date,避免使用当日数据)
         if 'date' in factor_data.columns:
-            df = factor_data[factor_data['date'] <= date]
+            df = factor_data[factor_data['date'] < date]
         else:
             df = factor_data
 

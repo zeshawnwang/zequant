@@ -18,7 +18,7 @@ import argparse
 from core.config import load_config, get_db_path
 from core.database import Database
 from core.data_fetcher import IncrementalFetcher
-from core.data_checker import DataQualityChecker
+from core.data_validator import DataValidator
 
 
 def main() -> None:
@@ -41,15 +41,19 @@ def main() -> None:
         db.close()
         return
 
+    validator = DataValidator(db)
+
     if args.symbol:
         print(f"获取 {args.symbol} ...")
         df = fetcher.fetch_daily_bars(args.symbol, args.start)
         if not df.empty:
-            issues = DataQualityChecker.check(df, args.symbol)
-            if issues:
-                print(f"数据问题: {issues}")
+            report = validator.validate_symbol(args.symbol, df=df)
+            if not report.passed:
+                print(f"数据问题: {report.issues}")
+                print(f"质量指标: {report.metrics}")
             else:
                 print(f"获取成功: {len(df)} 条, {df['date'].min()} ~ {df['date'].max()}")
+                print(f"质量指标: {report.metrics}")
     elif args.batch:
         symbols_df = db.get_symbols()
         symbols = symbols_df["symbol"].tolist()[: args.batch]
@@ -57,6 +61,18 @@ def main() -> None:
         results = fetcher.fetch_batch(symbols)
         success = sum(1 for v in results.values() if v > 0)
         print(f"完成: {success}/{len(symbols)} 只成功获取数据")
+
+        # 批量验证
+        print("开始数据验证...")
+        reports = validator.validate_all(symbols=symbols)
+        failed = sum(1 for r in reports.values() if not r.passed)
+        if failed:
+            print(f"验证警告: {failed}/{len(reports)} 只股票存在数据问题")
+            for sym, rep in reports.items():
+                if not rep.passed:
+                    print(f"  [{sym}] {rep.issues}")
+        else:
+            print("批量验证通过")
     else:
         print("请指定股票代码或使用 --batch / --all")
 

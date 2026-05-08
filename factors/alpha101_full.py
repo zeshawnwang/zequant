@@ -36,7 +36,7 @@ def alpha1(ctx: FactorContext) -> pd.DataFrame:
     close = ctx.close
     ret = close.pct_change()
     std20 = op.stddev(ret, 20)
-    base = ret.where(ret < 0, close)
+    base = ret.where(ret < 0, std20)
     sp = op.signed_power(base, 2.0)
     return op.rank_(op.ts_argmax(sp, 5)) - 0.5
 
