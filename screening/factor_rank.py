@@ -1,19 +1,12 @@
-"""
-因子排名选股器
+"""因子排名选股器
+
 按单个因子排序选股,支持升序/降序、分位数过滤。
 """
+from __future__ import annotations
 from typing import List
 import pandas as pd
 
-
-class IStockSelector:
-    """选股器基类"""
-
-    def select(self, factor_data: pd.DataFrame, date, top_n: int) -> List[str]:
-        raise NotImplementedError
-
-    def get_description(self) -> str:
-        return self.__class__.__name__
+from .base import IStockSelector
 
 
 class FactorRankSelector(IStockSelector):
@@ -38,6 +31,11 @@ class FactorRankSelector(IStockSelector):
         self.min_factor_value = min_factor_value
         self.max_factor_value = max_factor_value
         self.quantile_filter = quantile_filter
+
+    @property
+    def factor_names(self) -> List[str]:
+        """该选股器消费的因子列(供回测脚本提前加载用)。"""
+        return [self.factor_name]
 
     def select(self, factor_data: pd.DataFrame, date, top_n: int) -> List[str]:
         if factor_data is None or factor_data.empty:

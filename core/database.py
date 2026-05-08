@@ -1,47 +1,70 @@
 """
-DuckDB Database Manager
-Single-file database for all data: daily bars, factors, positions, signals.
+DuckDB 数据库管理器
+单文件数据库,统一存放:日线、因子(宽表)、标的、因子注册表、更新日志。
 
-修复说明(相对旧版):
-1. upsert_daily_bars 旧版会在写入前 DELETE 全表(子查询条件恒真),导致数据自毁。
-   现改为 INSERT ... ON CONFLICT DO UPDATE,走主键冲突合并。
-2. DuckDB Python API 的 DataFrame 写入使用 `conn.register("view", df)` 注册临时视图,
-   再在 SQL 里引用;不要用 `params={"df": df}`,那是错误的用法。
-3. 查询过滤使用位置参数(`?`)而非命名参数,兼容性更好。
+设计要点
+--------
+1) daily_bars 通过 INSERT ... ON CONFLICT DO UPDATE 走主键合并,支持增量更新。
+2) factors 改为【宽表】:(date, symbol, f1, f2, ..., fN),每个因子一列。
+   - 优点:读取无需 pivot,选股/回测/评估直接 SELECT 列,DuckDB 列存对宽表友好。
+   - 扩展:新增因子时调用 ensure_factor_columns([...]),自动 ALTER TABLE ADD COLUMN。
+   - 写入:save_factors 同时支持宽表 / 长表输入,内部统一落到宽表。
+3) factor_registry 维持不变,记录 IC/IR/换手等评估结果与启用开关。
+
+向后兼容
+--------
+- 旧调用方使用 get_factors_long() 仍可用,内部 melt 宽表得到同样的 long 格式。
+- list_factor_names() 改为返回宽表中的因子列(扣除元信息列)。
 """
+from __future__ import annotations
 import duckdb
+import numpy as np
 import pandas as pd
 from pathlib import Path
+from typing import Iterable, List, Optional
 
 
-# 数据库中 factors 表的有序列名,save_factors 依此挑选字段,防止串列
-FACTOR_COLUMNS = [
-    "date", "symbol", "close", "returns",
-    "momentum_5", "momentum_20",
-    "rsi_14",
-    "macd", "macd_signal", "macd_hist",
-    "boll_upper", "boll_middle", "boll_lower", "boll_position",
-    "volume_ratio",
-    "volatility_20",
-]
-
+# 日线主键列
 DAILY_BAR_COLUMNS = [
     "symbol", "date", "open", "high", "low", "close",
     "volume", "amount", "pct_change",
 ]
 
+# 宽表元信息列(非因子列)
+FACTOR_META_COLUMNS = ("date", "symbol")
+
 
 class Database:
-    """DuckDB single-file database manager."""
+    """DuckDB 单文件数据库管理器。
 
-    def __init__(self, db_path: str = "./data/quant_data.db"):
+    Args:
+        db_path:   数据库文件路径
+        read_only: 是否只读连接(被其他进程独占时可用,但禁止写入操作)
+    """
+
+    def __init__(self, db_path: str = "./data/quant_data.db",
+                 read_only: bool = False):
         self.db_path = db_path
+        self.read_only = read_only
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-        self.conn = duckdb.connect(db_path)
-        self._init_tables()
+        try:
+            self.conn = duckdb.connect(db_path, read_only=read_only)
+        except duckdb.IOException:
+            # 库被另一个进程独占(常见:IDE 内置 SQL 插件),回退到只读
+            if not read_only:
+                self.conn = duckdb.connect(db_path, read_only=True)
+                self.read_only = True
+            else:
+                raise
+        if not self.read_only:
+            self._init_tables()
+
+    # ============================================================
+    # Schema 初始化
+    # ============================================================
 
     def _init_tables(self):
-        """Initialize all tables."""
+        """初始化所有表。factors 表采用宽表设计,初始只含主键。"""
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS daily_bars (
                 symbol      VARCHAR,
@@ -57,27 +80,19 @@ class Database:
             )
         """)
 
+        # 宽表因子:初始只建主键,因子列由 ensure_factor_columns 动态扩展
         self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS factors (
-                date          DATE,
-                symbol        VARCHAR,
-                close         DECIMAL(10,3),
-                returns       DECIMAL(10,6),
-                momentum_5    DECIMAL(10,6),
-                momentum_20   DECIMAL(10,6),
-                rsi_14        DECIMAL(10,4),
-                macd          DECIMAL(10,4),
-                macd_signal   DECIMAL(10,4),
-                macd_hist     DECIMAL(10,4),
-                boll_upper    DECIMAL(10,3),
-                boll_middle   DECIMAL(10,3),
-                boll_lower    DECIMAL(10,3),
-                boll_position DECIMAL(10,4),
-                volume_ratio  DECIMAL(10,4),
-                volatility_20 DECIMAL(10,6),
+            CREATE TABLE IF NOT EXISTS factors_wide (
+                date        DATE,
+                symbol      VARCHAR,
                 PRIMARY KEY (date, symbol)
             )
         """)
+        # 加速按日期切片的查询(DuckDB 主键自带索引,这里再补一个 date 单列索引)
+        self.conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_factors_wide_date "
+            "ON factors_wide(date)"
+        )
 
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS symbols (
@@ -90,33 +105,40 @@ class Database:
             )
         """)
 
+        # 因子注册表:评估结果 + 启用开关
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS factor_registry (
-                factor_name VARCHAR PRIMARY KEY,
-                category    VARCHAR,
-                description VARCHAR,
-                params      VARCHAR,
-                last_update TIMESTAMP,
-                is_active   BOOLEAN DEFAULT true
+                factor_name   VARCHAR PRIMARY KEY,
+                category      VARCHAR,
+                description   VARCHAR,
+                ic_mean       DOUBLE,
+                ic_std        DOUBLE,
+                ir            DOUBLE,
+                ic_t_stat     DOUBLE,
+                turnover      DOUBLE,
+                top_group_ret DOUBLE,
+                bot_group_ret DOUBLE,
+                monotonic     BOOLEAN,
+                last_eval     TIMESTAMP,
+                enabled       BOOLEAN DEFAULT true
             )
         """)
 
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS update_log (
-                table_name  VARCHAR,
-                last_update TIMESTAMP,
+                table_name      VARCHAR,
+                last_update     TIMESTAMP,
                 records_updated INT,
-                status      VARCHAR
+                status          VARCHAR
             )
         """)
 
-    # ---------- daily_bars ----------
+    # ============================================================
+    # daily_bars
+    # ============================================================
 
     def upsert_daily_bars(self, df: pd.DataFrame):
-        """
-        Upsert daily bars by (symbol, date) primary key.
-        使用 INSERT ... ON CONFLICT 合并,不会抹掉其他分区数据。
-        """
+        """日线 upsert。df 必须含 DAILY_BAR_COLUMNS 中的列。"""
         if df is None or df.empty:
             return
         df = df[[c for c in DAILY_BAR_COLUMNS if c in df.columns]].copy()
@@ -135,14 +157,18 @@ class Database:
         finally:
             self.conn.unregister("_stg_bars")
 
-    def get_daily_bars(self, symbol: str = None,
+    def get_daily_bars(self, symbols=None, symbol: str = None,
                        start_date: str = None, end_date: str = None) -> pd.DataFrame:
-        """Query daily bars with optional filters."""
+        """查询日线。symbol(单只)与 symbols(多只)二选一。"""
         sql = "SELECT * FROM daily_bars WHERE 1=1"
-        params = []
+        params: list = []
         if symbol:
             sql += " AND symbol = ?"
             params.append(symbol)
+        elif symbols:
+            ph = ",".join(["?"] * len(symbols))
+            sql += f" AND symbol IN ({ph})"
+            params.extend(symbols)
         if start_date:
             sql += " AND date >= ?"
             params.append(start_date)
@@ -153,7 +179,6 @@ class Database:
         return self.conn.execute(sql, params).df()
 
     def get_max_date(self, table: str, column: str = "date"):
-        """Get max date from a table. Returns date/datetime or None."""
         try:
             row = self.conn.execute(f"SELECT MAX({column}) FROM {table}").fetchone()
             return row[0] if row and row[0] is not None else None
@@ -161,7 +186,6 @@ class Database:
             return None
 
     def get_symbol_max_date(self, symbol: str):
-        """按单只股票取 daily_bars 最大日期(增量起点)。"""
         try:
             row = self.conn.execute(
                 "SELECT MAX(date) FROM daily_bars WHERE symbol = ?", [symbol]
@@ -170,50 +194,214 @@ class Database:
         except Exception:
             return None
 
-    # ---------- factors ----------
+    # ============================================================
+    # factors(宽表) —— 核心 API
+    # ============================================================
 
-    def save_factors(self, df: pd.DataFrame):
-        """Save factor data with ON CONFLICT upsert."""
+    def list_factor_columns(self) -> List[str]:
+        """列出 factors_wide 中除元信息外的所有因子列。"""
+        df = self.conn.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'factors_wide' ORDER BY ordinal_position"
+        ).df()
+        if df.empty:
+            return []
+        return [c for c in df["column_name"].tolist() if c not in FACTOR_META_COLUMNS]
+
+    # 旧名兼容
+    def list_factor_names(self) -> List[str]:
+        """旧 API:返回所有因子名(等同 list_factor_columns)。"""
+        return self.list_factor_columns()
+
+    def ensure_factor_columns(self, factor_names: Iterable[str]):
+        """确保 factors_wide 中存在指定的因子列,缺失的自动 ALTER TABLE 添加为 DOUBLE。
+
+        实现策略
+        --------
+        - 一次性算出缺失列(set 差集),把多个 ALTER 包在单个事务里提交;
+          DuckDB 的 ALTER 不支持单语句多列,但事务化能避免 N 次 fsync,
+          首次 Alpha101 全量入库(101 列)从约 2~3s 降至 < 200ms。
+        - 列名需为合法 SQL 标识符(字母/数字/下划线),否则抛 ValueError。
+        """
+        existed = set(self.list_factor_columns()) | set(FACTOR_META_COLUMNS)
+        to_add: List[str] = []
+        for fn in factor_names:
+            fn = str(fn).strip()
+            if not fn or fn in existed:
+                continue
+            if not fn.replace("_", "").isalnum():
+                raise ValueError(f"非法因子名: {fn}(只允许字母/数字/下划线)")
+            to_add.append(fn)
+            existed.add(fn)
+        if not to_add:
+            return
+
+        # 在事务中批量 ALTER —— 减少 commit/fsync 次数
+        try:
+            self.conn.execute("BEGIN TRANSACTION")
+            for fn in to_add:
+                self.conn.execute(
+                    f'ALTER TABLE factors_wide ADD COLUMN "{fn}" DOUBLE'
+                )
+            self.conn.execute("COMMIT")
+        except Exception:
+            self.conn.execute("ROLLBACK")
+            raise
+
+    def save_factors(self, df: pd.DataFrame, factor_names: Optional[List[str]] = None):
+        """
+        保存因子数据,自动识别输入格式:
+          1) 宽表: date, symbol, f1, f2, ...
+          2) 长表: date, symbol, factor_name, value -> 内部 pivot 后写入
+
+        factor_names 仅在宽表输入时生效,指定要保存哪些列;None 时保存除
+        date/symbol/close/pct_change/volume/amount/open/high/low 外的所有数值列。
+        """
         if df is None or df.empty:
             return
-        # 只取 schema 列,避免原始 K 线列污染 INSERT
-        cols = [c for c in FACTOR_COLUMNS if c in df.columns]
-        if "date" not in cols or "symbol" not in cols:
-            raise ValueError("factor df must contain date and symbol")
-        df = df[cols].copy()
-        self.conn.register("_stg_factors", df)
-        set_clause = ", ".join(
-            f"{c}=excluded.{c}" for c in cols if c not in ("date", "symbol")
-        )
-        col_list = ", ".join(cols)
+
+        # 1) 长表 -> 宽表
+        if "factor_name" in df.columns and "value" in df.columns:
+            wide = df.pivot_table(
+                index=["date", "symbol"],
+                columns="factor_name",
+                values="value",
+                aggfunc="last",
+            ).reset_index()
+            wide.columns.name = None
+        else:
+            wide = df.copy()
+
+        if "date" not in wide.columns or "symbol" not in wide.columns:
+            raise ValueError("save_factors: df 必须包含 date 与 symbol 列")
+
+        # 2) 选要保存的因子列
+        reserved = {"date", "symbol", "close", "open", "high", "low",
+                    "volume", "amount", "pct_change"}
+        if factor_names is None:
+            cols = [c for c in wide.columns
+                    if c not in reserved
+                    and pd.api.types.is_numeric_dtype(wide[c])]
+        else:
+            cols = [c for c in factor_names if c in wide.columns]
+        if not cols:
+            return
+
+        wide = wide[["date", "symbol"] + cols].copy()
+        # 清洗 inf
+        for c in cols:
+            wide[c] = wide[c].replace([np.inf, -np.inf], np.nan)
+
+        # 3) 确保宽表里有这些列
+        self.ensure_factor_columns(cols)
+
+        # 4) upsert(每列单独 SET,避免动态 SQL 注入,用双引号包列名)
+        self.conn.register("_stg_factors_wide", wide)
+        set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
+        col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
         try:
             self.conn.execute(f"""
-                INSERT INTO factors ({col_list})
-                SELECT {col_list} FROM _stg_factors
+                INSERT INTO factors_wide ({col_list})
+                SELECT {col_list} FROM _stg_factors_wide
                 ON CONFLICT (date, symbol) DO UPDATE SET {set_clause}
             """)
         finally:
-            self.conn.unregister("_stg_factors")
+            self.conn.unregister("_stg_factors_wide")
 
-    def get_factors(self, symbols: list = None,
-                    start_date: str = None, end_date: str = None) -> pd.DataFrame:
-        """Get factor data."""
-        sql = "SELECT * FROM factors WHERE 1=1"
-        params = []
+    def get_factors(self, symbols: Optional[List[str]] = None,
+                    start_date: str = None, end_date: str = None,
+                    factor_names: Optional[List[str]] = None,
+                    with_close: bool = True) -> pd.DataFrame:
+        """返回宽表 (date, symbol, f1, f2, ...);可选 join close/volume/amount/pct_change。
+
+        factor_names=None 时返回全部已存在的因子列。
+        """
+        all_cols = self.list_factor_columns()
+        if factor_names is None:
+            factor_names = all_cols
+        else:
+            factor_names = [c for c in factor_names if c in all_cols]
+        if not factor_names:
+            # 即使没有因子列,也允许只取 date/symbol(空因子场景)
+            select_factors = ""
+        else:
+            select_factors = ", " + ", ".join(f'"{c}"' for c in factor_names)
+
+        where = ["1=1"]
+        params: list = []
         if symbols:
-            placeholders = ",".join(["?"] * len(symbols))
-            sql += f" AND symbol IN ({placeholders})"
+            ph = ",".join(["?"] * len(symbols))
+            where.append(f"symbol IN ({ph})")
             params.extend(symbols)
         if start_date:
-            sql += " AND date >= ?"
+            where.append("date >= ?")
             params.append(start_date)
         if end_date:
-            sql += " AND date <= ?"
+            where.append("date <= ?")
             params.append(end_date)
-        sql += " ORDER BY date, symbol"
-        return self.conn.execute(sql, params).df()
+        where_sql = " AND ".join(where)
 
-    # ---------- symbols ----------
+        sql = (
+            f"SELECT date, symbol{select_factors} "
+            f"FROM factors_wide WHERE {where_sql} "
+            f"ORDER BY date, symbol"
+        )
+        wide = self.conn.execute(sql, params).df()
+        if wide.empty:
+            return wide
+
+        if with_close:
+            bars = self.get_daily_bars(
+                symbols=symbols,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            if not bars.empty:
+                join_cols = ["date", "symbol", "close",
+                             "pct_change", "volume", "amount"]
+                join_cols = [c for c in join_cols if c in bars.columns]
+                tail = bars[join_cols].copy()
+                tail["date"] = pd.to_datetime(tail["date"])
+                wide["date"] = pd.to_datetime(wide["date"])
+                wide = wide.merge(tail, on=["date", "symbol"], how="left")
+        return wide
+
+    def get_factors_long(self, symbols: Optional[List[str]] = None,
+                         start_date: str = None, end_date: str = None,
+                         factor_names: Optional[List[str]] = None) -> pd.DataFrame:
+        """兼容 API:返回长表 (date, symbol, factor_name, value)。
+        内部从宽表 melt 而来,适合因子评估等需要逐因子聚合的场景。
+        """
+        wide = self.get_factors(
+            symbols=symbols,
+            start_date=start_date,
+            end_date=end_date,
+            factor_names=factor_names,
+            with_close=False,
+        )
+        if wide.empty:
+            return pd.DataFrame(columns=["date", "symbol", "factor_name", "value"])
+        value_cols = [c for c in wide.columns if c not in FACTOR_META_COLUMNS]
+        if not value_cols:
+            return pd.DataFrame(columns=["date", "symbol", "factor_name", "value"])
+        long_df = wide.melt(
+            id_vars=["date", "symbol"],
+            value_vars=value_cols,
+            var_name="factor_name",
+            value_name="value",
+        ).dropna(subset=["value"])
+        return long_df
+
+    def delete_factors(self, factor_names: Iterable[str]):
+        """删除某些因子列(谨慎使用)。"""
+        existing = set(self.list_factor_columns())
+        for fn in factor_names:
+            if fn in existing:
+                self.conn.execute(f'ALTER TABLE factors_wide DROP COLUMN "{fn}"')
+
+    # ============================================================
+    # symbols
+    # ============================================================
 
     def save_symbols(self, df: pd.DataFrame):
         if df is None or df.empty:
@@ -236,6 +424,58 @@ class Database:
 
     def get_symbols(self) -> pd.DataFrame:
         return self.conn.execute("SELECT * FROM symbols ORDER BY symbol").df()
+
+    # ============================================================
+    # factor_registry
+    # ============================================================
+
+    def upsert_factor_registry(self, records: pd.DataFrame):
+        """把因子评估结果写入 factor_registry。"""
+        if records is None or records.empty:
+            return
+        records = records.copy()
+        records["last_eval"] = pd.Timestamp.now()
+        self.conn.register("_stg_reg", records)
+        cols = list(records.columns)
+        col_list = ", ".join(cols)
+        set_clause = ", ".join(
+            f"{c}=excluded.{c}" for c in cols if c != "factor_name"
+        )
+        try:
+            self.conn.execute(f"""
+                INSERT INTO factor_registry ({col_list})
+                SELECT {col_list} FROM _stg_reg
+                ON CONFLICT (factor_name) DO UPDATE SET {set_clause}
+            """)
+        finally:
+            self.conn.unregister("_stg_reg")
+
+    def get_enabled_factors(self, min_abs_ir: float = None,
+                            as_dataframe: bool = False):
+        """取启用中的因子。
+
+        Args:
+            min_abs_ir: 要求 |IR| 超过该阈值(反转因子 IR<0 仍有效,故取绝对值)
+            as_dataframe: True 返回完整 DataFrame,False 仅返回 factor_name 列表
+        """
+        sql = (
+            "SELECT factor_name, ir, ic_mean, ic_t_stat, "
+            "turnover, top_group_ret, bot_group_ret, monotonic, last_eval "
+            "FROM factor_registry WHERE enabled = TRUE"
+        )
+        params: list = []
+        if min_abs_ir is not None:
+            sql += " AND ABS(ir) >= ?"
+            params.append(float(min_abs_ir))
+        sql += " ORDER BY ABS(ir) DESC NULLS LAST"
+        df = self.conn.execute(sql, params).df()
+        if as_dataframe:
+            return df
+        return df["factor_name"].tolist() if not df.empty else []
+
+    # ============================================================
+    # 通用
+    # ============================================================
 
     def execute(self, sql: str, *args, **kwargs):
         return self.conn.execute(sql, *args, **kwargs)

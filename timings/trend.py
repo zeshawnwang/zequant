@@ -1,30 +1,20 @@
-"""
-趋势择时器
-使用均线/MACD/动量打分对候选股票产生 BUY/SELL/HOLD 信号。
+"""趋势择时器。
 
-设计:
-- 对候选池(factor_data 中出现的所有 symbol)逐只计算趋势分 score ∈ [0, 1]
-- score > buy_threshold:
-    * 若已持仓 → HOLD
-    * 若未持仓 → BUY(供组合构建器分配仓位)
-- score < sell_threshold:
-    * 若已持仓 → SELL
-    * 若未持仓 → 无信号
+使用 MACD / 动量 / RSI 对候选池逐只打分(score ∈ [0,1]):
+  - score >= buy_threshold:
+      * 已持仓 → HOLD
+      * 未持仓 → BUY(由仓位分配器决定买多少)
+  - score <= sell_threshold:
+      * 已持仓 → SELL
+  - 中间区间不发信号
 """
+from __future__ import annotations
 from typing import List
 import numpy as np
 import pandas as pd
 
-# 统一使用 core.strategy 中的 Signal/SignalType,避免与 portfolios 端比较失败
 from core.strategy import Signal, SignalType
-
-
-class ITimingGenerator:
-    """择时器基类"""
-
-    def generate(self, factor_data: pd.DataFrame,
-                 positions: List[str], cash: float) -> List[Signal]:
-        raise NotImplementedError
+from .base import ITimingGenerator
 
 
 class TrendTiming(ITimingGenerator):

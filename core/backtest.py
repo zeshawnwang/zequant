@@ -1,20 +1,24 @@
-"""
-Backtest Engine
-事件驱动回测,支持费用计算、滑点、止损止盈。
+"""回测引擎(Backtest Engine)
+事件驱动回测,支持费用计算、滑点、止损止盈、Universe 过滤、T+1 约束。
 
-修复说明:
-- 旧版 _check_stops 是空实现,止损止盈不生效。
-- 旧版胜率/profit_factor 用「单笔成交价 vs 初始资金」比较,口径错误。
-  现按 entry/exit 配对(FIFO)计算每笔实现盈亏。
+设计要点:
+- _check_stops 每日按 close 检查止损/止盈,T+1 或停牌跌停日不强平
+- 按 FIFO 配对 BUY/SELL 计算每笔实现盈亏(win_rate / profit_factor)
+- Universe 过滤:自动剔除 ST/新股/涨跌停/停牌
+- T+1:用 _buy_date_map[symbol] 记录最近买入日期,卖出/止损前对比 date_str
 """
+import logging
 import pandas as pd
 import numpy as np
 from collections import defaultdict, deque
-from typing import Dict, List
+from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 
 from .strategy import Order, Position, QuantStrategy, SignalType
 from .fee import FeeCalculator, RiskManager
+from .universe import SymbolUniverse
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -29,6 +33,18 @@ class Trade:
 
 
 @dataclass
+class FinalPosition:
+    """回测结束时的持仓快照。"""
+    symbol: str
+    quantity: int
+    entry_price: float
+    last_price: float
+    market_value: float
+    pnl: float
+    pnl_pct: float
+
+
+@dataclass
 class BacktestReport:
     total_return: float
     annualized_return: float
@@ -39,6 +55,80 @@ class BacktestReport:
     total_trades: int
     equity_curve: pd.DataFrame
     trades: List[Trade] = field(default_factory=list)
+    # ===== 增强:本金/末态/选股记录 =====
+    initial_capital: float = 0.0
+    final_value: float = 0.0          # 末日总市值(现金 + 持仓)
+    final_cash: float = 0.0           # 末日现金
+    final_position_value: float = 0.0  # 末日持仓市值
+    final_positions: List[FinalPosition] = field(default_factory=list)
+    selection_log: List[dict] = field(default_factory=list)
+    # 用了哪些因子(策略名 + selector 描述 + 因子权重)
+    strategy_name: str = ""
+    selector_description: str = ""
+    factors_used: Dict[str, float] = field(default_factory=dict)
+    start_date: str = ""
+    end_date: str = ""
+
+    # ---------- 友好打印 ----------
+    def pretty_print(self, top_positions: int = 20, top_selections: int = 5) -> str:
+        lines = []
+        lines.append("=" * 72)
+        lines.append("回测报告")
+        lines.append("=" * 72)
+        if self.strategy_name:
+            lines.append(f"策略名称   : {self.strategy_name}")
+        if self.selector_description:
+            lines.append(f"选股逻辑   : {self.selector_description}")
+        if self.start_date or self.end_date:
+            lines.append(f"回测区间   : {self.start_date} ~ {self.end_date}")
+        lines.append("")
+        lines.append("─── 资金 ───")
+        lines.append(f"初始本金   : {self.initial_capital:>15,.2f}")
+        lines.append(f"期末现金   : {self.final_cash:>15,.2f}")
+        lines.append(f"期末持仓   : {self.final_position_value:>15,.2f}")
+        lines.append(f"期末总值   : {self.final_value:>15,.2f}")
+        lines.append(f"绝对盈亏   : {self.final_value - self.initial_capital:>+15,.2f}")
+        lines.append("")
+        lines.append("─── 收益指标 ───")
+        lines.append(f"总收益率   : {self.total_return*100:>+8.2f}%")
+        lines.append(f"年化收益   : {self.annualized_return*100:>+8.2f}%")
+        lines.append(f"最大回撤   : {self.max_drawdown*100:>+8.2f}%")
+        lines.append(f"夏普比率   : {self.sharpe_ratio:>+8.2f}")
+        lines.append(f"胜率       : {self.win_rate*100:>+8.2f}%")
+        lines.append(f"盈亏比     : {self.profit_factor:>8.2f}")
+        lines.append(f"交易次数   : {self.total_trades:>8d}")
+        lines.append("")
+        if self.factors_used:
+            lines.append("─── 使用的因子(权重) ───")
+            for f, w in sorted(self.factors_used.items(), key=lambda x: -abs(x[1])):
+                lines.append(f"  {f:<25s} {w:>+.4f}")
+            lines.append("")
+        if self.final_positions:
+            lines.append(f"─── 末日持仓 (共 {len(self.final_positions)} 只,显示前 {top_positions}) ───")
+            lines.append(f"  {'symbol':<10} {'qty':>8} {'entry':>10} {'last':>10} {'mv':>14} {'pnl':>12} {'pnl%':>8}")
+            for p in sorted(self.final_positions, key=lambda x: -x.market_value)[:top_positions]:
+                lines.append(
+                    f"  {p.symbol:<10} {p.quantity:>8d} {p.entry_price:>10.3f} "
+                    f"{p.last_price:>10.3f} {p.market_value:>14,.2f} "
+                    f"{p.pnl:>+12,.2f} {p.pnl_pct*100:>+7.2f}%"
+                )
+            lines.append("")
+        if self.selection_log:
+            lines.append(f"─── 选股记录 (共 {len(self.selection_log)} 个调仓日,显示首/末 {top_selections}) ───")
+            head = self.selection_log[:top_selections]
+            tail = self.selection_log[-top_selections:] if len(self.selection_log) > top_selections else []
+            for rec in head:
+                syms = rec.get("selected", [])
+                preview = ", ".join(syms[:10]) + (" ..." if len(syms) > 10 else "")
+                lines.append(f"  {rec['date']}  ({len(syms)}) {preview}")
+            if tail and tail != head:
+                lines.append(f"  ... 中间 {len(self.selection_log) - 2*top_selections} 天 ...")
+                for rec in tail:
+                    syms = rec.get("selected", [])
+                    preview = ", ".join(syms[:10]) + (" ..." if len(syms) > 10 else "")
+                    lines.append(f"  {rec['date']}  ({len(syms)}) {preview}")
+        lines.append("=" * 72)
+        return "\n".join(lines)
 
 
 class BacktestEngine:
@@ -47,18 +137,28 @@ class BacktestEngine:
     def __init__(self,
                  initial_capital: float = 1_000_000,
                  fee_config: dict = None,
-                 risk_config: dict = None):
+                 risk_config: dict = None,
+                 universe: Optional[SymbolUniverse] = None):
         self.initial_capital = initial_capital
         self.fee_calc = FeeCalculator(fee_config)
-        # RiskManager 内部还会读 fees 子键,这里把 fee 也传进去
         rcfg = dict(risk_config or {})
         if fee_config and "fees" not in rcfg:
             rcfg["fees"] = fee_config
         self.risk_mgr = RiskManager(rcfg)
+        self.universe = universe
         self.positions: Dict[str, Position] = {}
         self.cash = initial_capital
         self.trades: List[Trade] = []
         self.daily_values: List[dict] = []
+        # T+1 锁:记录每只股票【最近一次买入日期】,卖出前检查是否为同日
+        self._buy_date_map: Dict[str, str] = {}
+        # 选股日志 [{"date": "2024-01-15", "selected": [...]}, ...]
+        self.selection_log: List[dict] = []
+        # 回测期最后一天用来算末日持仓市值
+        self._last_price_map: Dict[str, float] = {}
+        self._strategy_ref: Optional[QuantStrategy] = None
+        self._start_date: str = ""
+        self._end_date: str = ""
 
     def run(self,
             strategy: QuantStrategy,
@@ -76,27 +176,65 @@ class BacktestEngine:
             (df['date'] <= pd.to_datetime(end_date))
         ]
         if df.empty:
-            print("回测区间内无数据")
+            logger.warning("回测区间内无数据")
             return self._generate_report()
 
         dates = sorted(df['date'].unique())
+        self._strategy_ref = strategy
+        self._start_date = str(pd.Timestamp(dates[0]).date())
+        self._end_date = str(pd.Timestamp(dates[-1]).date())
 
         for current_date in dates:
             day_slice = df[df['date'] <= current_date]
             today_only = df[df['date'] == current_date]
+            date_str = str(pd.Timestamp(current_date).date())
 
-            # Step 1: 先按当日收盘价检查止损止盈
-            self._check_stops(today_only, str(pd.Timestamp(current_date).date()))
+            # Universe 过滤:仅让【可买入】的样本 + 当前持仓进入策略视野
+            buyable_today = None
+            if self.universe is not None:
+                buyable_today = self.universe.filter_buyable(
+                    current_date, today_only
+                )
+                visible = buyable_today | set(self.positions.keys())
+                day_slice = day_slice[day_slice['symbol'].isin(visible)]
 
-            # Step 2: 让策略生成订单
+            # Step 1: 止损止盈
+            self._check_stops(today_only, date_str)
+
+            # Step 2: 策略下单
             orders = strategy.generate_orders(
                 day_slice, self.positions, self.cash, current_date
             )
 
-            for order in orders:
-                self._execute_order(order, str(pd.Timestamp(current_date).date()))
+            # 记录今日 selected(策略可能为空选)
+            sel = list(getattr(strategy, "last_selected", []) or [])
+            if sel:
+                self.selection_log.append({
+                    "date": str(pd.Timestamp(current_date).date()),
+                    "selected": sel,
+                    "n": len(sel),
+                })
 
-            # Step 3: 记录每日净值
+            for order in orders:
+                if order.direction == 'BUY':
+                    if (
+                        buyable_today is not None
+                        and order.symbol not in buyable_today
+                    ):
+                        continue
+                elif order.direction == 'SELL':
+                    # T+1:当日买入的不能卖(用"最近买入日期 == 今日"判定)
+                    if self._buy_date_map.get(order.symbol) == date_str:
+                        continue
+                    # 停牌/跌停不能卖
+                    if (
+                        self.universe is not None
+                        and not self.universe.is_sellable(order.symbol, today_only)
+                    ):
+                        continue
+                self._execute_order(order, date_str)
+
+            # Step 3: 每日净值
             portfolio_value = self._calc_portfolio_value(today_only)
             self.daily_values.append({
                 'date': current_date,
@@ -104,6 +242,12 @@ class BacktestEngine:
                 'portfolio_value': portfolio_value,
                 'total_value': self.cash + portfolio_value,
             })
+
+            # 更新 last_price_map(供末日持仓估值)
+            if today_only is not None and not today_only.empty:
+                for sym, px in zip(today_only['symbol'], today_only['close']):
+                    if px is not None and not pd.isna(px):
+                        self._last_price_map[sym] = float(px)
 
         return self._generate_report()
 
@@ -118,20 +262,22 @@ class BacktestEngine:
             return
 
         if order.direction == 'BUY':
-            cost = self.fee_calc.calc_net_proceed('buy', order.symbol, exec_price, order.quantity)
+            cost = self.fee_calc.calc_net_proceed(
+                'buy', order.symbol, exec_price, order.quantity
+            )
             qty = order.quantity
             if cost > self.cash:
-                # 现金不足,按可买数量(向下取整到 100 股)再核
                 max_qty = int(self.cash / exec_price / 100) * 100
                 if max_qty < 100:
                     return
                 qty = max_qty
-                cost = self.fee_calc.calc_net_proceed('buy', order.symbol, exec_price, qty)
+                cost = self.fee_calc.calc_net_proceed(
+                    'buy', order.symbol, exec_price, qty
+                )
                 if cost > self.cash:
                     return
 
             self.cash -= cost
-            # 已持仓加仓:用加权均价更新
             if order.symbol in self.positions:
                 old = self.positions[order.symbol]
                 total_qty = old.quantity + qty
@@ -149,6 +295,7 @@ class BacktestEngine:
                     stop_loss=exec_price * (1 - self.risk_mgr.stop_loss),
                     take_profit=exec_price * (1 + self.risk_mgr.take_profit),
                 )
+            self._buy_date_map[order.symbol] = date  # T+1 锁:记录买入日期
             self.trades.append(Trade(
                 date=date, symbol=order.symbol,
                 direction='BUY', price=exec_price, quantity=qty,
@@ -162,7 +309,9 @@ class BacktestEngine:
             sell_qty = min(order.quantity, pos.quantity)
             if sell_qty <= 0:
                 return
-            proceeds = self.fee_calc.calc_net_proceed('sell', order.symbol, exec_price, sell_qty)
+            proceeds = self.fee_calc.calc_net_proceed(
+                'sell', order.symbol, exec_price, sell_qty
+            )
             self.cash += proceeds
             pos.quantity -= sell_qty
             if pos.quantity <= 0:
@@ -174,12 +323,15 @@ class BacktestEngine:
             ))
 
     def _check_stops(self, today_only: pd.DataFrame, date: str):
-        """根据当日 close 对持仓检查止损/止盈,触发即按当日 close 平仓。"""
+        """止损止盈,T+1 + 跌停 + 停牌日不强制平仓。"""
         if today_only is None or today_only.empty or not self.positions:
             return
         price_map = dict(zip(today_only['symbol'], today_only['close']))
         to_sell = []
         for symbol, pos in self.positions.items():
+            # T+1:同日买入的不能止损
+            if self._buy_date_map.get(symbol) == date:
+                continue
             cp = price_map.get(symbol)
             if cp is None or pd.isna(cp):
                 continue
@@ -187,8 +339,14 @@ class BacktestEngine:
             should_stop, reason = self.risk_mgr.check_stop_loss(
                 pos.entry_price, cp, direction='long'
             )
-            if should_stop:
-                to_sell.append((symbol, cp, reason))
+            if not should_stop:
+                continue
+            if (
+                self.universe is not None
+                and not self.universe.is_sellable(symbol, today_only)
+            ):
+                continue
+            to_sell.append((symbol, cp, reason))
         for symbol, cp, reason in to_sell:
             self._execute_order(
                 Order(symbol=symbol, direction='SELL',
@@ -212,7 +370,15 @@ class BacktestEngine:
     def _generate_report(self) -> BacktestReport:
         equity = pd.DataFrame(self.daily_values)
         if equity.empty:
-            return BacktestReport(0, 0, 0, 0, 0, 0, 0, equity)
+            return BacktestReport(
+                0, 0, 0, 0, 0, 0, 0, equity,
+                initial_capital=self.initial_capital,
+                final_value=self.initial_capital,
+                final_cash=self.cash,
+                start_date=self._start_date,
+                end_date=self._end_date,
+                selection_log=self.selection_log,
+            )
 
         total_value = equity['total_value'].astype(float)
         returns = total_value.pct_change().dropna()
@@ -236,8 +402,42 @@ class BacktestEngine:
             if returns.std() > 0 else 0.0
         )
 
-        # ===== FIFO 配对计算实现盈亏 =====
         win_rate, profit_factor = self._calc_pnl_stats()
+
+        # ===== 增强:末日持仓快照 =====
+        final_positions: List[FinalPosition] = []
+        final_position_value = 0.0
+        for sym, pos in self.positions.items():
+            last_px = self._last_price_map.get(sym, pos.entry_price)
+            mv = pos.quantity * float(last_px)
+            pnl = (float(last_px) - pos.entry_price) * pos.quantity
+            pnl_pct = (float(last_px) - pos.entry_price) / pos.entry_price if pos.entry_price > 0 else 0.0
+            final_positions.append(FinalPosition(
+                symbol=sym, quantity=pos.quantity,
+                entry_price=pos.entry_price, last_price=float(last_px),
+                market_value=mv, pnl=pnl, pnl_pct=pnl_pct,
+            ))
+            final_position_value += mv
+
+        # 因子信息 / 策略描述
+        strategy_name = ""
+        selector_desc = ""
+        factors_used: Dict[str, float] = {}
+        if self._strategy_ref is not None:
+            strategy_name = self._strategy_ref.name
+            selector = self._strategy_ref.selector
+            if hasattr(selector, "get_description"):
+                try:
+                    selector_desc = selector.get_description()
+                except Exception:
+                    selector_desc = selector.__class__.__name__
+            else:
+                selector_desc = selector.__class__.__name__
+            # MultiFactorSelector 会暴露 .weights
+            if hasattr(selector, "weights") and isinstance(selector.weights, dict):
+                factors_used = dict(selector.weights)
+            elif hasattr(selector, "factor_name"):
+                factors_used = {getattr(selector, "factor_name"): 1.0}
 
         return BacktestReport(
             total_return=float(total_return),
@@ -249,16 +449,27 @@ class BacktestEngine:
             total_trades=len(self.trades),
             equity_curve=equity,
             trades=self.trades,
+            initial_capital=float(self.initial_capital),
+            final_value=float(final_value),
+            final_cash=float(self.cash),
+            final_position_value=float(final_position_value),
+            final_positions=final_positions,
+            selection_log=self.selection_log,
+            strategy_name=strategy_name,
+            selector_description=selector_desc,
+            factors_used=factors_used,
+            start_date=self._start_date,
+            end_date=self._end_date,
         )
 
     def _calc_pnl_stats(self):
-        """按 FIFO 配对每只股票的 BUY/SELL,计算每笔实现盈亏。"""
+        """FIFO 配对 BUY/SELL 计算每笔实现盈亏。"""
         buys: Dict[str, deque] = defaultdict(deque)
         realized = []
         for t in self.trades:
             if t.direction == 'BUY':
                 buys[t.symbol].append([t.price, t.quantity])
-            else:  # SELL
+            else:
                 qty_to_close = t.quantity
                 while qty_to_close > 0 and buys[t.symbol]:
                     open_price, open_qty = buys[t.symbol][0]
@@ -278,8 +489,8 @@ class BacktestEngine:
         win_rate = len(wins) / len(realized)
         gross_profit = sum(wins)
         gross_loss = abs(sum(losses))
-        profit_factor = gross_profit / gross_loss if gross_loss > 0 else float('inf') if gross_profit > 0 else 0.0
-        # 处理 inf 防止后续打印报错
-        if profit_factor == float('inf'):
-            profit_factor = 999.0
+        profit_factor = (
+            gross_profit / gross_loss if gross_loss > 0
+            else (999.0 if gross_profit > 0 else 0.0)
+        )
         return float(win_rate), float(profit_factor)

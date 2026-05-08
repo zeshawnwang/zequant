@@ -1,75 +1,54 @@
-# ===== Database =====
+# ====================================================================
+# zequant 配置文件
+# 所有字段都有真实使用方,无注释矛盾、无死配置;新增字段请同步更新加载方
+# ====================================================================
+
+# ---- 数据库 -------------------------------------------------------
 database:
   path: "./data/quant_data.db"
-  backup_path: "./data/parquet"
 
-# ===== Data Source =====
+# ---- 数据源 -------------------------------------------------------
 data_source:
-  primary: akshare
-  fallback: tushare
-  fetch_schedule:
-    daily_bars: "16:05"
-    realtime: "9:30,10:30,11:30,13:00,14:00,14:30"
+  primary: akshare       # 主数据源
+  fallback: tushare      # 备用数据源(需要 token)
 
-# ===== Stock Universe =====
+# ---- Universe 过滤 ------------------------------------------------
+# 对应 core.universe.UniverseConfig
 universe:
   exclude:
-    - ST股
-    - 上市不满N天: 60
-  min_daily_amount: 100_000_000
+    - ST股                       # 排除 ST/*ST
+    - 上市不满N天: 60            # 排除上市不满 60 天
+  min_daily_amount: 100_000_000  # 当日成交额下限(元),低于此值视为流动性不足
 
-# ===== Fees (A股实盘标准) =====
+# ---- 交易费用 (A 股实盘标准) -------------------------------------
+# 对应 core.fee.FeeCalculator
 fees:
-  stamp_tax: 0.001          # 印花税，卖出收0.1%
-  transfer_fee: 0.00002     # 过户费，沪市0.002%
-  commission: 0.0003         # 佣金，默认万三
-  min_commission: 5         # 最低佣金（元）
-  slippage: 0.0005          # 滑点，0.05%
+  stamp_tax: 0.001          # 印花税,卖出收 0.1%
+  transfer_fee: 0.00002     # 过户费,沪市 0.002%
+  commission: 0.0003        # 佣金,默认万三
+  min_commission: 5         # 最低佣金(元)
+  slippage: 0.0005          # 滑点,0.05%
 
-# ===== Risk =====
+# ---- 风控规则 ----------------------------------------------------
+# 对应 core.fee.RiskManager
 risk:
-  max_position_pct: 0.15     # 单股最大仓位15%
-  max_total_position: 0.85  # 总仓位最大85%
-  max_single_loss: 0.05     # 单日最大亏损5%
-  stop_loss: 0.10           # 止损线-5%
-  take_profit: 0.25         # 止盈线+12%
+  max_position_pct: 0.15    # 单股最大仓位 15%
+  max_total_position: 0.85  # 总仓位最大 85%
+  stop_loss: 0.10           # 止损线,亏损达 10% 触发
+  take_profit: 0.25         # 止盈线,盈利达 25% 触发
 
-# ===== Backtest =====
+# ---- 回测参数 ----------------------------------------------------
+# 对应 scripts/run_backtest.py
 backtest:
-  initial_capital: 1_000_000
-  rebalance_freq: "1d"       # 日线调仓
+  initial_capital: 1_000_000   # 初始资金
+  rebalance_freq: "1d"         # 调仓频率(目前仅 1d 实现)
   start_date: "2019-01-01"
   end_date: "2026-05-01"
 
-# ===== Factors =====
+# ---- 因子评估阈值 -----------------------------------------------
+# 对应 core.factor_evaluator.FactorEvaluator.to_registry_records
+# 因子的具体清单由 FactorHub 注册中心管理(代码侧 @register_factor),
+# 这里只放评估时的启停阈值
 factors:
-  technical:
-    - name: momentum_5
-      category: 动量
-      params:
-        window: 5
-    - name: momentum_20
-      category: 动量
-      params:
-        window: 20
-    - name: rsi_14
-      category: 超买超卖
-      params:
-        window: 14
-    - name: macd
-      category: 趋势
-      params:
-        fast: 12
-        slow: 26
-        signal: 9
-    - name: boll_position
-      category: 趋势
-      params:
-        window: 20
-        std: 2
-    - name: volume_ratio
-      category: 成交量
-      params:
-        window: 20
-  min_ic_threshold: 0.02
-  min_ir_threshold: 0.3
+  ir_threshold: 0.05        # |IR| ≥ 0.05 才标记 enabled=True
+  forward_days: 5           # 计算 IC 时使用的远期窗口(交易日)

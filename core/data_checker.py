@@ -1,5 +1,5 @@
 """
-Data Quality Checker
+数据质量检查器(Data Quality Checker)
 检查并修复常见数据质量问题。
 """
 import pandas as pd

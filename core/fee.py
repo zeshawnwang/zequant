@@ -1,6 +1,6 @@
 """
-Fee and Risk Manager
-包含完整的A股费用计算和风控规则。
+费用与风控(Fee & Risk Manager)
+包含完整的 A 股费用计算和风控规则。
 """
 from dataclasses import dataclass
 from typing import Dict, Optional

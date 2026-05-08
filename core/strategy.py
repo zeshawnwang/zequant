@@ -1,27 +1,31 @@
+"""策略核心模块。
+
+定义选股器 + 择时器 + 仓位分配器的组装接口与数据载体(Signal/Order/Position)。
 """
-策略核心模块
-定义选股器+择时器+仓位分配器的组装接口。
-"""
-from typing import List, Dict, Optional
+from __future__ import annotations
+from typing import List, Dict
 from dataclasses import dataclass, field
+from enum import IntEnum
+
 import pandas as pd
+
+
+class SignalType(IntEnum):
+    """信号枚举(IntEnum 兼容旧版裸整数比较)。"""
+    BUY = 1
+    SELL = -1
+    HOLD = 0
 
 
 @dataclass
 class Signal:
-    """交易信号"""
+    """交易信号。"""
     symbol: str
-    signal_type: 'SignalType'  # BUY/SELL/HOLD
-    strength: float            # 信号强度 0-1
-    price: float              # 参考价格
+    signal_type: SignalType     # BUY / SELL / HOLD
+    strength: float             # 信号强度 0~1
+    price: float                # 参考价格
     reason: str = ""
     factors: Dict = field(default_factory=dict)
-
-
-class SignalType:
-    BUY = 1
-    SELL = -1
-    HOLD = 0
 
 
 @dataclass
@@ -67,6 +71,8 @@ class QuantStrategy:
         self.timing = timing
         self.portfolio = portfolio
         self.top_n = top_n
+        # 最近一次选股结果(供回测引擎记录到 selection_log)
+        self.last_selected: List[str] = []
 
     def generate_orders(self,
                       factor_data: pd.DataFrame,
@@ -87,6 +93,7 @@ class QuantStrategy:
 
         # Step 1: 选股
         selected = self.selector.select(factor_data, date, top_n)
+        self.last_selected = list(selected)
 
         # Step 2: 合并候选池(选出的 + 当前持仓)
         current_symbols = list(current_positions.keys())

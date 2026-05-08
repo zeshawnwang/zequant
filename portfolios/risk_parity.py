@@ -4,7 +4,7 @@
 """
 from typing import Dict, List
 import numpy as np
-from .equal_weight import IPortfolioBuilder
+from .base import IPortfolioBuilder
 
 
 class RiskParityBuilder(IPortfolioBuilder):

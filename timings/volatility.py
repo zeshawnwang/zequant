@@ -1,12 +1,18 @@
+"""波动率择时器。
+
+仅对【已持仓】标的产生信号:
+  - vol > high_threshold: SELL(高波动减仓)
+  - vol < low_threshold:  HOLD(低波动持有)
+
+注意:本择时器**不会产生 BUY 信号**,需与会出 BUY 的择时器(如 TrendTiming)
+配合 CompositeTiming 使用,或仅作为风控择时叠加在 TrendTiming 之后。
 """
-波动率择时
-高波动减仓，低波动加仓。
-"""
+from __future__ import annotations
 from typing import List
-import numpy as np
 import pandas as pd
-from .trend import ITimingGenerator
+
 from core.strategy import Signal, SignalType
+from .base import ITimingGenerator
 
 
 class VolatilityTiming(ITimingGenerator):

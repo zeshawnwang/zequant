@@ -1,24 +1,8 @@
-"""
-仓位分配器基类
-定义接口。
-"""
-from abc import ABC, abstractmethod
+"""等权重仓位分配器。"""
+from __future__ import annotations
 from typing import Dict, List
 
-
-class IPortfolioBuilder(ABC):
-    """仓位分配器接口"""
-
-    @abstractmethod
-    def allocate(self,
-                 signals,  # List[Signal]
-                 total_cash: float,
-                 current_positions: Dict) -> Dict[str, int]:
-        """
-        分配仓位。
-        Returns: {symbol: shares}
-        """
-        pass
+from .base import IPortfolioBuilder
 
 
 class EqualWeightBuilder(IPortfolioBuilder):

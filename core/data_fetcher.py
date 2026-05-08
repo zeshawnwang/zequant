@@ -1,15 +1,19 @@
+"""数据增量抓取模块。
+
+主数据源:AKShare;备选:Tushare(按需扩展)。
+负责把每日行情、股票名册等增量写入本地 DuckDB。
 """
-Data Fetcher
-Incremental fetching from AKShare (primary) and Tushare (fallback).
-"""
+import logging
 import pandas as pd
 from datetime import datetime, date, timedelta
 from typing import Optional
 from .database import Database
 
+logger = logging.getLogger(__name__)
+
 
 class IncrementalFetcher:
-    """增量获取数据，自动从AKShare拉取，upsert到DuckDB。"""
+    """增量获取数据,自动从 AKShare 拉取,upsert 到 DuckDB。"""
 
     def __init__(self, db: Database):
         self.db = db
@@ -21,7 +25,7 @@ class IncrementalFetcher:
         try:
             import akshare as ak
         except ImportError:
-            print("请安装 akshare: pip install akshare")
+            logger.error("请安装 akshare: pip install akshare")
             return pd.DataFrame()
 
         # 按 symbol 维度确定起始日期,避免用全局最大日期误伤新股票
@@ -45,10 +49,10 @@ class IncrementalFetcher:
                 period="daily",
                 start_date=start_date,
                 end_date=today,
-                adjust="qfq"
+                adjust="qfq",
             )
         except Exception as e:
-            print(f"获取 {symbol} 失败: {e}")
+            logger.warning("获取 %s 失败: %s", symbol, e)
             return pd.DataFrame()
 
         if df is None or df.empty:
@@ -65,7 +69,6 @@ class IncrementalFetcher:
         }
         df = df.rename(columns=rename)
 
-        # AKShare 有时返回的 symbol 列为空,统一写死
         df["symbol"] = str(symbol).zfill(6)
         df["date"] = pd.to_datetime(df["date"]).dt.date
 
@@ -76,17 +79,24 @@ class IncrementalFetcher:
         self.db.upsert_daily_bars(df)
         return df
 
-    def fetch_all_symbols(self) -> pd.DataFrame:
-        """获取全市场股票列表"""
+    def fetch_all_symbols(self, with_list_date: bool = True) -> pd.DataFrame:
+        """获取全市场股票列表。
+
+        Args:
+            with_list_date: 若为 True,从 daily_bars 表推断各 symbol 的最早交易日
+                作为 list_date(用于 Universe 过滤"上市不满 N 天")。
+                这是廉价兜底:不额外调 API,纯本地 SQL 聚合。
+        """
         try:
             import akshare as ak
         except ImportError:
+            logger.error("请安装 akshare: pip install akshare")
             return pd.DataFrame()
 
         try:
             df = ak.stock_info_a_code_name()
         except Exception as e:
-            print(f"获取股票列表失败: {e}")
+            logger.error("获取股票列表失败: %s", e)
             return pd.DataFrame()
 
         if df is None or df.empty:
@@ -100,7 +110,7 @@ class IncrementalFetcher:
         })
 
         if "symbol" not in df.columns:
-            print(f"未识别的列名: {df.columns.tolist()}")
+            logger.error("未识别的列名: %s", df.columns.tolist())
             return pd.DataFrame()
 
         df["symbol"] = df["symbol"].astype(str).str.zfill(6)
@@ -113,27 +123,45 @@ class IncrementalFetcher:
             lambda x: "SH" if x.startswith(("6", "9")) else
                       ("BJ" if x.startswith(("4", "8")) else "SZ")
         )
-        df["list_date"] = None
         df["delist_date"] = None
         df["sector"] = None
+
+        # 从本地 daily_bars 推断 list_date(各 symbol 的最早一条 K 线日期)
+        if with_list_date:
+            try:
+                first_dates = self.db.conn.execute(
+                    "SELECT symbol, MIN(date) AS list_date "
+                    "FROM daily_bars GROUP BY symbol"
+                ).df()
+                if not first_dates.empty:
+                    df = df.merge(first_dates, on="symbol", how="left")
+                else:
+                    df["list_date"] = None
+            except Exception as e:
+                logger.warning("推断 list_date 失败: %s", e)
+                df["list_date"] = None
+        else:
+            df["list_date"] = None
 
         cols = ["symbol", "name", "market", "list_date", "delist_date", "sector"]
         self.db.save_symbols(df[cols])
         return df
 
     def fetch_batch(self, symbols: list = None, max_n: int = 100) -> dict:
-        """
-        批量获取多只股票数据。
-        Returns: {symbol: rows_fetched}
+        """批量获取多只股票数据。
+
+        Returns:
+            {symbol: rows_fetched}
         """
         if symbols is None:
-            df = self.db.get_symbols()
-            symbols = df["symbol"].tolist()[:max_n]
+            sym_df = self.db.get_symbols()
+            symbols = sym_df["symbol"].tolist()[:max_n]
 
         results = {}
         for i, sym in enumerate(symbols):
-            print(f"[{i+1}/{len(symbols)}] 获取 {sym} ...")
+            logger.info("[%d/%d] 获取 %s ...", i + 1, len(symbols), sym)
             df = self.fetch_daily_bars(sym)
             results[sym] = len(df)
 
         return results
+
