@@ -104,26 +104,30 @@ class RiskManager:
                   total_equity: float, current_positions: Dict) -> tuple:
         """
         检查是否可以买入。
+        current_positions 期望值:{symbol: Position(dataclass,含 quantity/entry_price)}
         Returns: (allowed: bool, reason: str)
         """
         position_value = price * quantity
-        position_pct = position_value / total_equity
+        position_pct = position_value / total_equity if total_equity > 0 else 0
 
         # 单股仓位超限
         if position_pct > self.max_position_pct:
             return False, f"单股仓位超限({position_pct:.1%}>{self.max_position_pct:.1%})"
 
-        # 总仓位超限
-        current_position_value = sum(
-            p['quantity'] * p['current_price']
-            for p in current_positions.values()
-        )
-        new_total_pct = (current_position_value + position_value) / total_equity
+        # 总仓位超限(以 entry_price 近似估值,无当日收盘价时可用)
+        current_position_value = 0.0
+        for p in current_positions.values():
+            qty = getattr(p, 'quantity', None)
+            prc = getattr(p, 'entry_price', None)
+            if qty is None and isinstance(p, dict):
+                qty = p.get('quantity', 0)
+                prc = p.get('current_price') or p.get('entry_price') or 0
+            if qty and prc:
+                current_position_value += qty * prc
+
+        new_total_pct = (current_position_value + position_value) / total_equity if total_equity > 0 else 0
         if new_total_pct > self.max_total_position:
             return False, f"总仓位超限({new_total_pct:.1%}>{self.max_total_position:.1%})"
-
-        # 涨跌停检查（涨停不买，跌停不卖）
-        # (此处省略价格来源，实际使用时从实时数据获取)
 
         return True, "OK"
 

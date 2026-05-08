@@ -1,6 +1,9 @@
 """Unit tests for FeeCalculator."""
 import sys
-sys.path.insert(0, '.')
+import os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.append(_ROOT)
 
 from core.fee import FeeCalculator
 

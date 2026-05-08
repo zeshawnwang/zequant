@@ -2,7 +2,7 @@
 动量策略实例
 示例策略：选高动量股票 + 趋势择时 + 等权重分配。
 """
-from selectors.factor_rank import FactorRankSelector
+from stock_selectors.factor_rank import FactorRankSelector
 from timings.trend import TrendTiming
 from portfolios.equal_weight import EqualWeightBuilder
 from core.strategy import QuantStrategy

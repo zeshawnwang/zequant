@@ -4,7 +4,10 @@
 运行策略回测并打印报告。
 """
 import sys
-sys.path.insert(0, '.')
+import os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.append(_ROOT)
 
 import yaml
 from core.database import Database
@@ -31,6 +34,7 @@ def main():
 
     # 创建策略
     strategy = create_momentum_strategy(top_n=50)
+    # strategy = create_low_vol_strategy(top_n=50)
     print(f"\n策略: {strategy.name}")
     print(strategy.get_description())
 

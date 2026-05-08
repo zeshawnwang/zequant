@@ -4,7 +4,8 @@
 """
 from typing import List
 import pandas as pd
-from .trend import ITimingGenerator, Signal, SignalType
+from .trend import ITimingGenerator
+from core.strategy import Signal, SignalType
 
 
 class CompositeTiming(ITimingGenerator):

@@ -4,10 +4,15 @@
 创建所有表结构。
 """
 import sys
-sys.path.insert(0, '.')
+import os
+# 使用 append 而非 insert(0, ...) 以免遮蔽 Python 标准库同名包(如 selectors)
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.append(_ROOT)
 
-from core.database import Database
 from pathlib import Path
+from core.database import Database
+
 
 def main():
     db_path = "./data/quant_data.db"
@@ -16,9 +21,12 @@ def main():
     db = Database(db_path)
     print(f"数据库已初始化: {db_path}")
 
-    # 验证表
-    tables = db.conn.execute("SHOW TABLES").df()
-    print("表列表:", tables['name'].tolist())
+    # 验证表(使用 information_schema 更可靠)
+    tables = db.conn.execute(
+        "SELECT table_name FROM information_schema.tables "
+        "WHERE table_schema='main' ORDER BY table_name"
+    ).df()
+    print("表列表:", tables['table_name'].tolist())
 
     db.close()
 

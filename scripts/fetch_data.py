@@ -8,7 +8,10 @@
   python scripts/fetch_data.py --batch 100  # 获取前100只
 """
 import sys
-sys.path.insert(0, '.')
+import os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.append(_ROOT)
 
 import argparse
 from core.database import Database

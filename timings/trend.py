@@ -1,47 +1,40 @@
 """
 趋势择时器
-使用均线交叉和因子方向判断多空。
+使用均线/MACD/动量打分对候选股票产生 BUY/SELL/HOLD 信号。
+
+设计:
+- 对候选池(factor_data 中出现的所有 symbol)逐只计算趋势分 score ∈ [0, 1]
+- score > buy_threshold:
+    * 若已持仓 → HOLD
+    * 若未持仓 → BUY(供组合构建器分配仓位)
+- score < sell_threshold:
+    * 若已持仓 → SELL
+    * 若未持仓 → 无信号
 """
-from typing import List, Dict
+from typing import List
 import numpy as np
 import pandas as pd
-from enum import Enum
 
-
-class SignalType(Enum):
-    BUY = 1
-    SELL = -1
-    HOLD = 0
-
-
-class Signal:
-    def __init__(self, symbol: str, signal_type: SignalType,
-                 strength: float, price: float, reason: str = ""):
-        self.symbol = symbol
-        self.signal_type = signal_type
-        self.strength = strength
-        self.price = price
-        self.reason = reason
-
-    def __repr__(self):
-        return f"Signal({self.symbol}, {self.signal_type.name}, 强度={self.strength:.2f}, {self.reason})"
+# 统一使用 core.strategy 中的 Signal/SignalType,避免与 portfolios 端比较失败
+from core.strategy import Signal, SignalType
 
 
 class ITimingGenerator:
     """择时器基类"""
 
     def generate(self, factor_data: pd.DataFrame,
-                positions: List[str], cash: float) -> List[Signal]:
+                 positions: List[str], cash: float) -> List[Signal]:
         raise NotImplementedError
 
 
 class TrendTiming(ITimingGenerator):
     """
     趋势择时。
-    规则：
-    - 均线多头排列（短期 > 中期 > 长期）=> 看多
-    - MACD > 0 => 看多
-    - 跌破均线 => 看空
+    打分维度:
+      - MACD: macd > macd_signal 看多
+      - 动量: momentum_5 > 0 且 > momentum_20 看多
+      - RSI: 30~70 偏中性,>70 偏空(反弹乏力),<30 偏空(下跌惯性)
+    各维度 0/1 取均值得到 score。
     """
 
     def __init__(self,
@@ -55,73 +48,91 @@ class TrendTiming(ITimingGenerator):
         self.sell_threshold = sell_threshold
 
     def generate(self, factor_data: pd.DataFrame,
-                positions: List[str], cash: float) -> List[Signal]:
-        signals = []
-        for symbol in positions:
-            df = factor_data[factor_data['symbol'] == symbol].tail(30)
-            if len(df) < max(self.sma_short, self.sma_medium):
+                 positions: List[str], cash: float) -> List[Signal]:
+        if factor_data is None or factor_data.empty:
+            return []
+
+        signals: List[Signal] = []
+        held = set(positions or [])
+
+        # 取每个 symbol 的最新一行用于打分
+        latest = (
+            factor_data.sort_values('date')
+            .groupby('symbol')
+            .tail(1)
+        )
+
+        for _, row in latest.iterrows():
+            symbol = row['symbol']
+            score = self._calc_trend_score(row)
+            price = float(row['close']) if 'close' in row and pd.notna(row['close']) else 0.0
+            if price <= 0:
                 continue
 
-            score = self._calc_trend_score(df)
-            latest_price = df['close'].iloc[-1]
+            factors_dict = {
+                k: row[k] for k in
+                ('momentum_5', 'momentum_20', 'rsi_14', 'macd', 'macd_signal',
+                 'volatility_20', 'volume_ratio', 'boll_position')
+                if k in row.index and pd.notna(row[k])
+            }
 
-            if score < self.sell_threshold:
-                signals.append(Signal(
-                    symbol=symbol,
-                    signal_type=SignalType.SELL,
-                    strength=1 - score,
-                    price=latest_price,
-                    reason=f"趋势转弱({score:.2f})"
-                ))
-            elif score > self.buy_threshold:
-                signals.append(Signal(
-                    symbol=symbol,
-                    signal_type=SignalType.HOLD,
-                    strength=score,
-                    price=latest_price,
-                    reason=f"趋势保持({score:.2f})"
-                ))
+            if score >= self.buy_threshold:
+                if symbol in held:
+                    signals.append(Signal(
+                        symbol=symbol, signal_type=SignalType.HOLD,
+                        strength=score, price=price,
+                        reason=f"趋势保持({score:.2f})",
+                        factors=factors_dict,
+                    ))
+                else:
+                    signals.append(Signal(
+                        symbol=symbol, signal_type=SignalType.BUY,
+                        strength=score, price=price,
+                        reason=f"趋势看多({score:.2f})",
+                        factors=factors_dict,
+                    ))
+            elif score <= self.sell_threshold:
+                if symbol in held:
+                    signals.append(Signal(
+                        symbol=symbol, signal_type=SignalType.SELL,
+                        strength=1 - score, price=price,
+                        reason=f"趋势转弱({score:.2f})",
+                        factors=factors_dict,
+                    ))
+                # 未持仓且趋势差,直接忽略
+            # 中间区间不发信号
+
         return signals
 
-    def _calc_trend_score(self, df: pd.DataFrame) -> float:
-        """计算趋势得分 0-1"""
+    def _calc_trend_score(self, row) -> float:
+        """对单行(单只股票最新一日)的因子值打分。"""
         scores = []
-        price = df['close']
 
-        # 均线趋势
-        if f'sma_{self.sma_short}' in df.columns and f'sma_{self.sma_medium}' in df.columns:
-            sma_s = df[f'sma_{self.sma_short}'].iloc[-1]
-            sma_m = df[f'sma_{self.sma_medium}'].iloc[-1]
-            prev_sma_s = df[f'sma_{self.sma_short}'].iloc[-2]
-            prev_sma_m = df[f'sma_{self.sma_medium}'].iloc[-2]
+        # MACD
+        macd = row.get('macd') if hasattr(row, 'get') else None
+        macd_sig = row.get('macd_signal') if hasattr(row, 'get') else None
+        if pd.notna(macd) and pd.notna(macd_sig):
+            scores.append(1.0 if macd > macd_sig else 0.0)
 
-            # 金叉
-            if sma_s > sma_m and prev_sma_s <= prev_sma_m:
+        # 动量
+        m5 = row.get('momentum_5') if hasattr(row, 'get') else None
+        m20 = row.get('momentum_20') if hasattr(row, 'get') else None
+        if pd.notna(m5) and pd.notna(m20):
+            if m5 > 0 and m5 > m20:
                 scores.append(1.0)
-            # 死叉
-            elif sma_s < sma_m and prev_sma_s >= prev_sma_m:
-                scores.append(0.0)
-            # 多头排列
-            elif sma_s > sma_m:
-                scores.append(0.8)
-            else:
-                scores.append(0.2)
-
-        # MACD趋势
-        if 'macd' in df.columns and 'macd_signal' in df.columns:
-            macd = df['macd'].iloc[-1]
-            macd_s = df['macd_signal'].iloc[-1]
-            scores.append(1.0 if macd > macd_s else 0.0)
-
-        # 动量趋势
-        if 'momentum_5' in df.columns and 'momentum_20' in df.columns:
-            mom5 = df['momentum_5'].iloc[-1]
-            mom20 = df['momentum_20'].iloc[-1]
-            if mom5 > mom20 and mom5 > 0:
-                scores.append(1.0)
-            elif mom5 < mom20 or mom5 < 0:
+            elif m5 < 0:
                 scores.append(0.0)
             else:
                 scores.append(0.5)
 
-        return np.mean(scores) if scores else 0.5
+        # RSI
+        rsi = row.get('rsi_14') if hasattr(row, 'get') else None
+        if pd.notna(rsi):
+            if 50 <= rsi <= 70:
+                scores.append(1.0)
+            elif 30 <= rsi < 50:
+                scores.append(0.5)
+            else:
+                scores.append(0.0)
+
+        return float(np.mean(scores)) if scores else 0.5

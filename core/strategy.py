@@ -78,50 +78,57 @@ class QuantStrategy:
         生成订单。
         Step 1: 选股
         Step 2: 合并持仓候选池
-        Step 3: 择时
-        Step 4: 仓位分配
-        Step 5: 生成订单
+        Step 3: 择时(对候选池产生 BUY/SELL/HOLD 信号)
+        Step 4: 仓位分配(按 BUY 信号分配)
+        Step 5: 生成买入/卖出订单
         """
         top_n = top_n or self.top_n
-        orders = []
+        orders: List[Order] = []
 
         # Step 1: 选股
         selected = self.selector.select(factor_data, date, top_n)
 
-        # Step 2: 合并候选池
+        # Step 2: 合并候选池(选出的 + 当前持仓)
         current_symbols = list(current_positions.keys())
         candidate_pool = list(set(selected) | set(current_symbols))
+        if not candidate_pool:
+            return orders
+
         pool_data = factor_data[factor_data['symbol'].isin(candidate_pool)]
 
         # Step 3: 择时
         signals = self.timing.generate(pool_data, current_symbols, cash)
+        signal_by_symbol = {s.symbol: s for s in signals}
 
-        # Step 4: 仓位分配
+        # Step 4: 仓位分配(基于 BUY 信号)
         allocation = self.portfolio.allocate(signals, cash, current_positions)
 
         # Step 5: 生成买入订单
         for symbol, shares in allocation.items():
-            if symbol not in current_positions:
-                orders.append(Order(
-                    symbol=symbol,
-                    direction='BUY',
-                    quantity=shares,
-                    price=signals[next(i for i, s in enumerate(signals) if s.symbol == symbol)].price
-                                   if any(s.symbol == symbol for s in signals) else 0,
-                    reason='新买入'
-                ))
+            if symbol in current_positions or shares <= 0:
+                continue
+            sig = signal_by_symbol.get(symbol)
+            if sig is None or sig.price <= 0:
+                continue
+            orders.append(Order(
+                symbol=symbol,
+                direction='BUY',
+                quantity=shares,
+                price=sig.price,
+                reason=sig.reason or '新买入',
+            ))
 
-        # Step 6: 生成卖出订单（择时信号）
+        # Step 6: 生成卖出订单(择时 SELL 信号 + 持仓中的标的)
         for sig in signals:
-            if sig.signal_type == SignalType.SELL:
-                if sig.symbol in current_positions:
-                    orders.append(Order(
-                        symbol=sig.symbol,
-                        direction='SELL',
-                        quantity=current_positions[sig.symbol].quantity,
-                        price=sig.price,
-                        reason=sig.reason
-                    ))
+            if sig.signal_type == SignalType.SELL and sig.symbol in current_positions:
+                pos = current_positions[sig.symbol]
+                orders.append(Order(
+                    symbol=sig.symbol,
+                    direction='SELL',
+                    quantity=pos.quantity,
+                    price=sig.price,
+                    reason=sig.reason,
+                ))
 
         return orders
 

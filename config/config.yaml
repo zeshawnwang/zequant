@@ -31,15 +31,15 @@ risk:
   max_position_pct: 0.15     # 单股最大仓位15%
   max_total_position: 0.85  # 总仓位最大85%
   max_single_loss: 0.05     # 单日最大亏损5%
-  stop_loss: 0.05           # 止损线-5%
-  take_profit: 0.12         # 止盈线+12%
+  stop_loss: 0.10           # 止损线-5%
+  take_profit: 0.25         # 止盈线+12%
 
 # ===== Backtest =====
 backtest:
   initial_capital: 1_000_000
   rebalance_freq: "1d"       # 日线调仓
-  start_date: "2020-01-01"
-  end_date: "2024-12-31"
+  start_date: "2019-01-01"
+  end_date: "2026-05-01"
 
 # ===== Factors =====
 factors:
