@@ -4,7 +4,7 @@ A 股横截面 / 多因子量化研究框架。**单文件数据库 + 注册中�
 
 核心特征:
 - 📦 **单文件 DuckDB**(数据/因子/评估/注册表) —— 无外部依赖
-- 🧮 **因子宽表 + [`FactorHub`](core/factor_hub.py:52) 注册中心** —— 101 个 WorldQuant Alpha(已按原论文修正 alpha1 公式) + **191 个国泰君安 GTJA 因子** + 13 个传统因子,支持 `n_jobs` 并行计算
+- 🧮 **因子宽表 + [`FactorHub`](core/factor_hub.py:52) 注册中心** —— 101 个 WorldQuant Alpha(已按原论文修正 alpha1 公式) + **191 个国泰君安 GTJA 因子** + **5 个 Fama-French 因子(MKT/SMB/HML/Size/Value)** + 13 个传统因子,支持 `n_jobs` 并行计算
 - 🧩 **[`StrategyHub`](core/strategy_hub.py:62) 统一策略入口** —— 静态策略 / 评估驱动策略 一条命令行拉起;FactorHub / StrategyHub 已改为实例级注册,杜绝测试污染并支持并行研究
 - 🔗 **可插拔三段式** —— 选股 → 择时 → 仓位,每段都有抽象基类,随意替换;择时与选股严格使用目标日期前数据,回测成交于次日开盘价,彻底消除前视偏差
 - ⚖️ **真风险平价仓位** —— [`RiskParityBuilder`](portfolios/risk_parity.py) 基于历史收益协方差矩阵,通过 Cyclical Coordinate Descent 求解真实风险平价权重(非简单逆波动率)
@@ -174,9 +174,11 @@ python3 scripts/init_db.py                     # 1. 建表
 python3 scripts/fetch_data.py --full           # 2. 拉全市场日线 + 名册
 python3 scripts/compute_factors.py --all       # 3. 算 13 个传统因子
 python3 scripts/compute_alpha101_full.py       # 4. 算 101 个 alpha 因子
-python3 scripts/evaluate_factors.py            # 5. 评估写 factor_registry
-python3 scripts/run_backtest.py --list         # 6. 看看可用策略
-python3 scripts/run_backtest.py --strategy momentum_5d_top20  # 7. 实跑
+python3 scripts/compute_gtja191.py --all       # 5. 算 191 个 GTJA 因子
+python3 scripts/compute_fama_french.py --all   # 6. 算 Fama-French 因子
+python3 scripts/evaluate_factors.py            # 7. 评估写 factor_registry
+python3 scripts/run_backtest.py --list         # 8. 看看可用策略
+python3 scripts/run_backtest.py --strategy momentum_5d_top20  # 9. 实跑
 ```
 
 之后日常增量更新:
