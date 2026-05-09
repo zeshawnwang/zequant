@@ -19,7 +19,9 @@ DuckDB 数据库管理器
 from __future__ import annotations
 import duckdb
 import numpy as np
+import os
 import pandas as pd
+import tempfile
 from pathlib import Path
 from typing import Iterable, List, Optional
 
@@ -168,9 +170,20 @@ class Database:
             self.conn.unregister("_stg_bars")
 
     def get_daily_bars(self, symbols=None, symbol: str = None,
-                       start_date: str = None, end_date: str = None) -> pd.DataFrame:
-        """查询日线。symbol(单只)与 symbols(多只)二选一。"""
-        sql = "SELECT * FROM daily_bars WHERE 1=1"
+                       start_date: str = None, end_date: str = None,
+                       columns: List[str] = None) -> pd.DataFrame:
+        """查询日线。symbol(单只)与 symbols(多只)二选一。
+
+        Args:
+            columns: 可选,指定返回的列名列表,减少数据传输量
+        """
+        all_cols = ["symbol", "date", "open", "high", "low", "close",
+                    "volume", "amount", "pct_change"]
+        if columns:
+            cols = [c for c in columns if c in all_cols]
+        else:
+            cols = all_cols
+        sql = f"SELECT {', '.join(cols)} FROM daily_bars WHERE 1=1"
         params: list = []
         if symbol:
             sql += " AND symbol = ?"
@@ -203,6 +216,55 @@ class Database:
             return row[0] if row and row[0] is not None else None
         except Exception:
             return None
+
+    def get_daily_bars_with_fwd_ret(
+        self,
+        symbols: Optional[List[str]] = None,
+        start_date: str = None,
+        end_date: str = None,
+        forward_days: int = 5,
+        columns: List[str] = None,
+    ) -> pd.DataFrame:
+        """查询日线并计算前向收益率(通过 SQL 窗口函数,避免加载全量数据到内存)。
+
+        使用 LEAD() OVER (PARTITION BY symbol ORDER BY date) 计算 fwd_ret,
+        比 pandas groupby.shift() 更高效且内存占用更少。
+        """
+        all_cols = ["symbol", "date", "open", "high", "low", "close",
+                    "volume", "amount", "pct_change"]
+        base_cols = [c for c in (columns or all_cols) if c in all_cols]
+
+        where = ["1=1"]
+        params: list = []
+        if symbols:
+            ph = ",".join(["?"] * len(symbols))
+            where.append(f"symbol IN ({ph})")
+            params.extend(symbols)
+        if start_date:
+            where.append("date >= ?")
+            params.append(start_date)
+        if end_date:
+            where.append("date <= ?")
+            params.append(end_date)
+        where_sql = " AND ".join(where)
+
+        col_list = ", ".join(base_cols)
+        sql = f"""
+            SELECT {col_list},
+                   LEAD(close, {forward_days}) OVER (
+                       PARTITION BY symbol ORDER BY date
+                   ) AS fwd_close
+            FROM daily_bars
+            WHERE {where_sql}
+            ORDER BY symbol, date
+        """
+        df = self.conn.execute(sql, params).df()
+        if df.empty:
+            return df
+        df["date"] = pd.to_datetime(df["date"])
+        df["fwd_ret"] = df["fwd_close"] / df["close"].astype("float64") - 1.0
+        df.drop(columns=["fwd_close"], inplace=True, errors="ignore")
+        return df
 
     # ============================================================
     # factors(宽表) —— 核心 API
@@ -293,24 +355,26 @@ class Database:
 
         self.ensure_factor_columns(cols)
 
-        # 4) 在事务中批量写入,避免每批独立 COMMIT
+        # 4) 在事务中批量写入,用 Parquet 中转避免 register/unregister 开销
         batch_size = 50000
         n_batches = (len(wide) + batch_size - 1) // batch_size
         self.conn.execute("BEGIN TRANSACTION")
         try:
+            tmp_dir = tempfile.gettempdir()
             for i in range(n_batches):
                 start = i * batch_size
                 end = min(start + batch_size, len(wide))
                 batch = wide.iloc[start:end]
-                self.conn.register("_stg_factors_wide", batch)
+                tmp_path = os.path.join(tmp_dir, f"_stg_fw_{os.getpid()}_{i}.parquet")
+                batch.to_parquet(tmp_path, compression="zstd")
                 set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
                 col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
                 self.conn.execute(f"""
                     INSERT INTO factors_wide ({col_list})
-                    SELECT {col_list} FROM _stg_factors_wide
+                    SELECT {col_list} FROM read_parquet('{tmp_path}')
                     ON CONFLICT (date, symbol) DO UPDATE SET {set_clause}
                 """)
-                self.conn.unregister("_stg_factors_wide")
+                os.remove(tmp_path)
             self.conn.execute("COMMIT")
         except Exception:
             self.conn.execute("ROLLBACK")
