@@ -356,7 +356,7 @@ class Database:
         self.ensure_factor_columns(cols)
 
         # 4) 在事务中批量写入,用 Parquet 中转避免 register/unregister 开销
-        batch_size = 50000
+        batch_size = 10000
         n_batches = (len(wide) + batch_size - 1) // batch_size
         self.conn.execute("BEGIN TRANSACTION")
         try:
