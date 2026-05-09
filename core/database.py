@@ -295,18 +295,24 @@ class Database:
         # 3) 确保宽表里有这些列
         self.ensure_factor_columns(cols)
 
-        # 4) upsert(每列单独 SET,避免动态 SQL 注入,用双引号包列名)
-        self.conn.register("_stg_factors_wide", wide)
-        set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
-        col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
-        try:
-            self.conn.execute(f"""
-                INSERT INTO factors_wide ({col_list})
-                SELECT {col_list} FROM _stg_factors_wide
-                ON CONFLICT (date, symbol) DO UPDATE SET {set_clause}
-            """)
-        finally:
-            self.conn.unregister("_stg_factors_wide")
+        # 4) 分批写入(避免内存溢出,每批50000条)
+        batch_size = 50000
+        n_batches = (len(wide) + batch_size - 1) // batch_size
+        for i in range(n_batches):
+            start = i * batch_size
+            end = min(start + batch_size, len(wide))
+            batch = wide.iloc[start:end]
+            self.conn.register("_stg_factors_wide", batch)
+            set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
+            col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
+            try:
+                self.conn.execute(f"""
+                    INSERT INTO factors_wide ({col_list})
+                    SELECT {col_list} FROM _stg_factors_wide
+                    ON CONFLICT (date, symbol) DO UPDATE SET {set_clause}
+                """)
+            finally:
+                self.conn.unregister("_stg_factors_wide")
 
     def get_factors(self, symbols: Optional[List[str]] = None,
                     start_date: str = None, end_date: str = None,

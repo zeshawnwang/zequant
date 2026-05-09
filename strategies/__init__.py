@@ -8,8 +8,10 @@
 # 触发注册副作用 ------------------------------------------------------------
 from . import momentum_strategy   # noqa: F401  动量 / 低波
 from . import alpha101_strategy    # noqa: F401  Alpha101 多因子族(3 种)
+from . import technical_strategy   # noqa: F401  技术分析策略(趋势突破/超跌反弹/筹码集中/β自适应)
 
 __all__ = [
     "momentum_strategy",
     "alpha101_strategy",
+    "technical_strategy",
 ]

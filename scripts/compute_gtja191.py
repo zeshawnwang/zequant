@@ -33,7 +33,7 @@ import pandas as pd
 
 from core.config import load_config, get_db_path
 from core.database import Database
-from core.factor_hub import FactorHub
+from core.factor_hub import FactorHub, list_by_category, compute_all
 import factors.gtja191_full  # noqa: F401  触发注册
 
 
@@ -69,12 +69,12 @@ def main():
     if args.names:
         names = [n.strip() for n in args.names.split(",") if n.strip()]
     else:
-        all_gtja = FactorHub.list_by_category("gtja191")
+        all_gtja = list_by_category("gtja191")
         names = sorted(all_gtja, key=lambda x: int(x[4:]) if x[4:].isdigit() else 0)
     print(f"[2/5] computing {len(names)} GTJA factors via FactorHub ...")
     print(f"      parallel: n_jobs={args.n_jobs}")
     t0 = time.time()
-    long_df = FactorHub.compute_all(
+    long_df = compute_all(
         bars,
         names=names,
         verbose=True,

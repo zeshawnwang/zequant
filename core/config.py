@@ -12,6 +12,10 @@
     ir_threshold   = cfg["factors"]["ir_threshold"]
     forward_days   = cfg["factors"]["forward_days"]
 
+    # 读取策略专属配置
+    strat_cfg = get_strategy_config(cfg, "momentum_top50")
+    top_n = strat_cfg.get("top_n", 50)
+
 约定
 ----
 - 找不到字段时返回 schema 内置的默认值,而非抛异常,保证旧配置文件平滑升级
@@ -54,6 +58,93 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "ir_threshold": 0.05,
         "forward_days": 5,
     },
+    # 策略默认配置 —— 与 config.yaml 中的 strategies 段保持一致
+    "strategies": {
+        "momentum_top50": {
+            "top_n": 50,
+            "selector": {
+                "factor_name": "momentum_20",
+                "ascending": False,
+                "pool_multiplier": 3,
+            },
+            "timing": {
+                "sma_short": 5,
+                "sma_medium": 20,
+                "buy_threshold": 0.6,
+                "sell_threshold": 0.4,
+            },
+            "portfolio": {
+                "type": "equal_weight",
+                "reserve_cash_ratio": 0.1,
+            },
+        },
+        "low_vol_top50": {
+            "top_n": 50,
+            "selector": {
+                "factor_name": "volatility_20",
+                "ascending": True,
+                "pool_multiplier": 3,
+            },
+            "timing": {
+                "sma_short": 5,
+                "sma_medium": 20,
+                "buy_threshold": 0.6,
+                "sell_threshold": 0.4,
+            },
+            "portfolio": {
+                "type": "risk_parity",
+                "volatility_factor": "volatility_20",
+                "max_weight": 0.15,
+            },
+        },
+        "alpha101_manual": {
+            "top_n": 50,
+            "weights": {
+                "momentum_20": 0.6,
+                "volatility_20": -0.4,
+                "a3": -0.5,
+                "a101": 0.5,
+            },
+            "timing": {
+                "sma_short": 5,
+                "sma_medium": 20,
+                "buy_threshold": 0.55,
+                "sell_threshold": 0.4,
+            },
+            "portfolio": {
+                "type": "equal_weight",
+                "reserve_cash_ratio": 0.1,
+            },
+        },
+        "alpha101_from_registry": {
+            "top_n": 50,
+            "min_abs_ir": 0.2,
+            "timing": {
+                "sma_short": 5,
+                "sma_medium": 20,
+                "buy_threshold": 0.55,
+                "sell_threshold": 0.4,
+            },
+            "portfolio": {
+                "type": "equal_weight",
+                "reserve_cash_ratio": 0.1,
+            },
+        },
+        "alpha101_walk_forward": {
+            "top_n": 30,
+            "top_factors": 8,
+            "timing": {
+                "sma_short": 5,
+                "sma_medium": 20,
+                "buy_threshold": 0.55,
+                "sell_threshold": 0.4,
+            },
+            "portfolio": {
+                "type": "equal_weight",
+                "reserve_cash_ratio": 0.1,
+            },
+        },
+    },
 }
 
 
@@ -90,3 +181,19 @@ def load_config(path: Optional[str] = "config/config.yaml") -> Dict[str, Any]:
 def get_db_path(cfg: Dict[str, Any]) -> str:
     """便捷读取 database.path,带兜底。"""
     return str(cfg.get("database", {}).get("path") or DEFAULT_CONFIG["database"]["path"])
+
+
+def get_strategy_config(cfg: Dict[str, Any], strategy_name: str) -> Dict[str, Any]:
+    """读取指定策略的专属配置。
+
+    从 cfg["strategies"][strategy_name] 读取,若不存在则返回空 dict。
+    策略工厂函数通过此函数获取配置,避免硬编码。
+
+    Args:
+        cfg: load_config() 返回的全局配置 dict
+        strategy_name: StrategyHub 中注册的策略名
+
+    Returns:
+        dict —— 该策略的配置段,若未配置则返回空 dict
+    """
+    return dict(cfg.get("strategies", {}).get(strategy_name, {}))

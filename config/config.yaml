@@ -52,3 +52,83 @@ backtest:
 factors:
   ir_threshold: 0.05        # |IR| ≥ 0.05 才标记 enabled=True
   forward_days: 5           # 计算 IC 时使用的远期窗口(交易日)
+
+# ---- 策略专属配置 -----------------------------------------------
+# 每个策略可独立配置参数,避免硬编码在代码中
+# 策略工厂函数通过 strategy_config 参数读取对应配置段
+strategies:
+  # 动量策略:买入 momentum_20 排名靠前的股票
+  momentum_top50:
+    top_n: 50                  # 最终持仓数量
+    selector:
+      factor_name: "momentum_20"   # 选股因子
+      ascending: false             # false=降序(值越大越优先)
+      pool_multiplier: 3           # 候选池倍数(最终持仓数×此倍数)
+    timing:
+      sma_short: 5                 # 短期均线周期
+      sma_medium: 20               # 中期均线周期
+      buy_threshold: 0.6           # 买入阈值
+      sell_threshold: 0.4          # 卖出阈值
+    portfolio:
+      type: "equal_weight"         # 仓位分配类型
+      reserve_cash_ratio: 0.1      # 预留现金比例
+
+  # 低波动策略:买入 volatility_20 最低的股票
+  low_vol_top50:
+    top_n: 50
+    selector:
+      factor_name: "volatility_20"
+      ascending: true              # true=升序(值越小越优先)
+      pool_multiplier: 3
+    timing:
+      sma_short: 5
+      sma_medium: 20
+      buy_threshold: 0.6
+      sell_threshold: 0.4
+    portfolio:
+      type: "risk_parity"           # 风险平价分配
+      volatility_factor: "volatility_20"
+      max_weight: 0.15             # 单股最大权重
+
+  # Alpha101 手工权重策略
+  alpha101_manual:
+    top_n: 50
+    weights:                       # 多因子手工权重
+      momentum_20: 0.6             # 顺势
+      volatility_20: -0.4          # 反向(低波偏好)
+      a3: -0.5                     # 短期反转
+      a101: 0.5                    # 当日强势
+    timing:
+      sma_short: 5
+      sma_medium: 20
+      buy_threshold: 0.55
+      sell_threshold: 0.4
+    portfolio:
+      type: "equal_weight"
+      reserve_cash_ratio: 0.1
+
+  # Alpha101 从注册表拉权重策略
+  alpha101_from_registry:
+    top_n: 50
+    min_abs_ir: 0.2                # |IR| 下限阈值
+    timing:
+      sma_short: 5
+      sma_medium: 20
+      buy_threshold: 0.55
+      sell_threshold: 0.4
+    portfolio:
+      type: "equal_weight"
+      reserve_cash_ratio: 0.1
+
+  # Alpha101 Walk-forward 评估驱动策略
+  alpha101_walk_forward:
+    top_n: 15                  # 最终持仓数量（精简配置）
+    top_factors: 5             # 取 |IR| 前 5 个最强因子
+    timing:
+      sma_short: 3             # 短期均线周期（更敏感）
+      sma_medium: 10           # 中期均线周期（缩短周期）
+      buy_threshold: 0.65      # 买入阈值（更严格，过滤低质量信号）
+      sell_threshold: 0.45     # 卖出阈值（更早止损）
+    portfolio:
+      type: "equal_weight"
+      reserve_cash_ratio: 0.15 # 预留 15% 现金

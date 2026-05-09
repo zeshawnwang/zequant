@@ -31,7 +31,7 @@ if str(_ROOT) not in sys.path:
 
 import pandas as pd
 
-from core.config import load_config, get_db_path
+from core.config import load_config, get_db_path, get_strategy_config
 from core.database import Database
 from core.backtest import BacktestEngine
 from core.universe import SymbolUniverse, UniverseConfig
@@ -173,12 +173,16 @@ def main() -> None:
         universe=universe,
     )
 
-    # 3) 因子评估(若策略需要)
+    # 3) 读取策略专属配置并组装 factory 参数
+    strategy_cfg = get_strategy_config(cfg, args.strategy)
     factory_kwargs = {
         "db": db,
         "top_n": args.top_n,
         "min_abs_ir": args.min_abs_ir,
+        "strategy_config": strategy_cfg,
     }
+
+    # 4) 因子评估(若策略需要)
     if meta.requires_evaluation:
         if not args.eval_start or not args.eval_end:
             raise SystemExit(
@@ -194,12 +198,12 @@ def main() -> None:
         logger.info("\n评估摘要(|IR| 前 5):\n%s",
                     eval_summary.head(5).to_string(index=False))
 
-    # 4) 创建策略
+    # 5) 创建策略
     strategy = StrategyHub.create(args.strategy, **factory_kwargs)
     logger.info("策略: %s  (注册名: %s)", strategy.name, args.strategy)
     logger.info(strategy.get_description())
 
-    # 5) 加载因子(含择时所需)
+    # 6) 加载因子(含择时所需)
     selector_factors = list(getattr(strategy.selector, "factor_names", [])) \
         or [getattr(strategy.selector, "factor_name", None)]
     selector_factors = [f for f in selector_factors if f]
@@ -220,7 +224,7 @@ def main() -> None:
             for c in factor_data.columns),
     )
 
-    # 6) 回测
+    # 7) 回测
     logger.info("运行回测: %s ~ %s ...", bt_start, bt_end)
     report = engine.run(
         strategy=strategy,
@@ -229,7 +233,7 @@ def main() -> None:
         rebalance_freq=cfg["backtest"].get("rebalance_freq", "1d"),
     )
 
-    # 7) 报告
+    # 8) 报告
     print("\n" + report.pretty_print(top_positions=20, top_selections=3))
 
     db.close()

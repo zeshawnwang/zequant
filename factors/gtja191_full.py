@@ -38,12 +38,12 @@ def gtja3(ctx: FactorContext) -> pd.DataFrame:
     delayed_low = op.delay(ctx.low, 1)
     delayed_high = op.delay(ctx.high, 1)
 
-    cond_equal = close == delayed_close
-    cond_up = close > delayed_close
+    cond_equal = (close == delayed_close)
+    cond_up = (close > delayed_close)
 
-    price_ref = cond_up.where(delayed_low, delayed_high)
+    price_ref = delayed_low.where(cond_up, delayed_high)
     diff = close - price_ref
-    result = cond_equal.where(0.0, diff)
+    result = diff.where(~cond_equal, 0.0)
     return op.ts_sum(result, 6)
 
 
@@ -133,7 +133,7 @@ def gtja10(ctx: FactorContext) -> pd.DataFrame:
     ret = close.pct_change()
     cond = ret < 0
     std_ret = op.ts_std(ret, 20)
-    base = cond.where(std_ret, close)
+    base = std_ret.where(cond, close)
     squared = base ** 2
     return op.rank(op.ts_max(squared, 5))
 
@@ -217,7 +217,7 @@ def gtja19(ctx: FactorContext) -> pd.DataFrame:
     ratio_to_delay = (close - delayed) / delayed.replace(0, np.nan)
     ratio_to_close = (close - delayed) / close.replace(0, np.nan)
 
-    result = cond_equal.where(0.0, cond_less.where(ratio_to_delay, ratio_to_close))
+    result = ratio_to_delay.where(cond_less, ratio_to_close).where(~cond_equal, 0.0)
     return result
 
 
@@ -235,28 +235,20 @@ def gtja20(ctx: FactorContext) -> pd.DataFrame:
 def gtja21(ctx: FactorContext) -> pd.DataFrame:
     mean6 = op.ts_mean(ctx.close, 6)
     window = 6
-    sequence = pd.DataFrame(
-        np.arange(1, window + 1),
-        index=mean6.index,
-        columns=mean6.columns
-    )
-    sequence = pd.concat([sequence] * len(mean6), ignore_index=True).set_index(mean6.index)
-
     n = window
-    x_mean = (n + 1) / 2.0
-    x_var = (n ** 2 - 1) / 12.0
+    x = np.arange(1, n + 1).astype(float)
+    x_mean = x.mean()
+    x_var = np.sum((x - x_mean) ** 2)
 
     def calc_slope(series):
-        if series.isna().all():
-            return np.nan
         y = series.values
         if np.isnan(y).any():
             return np.nan
-        y_mean = np.mean(y)
-        cov = np.sum((np.arange(1, n + 1) - x_mean) * (y - y_mean)) / n
+        y_mean = y.mean()
+        cov = np.sum((x - x_mean) * (y - y_mean))
         return cov / x_var
 
-    result = mean6.rolling(window).apply(calc_slope, raw=True)
+    result = mean6.rolling(window).apply(calc_slope, raw=False)
     return result
 
 
@@ -280,8 +272,8 @@ def gtja23(ctx: FactorContext) -> pd.DataFrame:
     ret = close.pct_change()
     cond_up = ret > 0
     std20 = op.ts_std(close, 20)
-    up_val = cond_up.where(std20, 0.0)
-    down_val = (~cond_up).where(std20, 0.0)
+    up_val = std20.where(cond_up, 0.0)
+    down_val = std20.where(~cond_up, 0.0)
     sma_up = op.sma(up_val, 20, 1)
     sma_down = op.sma(down_val, 20, 1)
     denominator = (sma_up + sma_down).replace(0, np.nan)
@@ -458,7 +450,7 @@ def gtja37(ctx: FactorContext) -> pd.DataFrame:
                  description="Alpha 38: ((SUM(HIGH, 20) / 20) < HIGH) ? (-1 * DELTA(HIGH, 2)) : 0")
 def gtja38(ctx: FactorContext) -> pd.DataFrame:
     cond = (op.ts_sum(ctx.high, 20) / 20.0) < ctx.high
-    return cond.where(-op.delta(ctx.high, 2), 0.0)
+    return (-op.delta(ctx.high, 2)).where(cond, 0.0)
 
 
 @register_factor("gtja39", category="gtja191",
@@ -491,8 +483,8 @@ def gtja40(ctx: FactorContext) -> pd.DataFrame:
     cond_up = close > op.delay(close, 1)
     cond_down = close <= op.delay(close, 1)
 
-    up_vol = cond_up.where(vol, 0.0)
-    down_vol = cond_down.where(vol, 0.0)
+    up_vol = vol.where(cond_up, 0.0)
+    down_vol = vol.where(cond_down, 0.0)
 
     sum_up = op.ts_sum(up_vol, 26)
     sum_down = op.ts_sum(down_vol, 26)
@@ -528,7 +520,7 @@ def gtja43(ctx: FactorContext) -> pd.DataFrame:
     cond_up = close > op.delay(close, 1)
     cond_down = close < op.delay(close, 1)
 
-    net_vol = cond_up.where(vol, 0.0) + cond_down.where(-vol, 0.0)
+    net_vol = vol.where(cond_up, 0.0) + (-vol).where(cond_down, 0.0)
 
     return op.ts_sum(net_vol, 6)
 
@@ -620,10 +612,10 @@ def gtja49(ctx: FactorContext) -> pd.DataFrame:
     cond_hl = (high + low) >= (op.delay(high, 1) + op.delay(low, 1))
     abs_high = (high - op.delay(high, 1)).abs()
     abs_low = (low - op.delay(low, 1)).abs()
-    max_diff = cond_hl.where(0.0, np.maximum(abs_high, abs_low))
+    max_diff = np.maximum(abs_high, abs_low).where(~cond_hl, 0.0)
 
     cond_hl2 = (high + low) <= (op.delay(high, 1) + op.delay(low, 1))
-    max_diff2 = cond_hl2.where(0.0, np.maximum(abs_high, abs_low))
+    max_diff2 = np.maximum(abs_high, abs_low).where(~cond_hl2, 0.0)
 
     sum1 = op.ts_sum(max_diff, 12)
     sum2 = op.ts_sum(max_diff2, 12)
@@ -739,9 +731,9 @@ def gtja59(ctx: FactorContext) -> pd.DataFrame:
     cond_equal = close == delayed_close
     cond_up = close > delayed_close
 
-    price_ref = cond_up.where(delayed_low, delayed_high)
+    price_ref = delayed_low.where(cond_up, delayed_high)
     diff = close - price_ref
-    result = cond_equal.where(0.0, diff)
+    result = diff.where(~cond_equal, 0.0)
 
     return op.ts_sum(result, 20)
 
@@ -810,7 +802,6 @@ def gtja64(ctx: FactorContext) -> pd.DataFrame:
 
     mean_vol60 = op.ts_mean(vol, 60)
     corr2 = op.correlation(op.rank(close), op.rank(mean_vol60), 4)
-    corr3 = op.correlation(corr2, pd.DataFrame(np.arange(1, 14), index=corr2.index, columns=corr2.columns).reindex_like(corr2).fillna(1), 13)
     rank2 = op.rank(op.decay_linear(corr2.clip(-1, 1), 14))
 
     return op._max(rank1, rank2) * -1
@@ -870,8 +861,8 @@ def gtja69(ctx: FactorContext) -> pd.DataFrame:
     cond_dtm = (high > op.delay(high, 1)) & (open_val >= op.delay(open_val, 1))
     cond_dbm = (low < op.delay(low, 1)) & (open_val <= op.delay(open_val, 1))
 
-    dtm = cond_dtm.where(np.maximum(high - open_val, open_val - low), 0.0)
-    dbm = cond_dbm.where(np.maximum(open_val - low, high - open_val), 0.0)
+    dtm = np.maximum(high - open_val, open_val - low).where(cond_dtm, 0.0)
+    dbm = np.maximum(open_val - low, high - open_val).where(cond_dbm, 0.0)
 
     sum_dtm = op.ts_sum(dtm, 20)
     sum_dbm = op.ts_sum(dbm, 20)
@@ -879,10 +870,10 @@ def gtja69(ctx: FactorContext) -> pd.DataFrame:
     cond_equal = sum_dtm == sum_dbm
     cond_dtm_gt = sum_dtm > sum_dbm
 
-    result = cond_equal.where(0.0, cond_dtm_gt.where(
-        (sum_dtm - sum_dbm) / sum_dtm.replace(0, np.nan),
-        (sum_dtm - sum_dbm) / sum_dbm.replace(0, np.nan)
-    ))
+    result = (
+        ((sum_dtm - sum_dbm) / sum_dtm.replace(0, np.nan)).where(cond_dtm_gt, (sum_dtm - sum_dbm) / sum_dbm.replace(0, np.nan))
+        .where(~cond_equal, 0.0)
+    )
 
     return result
 
@@ -1071,7 +1062,7 @@ def gtja84(ctx: FactorContext) -> pd.DataFrame:
     delay_close = op.delay(close, 1)
     cond_up = close > delay_close
     cond_down = close < delay_close
-    result = cond_up.where(volume, cond_down.where(-volume, 0.0))
+    result = volume.where(cond_up, (-volume).where(cond_down, 0.0))
     return op.ts_sum(result, 20)
 
 
@@ -1187,7 +1178,7 @@ def gtja93(ctx: FactorContext) -> pd.DataFrame:
     term1 = open_val - low
     term2 = open_val - delay_open
     max_val = np.maximum(term1, term2)
-    result = cond_down.where(max_val, 0.0)
+    result = max_val.where(cond_down, 0.0)
     return op.ts_sum(result, 20)
 
 
@@ -1200,7 +1191,7 @@ def gtja94(ctx: FactorContext) -> pd.DataFrame:
     delay_close = op.delay(close, 1)
     cond_up = close > delay_close
     cond_down = close < delay_close
-    result = cond_up.where(volume, cond_down.where(-volume, 0.0))
+    result = volume.where(cond_up, (-volume).where(cond_down, 0.0))
     return op.ts_sum(result, 30)
 
 
@@ -1624,8 +1615,8 @@ def gtja128(ctx: FactorContext) -> pd.DataFrame:
     delay_tp = op.delay(tp, 1)
     cond_up = tp > delay_tp
     cond_down = tp < delay_tp
-    up_val = cond_up.where(tp * volume, 0.0)
-    down_val = cond_down.where(tp * volume, 0.0)
+    up_val = (tp * volume).where(cond_up, 0.0)
+    down_val = (tp * volume).where(cond_down, 0.0)
     sum_up = op.ts_sum(up_val, 14)
     sum_down = op.ts_sum(down_val, 14)
     return 100 - 100 / (1 + sum_up / sum_down.replace(0, np.nan))
@@ -1639,7 +1630,7 @@ def gtja129(ctx: FactorContext) -> pd.DataFrame:
     delay_close = op.delay(close, 1)
     cond_down = close < delay_close
     diff = (close - delay_close).abs()
-    result = cond_down.where(diff, 0.0)
+    result = diff.where(cond_down, 0.0)
     return op.ts_sum(result, 12)
 
 
@@ -1827,7 +1818,7 @@ def gtja144(ctx: FactorContext) -> pd.DataFrame:
     amount = volume * vwap
     returns = (close / delay_close.replace(0, np.nan) - 1).abs()
     ratio = returns / amount.replace(0, np.nan)
-    result = cond_down.where(ratio, 0.0)
+    result = ratio.where(cond_down, 0.0)
     sum_ratio = op.ts_sum(result, 20)
     count = cond_down.rolling(20).sum()
     return sum_ratio / count.replace(0, np.nan)
@@ -1993,7 +1984,7 @@ def gtja160(ctx: FactorContext) -> pd.DataFrame:
     delay_close = op.delay(close, 1)
     cond = close <= delay_close
     ts_std = op.ts_std(close, 20)
-    result = cond.where(ts_std, 0.0)
+    result = ts_std.where(cond, 0.0)
     return op.sma(result, 20, 1)
 
 
@@ -2159,7 +2150,7 @@ def gtja174(ctx: FactorContext) -> pd.DataFrame:
     delay_close = op.delay(close, 1)
     cond = close > delay_close
     ts_std = op.ts_std(close, 20)
-    result = cond.where(ts_std, 0.0)
+    result = ts_std.where(cond, 0.0)
     return op.sma(result, 20, 1)
 
 
@@ -2242,7 +2233,7 @@ def gtja180(ctx: FactorContext) -> pd.DataFrame:
     ts_rank_delta = op.ts_rank(delta_close.abs(), 60)
     sign_delta = np.sign(delta_close)
     term = -ts_rank_delta * sign_delta
-    return cond.where(term, -volume)
+    return term.where(cond, -volume)
 
 
 @register_factor("gtja181", category="gtja191",
@@ -2316,7 +2307,7 @@ def gtja187(ctx: FactorContext) -> pd.DataFrame:
     term1 = high - open_val
     term2 = open_val - delay_open
     max_val = np.maximum(term1, term2)
-    result = cond.where(0.0, max_val)
+    result = max_val.where(cond, 0.0)
     return op.ts_sum(result, 20)
 
 

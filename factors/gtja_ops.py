@@ -86,7 +86,7 @@ def decay_linear(x: pd.DataFrame, window: int) -> pd.DataFrame:
     df = _to_df(x)
     weights = np.arange(1, window + 1)
     return df.rolling(window).apply(
-        lambda s: np.dot(s.values, weights) / weights.sum() if not np.isnan(s.values).any() else np.nan,
+        lambda s: np.dot(s, weights) / weights.sum() if not np.isnan(s).any() else np.nan,
         raw=True
     )
 
@@ -100,7 +100,7 @@ def wma(x: pd.DataFrame, window: int) -> pd.DataFrame:
     df = _to_df(x)
     weights = np.arange(1, window + 1)
     return df.rolling(window).apply(
-        lambda s: np.dot(s.values, weights) / weights.sum() if not np.isnan(s.values).any() else np.nan,
+        lambda s: np.dot(s, weights) / weights.sum() if not np.isnan(s).any() else np.nan,
         raw=True
     )
 
@@ -159,12 +159,16 @@ def _abs(x: pd.DataFrame) -> pd.DataFrame:
     return _to_df(x).abs()
 
 
+def log(x: pd.DataFrame) -> pd.DataFrame:
+    return np.log(_to_df(x))
+
+
 def _log(x: pd.DataFrame) -> pd.DataFrame:
-    return _to_df(x).apply(np.log)
+    return log(x)
 
 
 def _sign(x: pd.DataFrame) -> pd.DataFrame:
-    return _to_df(x).apply(np.sign)
+    return np.sign(_to_df(x))
 
 
 def _pow(x: pd.DataFrame, p: float) -> pd.DataFrame:

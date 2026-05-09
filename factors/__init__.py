@@ -5,6 +5,7 @@
   - gtja191_full:   国泰君安 GTJA 191 因子 (1-191)
   - fama_french:    Fama-French 三因子 (MKT/SMB/HML) + Size/Value 横截面因子
   - technical:      传统技术因子(动量/RSI/MACD/布林/量比/波动率,共 13 个)
+  - technical_analysis: 职业投资者技术分析方法论因子(均线/量价/K线/MACD形态/箱体/筹码/β,共 30+ 个)
 
 新增因子文件时,只需在此处加一行 `from . import xxx`,无需改动调用方。
 """
@@ -24,5 +25,6 @@ from . import alpha101_full  # noqa: F401
 from . import gtja191_full   # noqa: F401
 from . import fama_french    # noqa: F401
 from . import technical      # noqa: F401
+from . import technical_analysis  # noqa: F401
 
-__all__ = ["alpha101_full", "gtja191_full", "fama_french", "technical"]
+__all__ = ["alpha101_full", "gtja191_full", "fama_french", "technical", "technical_analysis"]
