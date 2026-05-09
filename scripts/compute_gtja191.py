@@ -1,25 +1,21 @@
 """
-GTJA 191 因子计算 + 落库 + IC 评估 + 检查点恢复
-
-流程:
-  1. 检查已有因子（检查点）
-  2. 加载 daily_bars(指定区间)
-  3. FactorHub.compute_all() 计算缺失的 GTJA 因子
-  4. 先保存到临时文件，再写入数据库
-  5. 写入失败时保留临时文件供恢复
+GTJA 191 因子计算 + 落库 + 检查点恢复（单一入口）
 
 用法:
-  # 正常计算（自动跳过已完成的因子）:
+  # 计算缺失的因子（自动跳过已完成）:
   python3 scripts/compute_gtja191.py
+
+  # 查看状态:
+  python3 scripts/compute_gtja191.py --status
+
+  # 恢复临时文件到数据库:
+  python3 scripts/compute_gtja191.py --restore
 
   # 强制重算指定因子:
   python3 scripts/compute_gtja191.py --force gtja1,gtja2
 
-  # 从临时文件恢复并写入数据库:
-  python3 scripts/restore_gtja_checkpoint.py
-
-  # 查看状态:
-  python3 scripts/compute_gtja191.py --status
+  # 只计算部分因子:
+  python3 scripts/compute_gtja191.py --names gtja1,gtja2,gtja3
 """
 from __future__ import annotations
 import argparse
@@ -74,91 +70,8 @@ def get_temp_factors() -> set:
     return {Path(f).stem for f in temp_files}
 
 
-def save_checkpoint(factor_name: str, df: pd.DataFrame) -> Path:
-    """保存因子到临时文件"""
-    temp_dir = get_temp_dir()
-    path = temp_dir / f"{factor_name}.parquet"
-    df.to_parquet(path, compression="zstd")
-    return path
-
-
-def load_checkpoint(factor_name: str) -> pd.DataFrame:
-    """从临时文件加载因子"""
-    path = get_temp_dir() / f"{factor_name}.parquet"
-    return pd.read_parquet(path)
-
-
-def remove_checkpoint(factor_name: str):
-    """删除临时文件"""
-    path = get_temp_dir() / f"{factor_name}.parquet"
-    if path.exists():
-        path.unlink()
-
-
-def write_factor_to_db(db: Database, factor_name: str, df: pd.DataFrame):
-    """写入因子到数据库"""
-    db.save_factors(df)
-
-
-def compute_and_save_factor(
-    db: Database,
-    bars: pd.DataFrame,
-    factor_name: str,
-    force: bool = False
-) -> bool:
-    """计算单个因子并保存到数据库"""
-    # 检查数据库
-    if not force:
-        cnt = db.conn.execute(f"""
-            SELECT COUNT(*) FROM factors_wide WHERE "{factor_name}" IS NOT NULL
-        """).fetchone()[0]
-        if cnt > 0:
-            return True
-
-    # 检查临时文件
-    temp_path = get_temp_dir() / f"{factor_name}.parquet"
-    if temp_path.exists() and not force:
-        df = pd.read_parquet(temp_path)
-    else:
-        # 计算因子
-        t0 = time.time()
-        hub = FactorHub()
-        result = hub.compute(factor_name, bars)
-        elapsed = time.time() - t0
-
-        if result is None or result.empty:
-            print(f"  [WARN] {factor_name} computed empty, skipping")
-            return False
-
-        df = pd.DataFrame({
-            "date": result.index,
-            "symbol": result.columns.repeat(len(result)),
-        })
-        idx = pd.MultiIndex.from_product(
-            [result.index, result.columns], names=["date", "symbol"]
-        )
-        df["factor_name"] = factor_name
-        df["value"] = result.values.ravel(order="C")
-        df = df[["date", "symbol", "factor_name", "value"]]
-        print(f"  {factor_name}  shape={result.shape}  ({elapsed:.2f}s)")
-
-    # 先保存到临时文件
-    save_checkpoint(factor_name, df)
-
-    # 写入数据库
-    try:
-        write_factor_to_db(db, factor_name, df)
-        # 成功写入后删除临时文件
-        remove_checkpoint(factor_name)
-        return True
-    except Exception as e:
-        print(f"  [ERROR] {factor_name} write failed: {e}")
-        print(f"  [INFO]  Saved to {temp_path}, run restore script to retry")
-        return False
-
-
-def print_status(db: Database, all_factors: list):
-    """打印因子计算状态"""
+def cmd_status(db: Database, all_factors: list):
+    """查看状态"""
     completed = get_completed_factors(db)
     temp_factors = get_temp_factors()
 
@@ -179,16 +92,49 @@ def print_status(db: Database, all_factors: list):
             print(f"  - {f} ({size:.1f} MB)")
         print()
         print("运行以下命令恢复:")
-        print("  python3 scripts/restore_gtja_checkpoint.py")
+        print("  python3 scripts/compute_gtja191.py --restore")
         print()
 
     if completed:
-        print("已完成（数据库中）:")
         completed_sorted = sorted(completed, key=lambda x: int(x[4:]) if x[4:].isdigit() else 0)
+        print("已完成（数据库中）:")
         print("  " + ", ".join(completed_sorted[:50]))
         if len(completed_sorted) > 50:
             print(f"  ... 等共 {len(completed_sorted)} 个")
         print()
+
+
+def cmd_restore(db: Database, dry_run: bool = False):
+    """从临时文件恢复到数据库"""
+    pending = sorted(get_temp_dir().glob("*.parquet"),
+                     key=lambda x: x.stem)
+
+    if not pending:
+        print("没有待恢复的临时文件")
+        return
+
+    print(f"\n{'='*60}")
+    print(f"恢复 GTJA 因子临时文件")
+    print(f"{'='*60}")
+    print(f"待恢复文件数: {len(pending)}")
+    print()
+
+    for i, fpath in enumerate(pending):
+        factor_name = fpath.stem
+        size_mb = fpath.stat().st_size / 1024 / 1024
+        print(f"[{i+1}/{len(pending)}] {factor_name} ({size_mb:.1f} MB)")
+
+        if dry_run:
+            print(f"  [DRY RUN] would restore")
+            continue
+
+        try:
+            df = pd.read_parquet(fpath)
+            db.save_factors(df)
+            fpath.unlink()
+            print(f"  ✓ restored and removed")
+        except Exception as e:
+            print(f"  ✗ failed: {e}")
 
 
 def main():
@@ -198,11 +144,12 @@ def main():
     ap.add_argument("--start", default=None, help="计算区间起,默认 config.backtest.start_date")
     ap.add_argument("--end", default=None, help="计算区间止,默认 config.backtest.end_date")
     ap.add_argument("--names", default="", help="只算这些因子,逗号分隔;空=全部")
-    ap.add_argument("--force", default="",
-                    help="强制重算这些因子,逗号分隔")
+    ap.add_argument("--force", default="", help="强制重算这些因子,逗号分隔")
     ap.add_argument("--n-jobs", type=int, default=1,
                     help="并行计算的进程数,默认1(串行),-1=全部CPU核心")
-    ap.add_argument("--status", action="store_true", help="只打印状态,不计算")
+    ap.add_argument("--status", action="store_true", help="查看状态")
+    ap.add_argument("--restore", action="store_true", help="从临时文件恢复")
+    ap.add_argument("--dry-run", action="store_true", help="预演模式,不实际执行")
     ap.add_argument("--skip-write", action="store_true", help="不写库,只评估")
     args = ap.parse_args()
 
@@ -217,18 +164,23 @@ def main():
     all_gtja = list_by_category("gtja191")
     all_factors = sorted(all_gtja, key=lambda x: int(x[4:]) if x[4:].isdigit() else 0)
 
-    # 只打印状态
+    # 状态模式
     if args.status:
-        print_status(db, all_factors)
+        cmd_status(db, all_factors)
         return
 
-    # 解析要计算的因子
+    # 恢复模式
+    if args.restore:
+        cmd_restore(db, dry_run=args.dry_run)
+        return
+
+    # 计算模式
     if args.names:
         names = [n.strip() for n in args.names.split(",") if n.strip()]
     else:
         names = all_factors
 
-    # 解析强制重算的因子
+    # 强制重算的因子
     force_set = set()
     if args.force:
         force_set = {n.strip() for n in args.force.split(",") if n.strip()}
@@ -259,8 +211,6 @@ def main():
         print("\n所有因子已完成，无需计算")
     else:
         t0 = time.time()
-
-        # 使用 FactorHub 并行计算
         long_df = compute_all(
             bars,
             names=to_compute,
@@ -275,30 +225,30 @@ def main():
             return
 
         if not args.skip_write:
-            print(f"[3/3] writing to database + temp files ...")
+            print(f"[3/3] writing to database ...")
             t0 = time.time()
 
-            # 按因子分组保存
+            temp_dir = get_temp_dir()
             successful = []
             failed = []
+
             for fname in to_compute:
                 factor_df = long_df[long_df["factor_name"] == fname]
                 if factor_df.empty:
                     continue
 
                 # 保存到临时文件
-                temp_path = save_checkpoint(fname, factor_df)
+                temp_path = temp_dir / f"{fname}.parquet"
+                factor_df.to_parquet(temp_path, compression="zstd")
 
-                # 尝试写入数据库
+                # 写入数据库
                 try:
-                    write_factor_to_db(db, fname, factor_df)
-                    # 成功写入后删除临时文件
-                    remove_checkpoint(fname)
+                    db.save_factors(factor_df)
+                    temp_path.unlink()
                     successful.append(fname)
                     print(f"  ✓ {fname} saved ({len(factor_df):,} rows)")
                 except Exception as e:
                     print(f"  ✗ {fname} write failed: {e}")
-                    print(f"    temp file kept: {temp_path}")
                     failed.append((fname, str(e)))
 
             elapsed = time.time() - t0
@@ -306,17 +256,16 @@ def main():
             print(f"      total time: {elapsed:.1f}s")
 
             if failed:
-                print("\n      [WARN] 以下因子写入失败，保留临时文件:")
+                print("\n      [WARN] 以下因子写入失败:")
                 for fname, err in failed:
                     print(f"        - {fname}: {err}")
                 print("\n      运行以下命令重试:")
-                print("        python3 scripts/restore_gtja_checkpoint.py")
+                print("        python3 scripts/compute_gtja191.py --restore")
         else:
             print("[3/3] --skip-write,跳过落库")
 
-    # 打印最终状态
     print()
-    print_status(db, all_factors)
+    cmd_status(db, all_factors)
 
 
 if __name__ == "__main__":
