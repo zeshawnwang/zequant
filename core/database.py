@@ -50,14 +50,19 @@ class Database:
         try:
             self.conn = duckdb.connect(db_path, read_only=read_only)
         except duckdb.IOException:
-            # 库被另一个进程独占(常见:IDE 内置 SQL 插件),回退到只读
             if not read_only:
                 self.conn = duckdb.connect(db_path, read_only=True)
                 self.read_only = True
             else:
                 raise
         if not self.read_only:
+            self._configure_duckdb()
             self._init_tables()
+
+    def _configure_duckdb(self):
+        """配置 DuckDB 连接参数以提升性能。"""
+        self.conn.execute("SET threads TO 8")
+        self.conn.execute("SET memory_limit='4GB'")
 
     # ============================================================
     # Schema 初始化
@@ -88,10 +93,15 @@ class Database:
                 PRIMARY KEY (date, symbol)
             )
         """)
-        # 加速按日期切片的查询(DuckDB 主键自带索引,这里再补一个 date 单列索引)
         self.conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_factors_wide_date "
             "ON factors_wide(date)"
+        )
+
+        # daily_bars 添加 date 单列索引,加速日期范围查询
+        self.conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_daily_bars_date "
+            "ON daily_bars(date)"
         )
 
         self.conn.execute("""
@@ -249,24 +259,15 @@ class Database:
             raise
 
     def save_factors(self, df: pd.DataFrame, factor_names: Optional[List[str]] = None):
-        """
-        保存因子数据,自动识别输入格式:
-          1) 宽表: date, symbol, f1, f2, ...
-          2) 长表: date, symbol, factor_name, value -> 内部 pivot 后写入
-
-        factor_names 仅在宽表输入时生效,指定要保存哪些列;None 时保存除
-        date/symbol/close/pct_change/volume/amount/open/high/low 外的所有数值列。
-        """
         if df is None or df.empty:
             return
 
         # 1) 长表 -> 宽表
         if "factor_name" in df.columns and "value" in df.columns:
-            wide = df.pivot_table(
+            wide = df.pivot(
                 index=["date", "symbol"],
                 columns="factor_name",
                 values="value",
-                aggfunc="last",
             ).reset_index()
             wide.columns.name = None
         else:
@@ -275,7 +276,6 @@ class Database:
         if "date" not in wide.columns or "symbol" not in wide.columns:
             raise ValueError("save_factors: df 必须包含 date 与 symbol 列")
 
-        # 2) 选要保存的因子列
         reserved = {"date", "symbol", "close", "open", "high", "low",
                     "volume", "amount", "pct_change"}
         if factor_names is None:
@@ -288,31 +288,33 @@ class Database:
             return
 
         wide = wide[["date", "symbol"] + cols].copy()
-        # 清洗 inf
         for c in cols:
             wide[c] = wide[c].replace([np.inf, -np.inf], np.nan)
 
-        # 3) 确保宽表里有这些列
         self.ensure_factor_columns(cols)
 
-        # 4) 分批写入(避免内存溢出,每批50000条)
+        # 4) 在事务中批量写入,避免每批独立 COMMIT
         batch_size = 50000
         n_batches = (len(wide) + batch_size - 1) // batch_size
-        for i in range(n_batches):
-            start = i * batch_size
-            end = min(start + batch_size, len(wide))
-            batch = wide.iloc[start:end]
-            self.conn.register("_stg_factors_wide", batch)
-            set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
-            col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
-            try:
+        self.conn.execute("BEGIN TRANSACTION")
+        try:
+            for i in range(n_batches):
+                start = i * batch_size
+                end = min(start + batch_size, len(wide))
+                batch = wide.iloc[start:end]
+                self.conn.register("_stg_factors_wide", batch)
+                set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
+                col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
                 self.conn.execute(f"""
                     INSERT INTO factors_wide ({col_list})
                     SELECT {col_list} FROM _stg_factors_wide
                     ON CONFLICT (date, symbol) DO UPDATE SET {set_clause}
                 """)
-            finally:
                 self.conn.unregister("_stg_factors_wide")
+            self.conn.execute("COMMIT")
+        except Exception:
+            self.conn.execute("ROLLBACK")
+            raise
 
     def get_factors(self, symbols: Optional[List[str]] = None,
                     start_date: str = None, end_date: str = None,
