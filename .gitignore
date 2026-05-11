@@ -26,6 +26,8 @@ env/
 # Logs
 logs/
 *.log
+*_log.txt
+optimization*.txt
 
 # Environment
 .env
