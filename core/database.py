@@ -360,21 +360,19 @@ class Database:
         n_batches = (len(wide) + batch_size - 1) // batch_size
         self.conn.execute("BEGIN TRANSACTION")
         try:
-            tmp_dir = tempfile.gettempdir()
             for i in range(n_batches):
                 start = i * batch_size
                 end = min(start + batch_size, len(wide))
                 batch = wide.iloc[start:end]
-                tmp_path = os.path.join(tmp_dir, f"_stg_fw_{os.getpid()}_{i}.parquet")
-                batch.to_parquet(tmp_path, compression="zstd")
+                self.conn.register("_stg_factors_wide", batch)
                 set_clause = ", ".join(f'"{c}"=excluded."{c}"' for c in cols)
                 col_list = ", ".join(['"date"', '"symbol"'] + [f'"{c}"' for c in cols])
                 self.conn.execute(f"""
                     INSERT INTO factors_wide ({col_list})
-                    SELECT {col_list} FROM read_parquet('{tmp_path}')
+                    SELECT {col_list} FROM _stg_factors_wide
                     ON CONFLICT (date, symbol) DO UPDATE SET {set_clause}
                 """)
-                os.remove(tmp_path)
+                self.conn.unregister("_stg_factors_wide")
             self.conn.execute("COMMIT")
         except Exception:
             self.conn.execute("ROLLBACK")
@@ -429,7 +427,7 @@ class Database:
                 end_date=end_date,
             )
             if not bars.empty:
-                join_cols = ["date", "symbol", "close",
+                join_cols = ["date", "symbol", "open", "high", "low", "close",
                              "pct_change", "volume", "amount"]
                 join_cols = [c for c in join_cols if c in bars.columns]
                 tail = bars[join_cols].copy()

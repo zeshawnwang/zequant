@@ -119,11 +119,11 @@ class FactorEvaluator:
         fwd_end = pd.Timestamp(end_date) + pd.Timedelta(days=forward_days * 2 + 10)
 
         rank_fn_sql = ",\n               ".join(
-            f"RANK() OVER (PARTITION BY p.date ORDER BY p.\"{fn}\") AS \"rank_{fn}\""
+            f"RANK() OVER (PARTITION BY f.date ORDER BY f.\"{fn}\") AS \"rank_{fn}\""
             for fn in factor_names
         )
         corr_sql = ",\n               ".join(
-            f"corr(\"rank_{fn}\", p.rank_fwd_ret) AS \"{fn}\""
+            f"corr(\"rank_{fn}\", panel.rank_fwd_ret) AS \"{fn}\""
             for fn in factor_names
         )
 
@@ -263,9 +263,8 @@ class FactorEvaluator:
         if panel.empty:
             return pd.DataFrame(columns=EVAL_FIELDS)
 
-        ic_df = self._ic_panel_sql(
-            factor_names, start_date, end_date, forward_days
-        )
+        # 使用 pandas 向量化版本，避免 SQL 大表开销
+        ic_df = self._ic_panel(panel, factor_names)
 
         rows: List[Dict] = []
         for fn in factor_names:

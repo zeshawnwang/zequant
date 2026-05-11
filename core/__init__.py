@@ -48,3 +48,7 @@ __all__ = [
     "Signal",
     "SignalType",
 ]
+
+def _lazy_import_submodules():
+    """按需导入子模块（避免启动时加载重量级模块）"""
+    pass

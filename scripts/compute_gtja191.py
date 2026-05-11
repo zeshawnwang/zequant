@@ -106,7 +106,7 @@ def cmd_status(db: Database, all_factors: list):
 
 def cmd_restore(db: Database, dry_run: bool = False):
     """从临时文件恢复到数据库"""
-    pending = sorted(get_temp_dir().glob("*.parquet"),
+    pending = sorted(get_temp_dir().glob("*.pkl"),
                      key=lambda x: x.stem)
 
     if not pending:
@@ -129,7 +129,7 @@ def cmd_restore(db: Database, dry_run: bool = False):
             continue
 
         try:
-            df = pd.read_parquet(fpath)
+            df = pd.read_pickle(fpath)
             db.save_factors(df)
             fpath.unlink()
             print(f"  ✓ restored and removed")
@@ -237,9 +237,9 @@ def main():
                 if factor_df.empty:
                     continue
 
-                # 保存到临时文件
-                temp_path = temp_dir / f"{fname}.parquet"
-                factor_df.to_parquet(temp_path, compression="zstd")
+                # 保存到临时文件（使用 pickle 格式，pandas 原生支持）
+                temp_path = temp_dir / f"{fname}.pkl"
+                factor_df.to_pickle(temp_path)
 
                 # 写入数据库
                 try:

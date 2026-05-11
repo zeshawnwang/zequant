@@ -1916,9 +1916,9 @@ def gtja153(ctx: FactorContext) -> pd.DataFrame:
 
 @register_factor("gtja154", category="gtja191",
                  requires=["volume", "vwap"],
-                 description="Alpha 154: (vwap - min(vwap, 16)) < corr(vwap, mean(volume,180), 18) - simplified to 0")
+                 description="Alpha 154: placeholder returning zeros")
 def gtja154(ctx: FactorContext) -> pd.DataFrame:
-    return pd.DataFrame(0, index=ctx.close.index, columns=ctx.close.columns) if hasattr(ctx, 'close') else pd.DataFrame(0, index=ctx.volume.index, columns=ctx.volume.columns)
+    return pd.DataFrame(0, index=ctx.volume.index, columns=ctx.volume.columns)
 
 
 @register_factor("gtja155", category="gtja191",
