@@ -18,7 +18,7 @@
     from core.strategy import SignalStrategy
     from core.signals import LayeredComposer
     from core.signals.position import TrendPositionSizer
-    from screening import FactorRankSelector
+    from core.screening import FactorRankSelector
 
     strategy = SignalStrategy(
         name="MomentumStrategy",
@@ -33,6 +33,24 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 import pandas as pd
+
+try:
+    from . import Order, Position
+except ImportError:
+    # 兼容旧架构导入
+    class Order:
+        def __init__(self, symbol, direction, quantity, price=0.0, reason=""):
+            self.symbol = symbol
+            self.direction = direction
+            self.quantity = quantity
+            self.price = price
+            self.reason = reason
+    class Position:
+        def __init__(self, symbol, quantity, entry_price, entry_date, **kwargs):
+            self.symbol = symbol
+            self.quantity = quantity
+            self.entry_price = entry_price
+            self.entry_date = entry_date
 
 
 @dataclass
@@ -167,27 +185,39 @@ class SignalStrategy(IStrategy):
         date: Any,
         market_data: pd.DataFrame,
         cash: float,
-        positions: Dict[str, float],
-    ) -> List[TargetPosition]:
+        positions: Dict[str, Any],
+    ) -> List[Any]:
         """
-        生成交易清单。
+        生成交易清单（兼容回测引擎）。
 
         Args:
             date: 当前日期
             market_data: 市场数据
             cash: 当前现金
-            positions: 当前持仓 {symbol: weight}
+            positions: 当前持仓（旧架构格式: Dict[str, Position] 或新架构格式: Dict[str, float]）
 
         Returns:
-            目标持仓列表
+            Order 列表
         """
-        signal = self.get_signal(date, market_data, cash, positions)
+        # 处理不同的位置表示格式
+        if positions and isinstance(next(iter(positions.values())), Position):
+            # 旧架构格式（Position对象）
+            current_weights = {
+                sym: (pos.quantity * pos.entry_price) / cash if cash > 0 else 0.0
+                for sym, pos in positions.items()
+            }
+        else:
+            # 新架构格式（权重）
+            current_weights = positions.copy() if isinstance(positions, dict) else {}
 
-        orders = self._generate_orders_from_weights(
-            date, signal.target_weights, cash, positions
+        signal = self.get_signal(date, market_data, cash, current_weights)
+
+        orders = self._generate_standard_orders(
+            date, signal.target_weights, cash, positions, market_data
         )
 
-        signal.orders = orders
+        signal.orders = []  # 避免兼容性问题
+        self.last_selected = list(signal.selector_scores.keys())  # 兼容回测记录
 
         return orders
 
@@ -327,6 +357,97 @@ class SignalStrategy(IStrategy):
             )
 
             orders.append(order)
+
+        return orders
+
+    def _generate_standard_orders(
+        self,
+        date: Any,
+        target_weights: Dict[str, float],
+        cash: float,
+        current_positions: Dict[str, Any],
+        market_data: pd.DataFrame,
+    ) -> List[Any]:
+        """生成标准订单（兼容回测引擎）。"""
+        orders = []
+
+        # 获取价格映射
+        price_map = {}
+        if market_data is not None and not market_data.empty:
+            last_day = market_data['date'].max()
+            last_slice = market_data[market_data['date'] == last_day]
+            if not last_slice.empty:
+                price_map = dict(zip(last_slice['symbol'], last_slice['close']))
+
+        # 先处理卖出
+        for sym, pos in list(current_positions.items()):
+            if sym not in target_weights or target_weights.get(sym, 0) < self.min_position:
+                # 需要全部卖出
+                qty = pos.quantity if hasattr(pos, 'quantity') else 0
+                if qty > 0:
+                    px = float(price_map.get(sym, pos.entry_price if hasattr(pos, 'entry_price') else 1.0))
+                    orders.append(Order(
+                        symbol=sym,
+                        direction='SELL',
+                        quantity=qty,
+                        price=px,
+                        reason=f"SignalStrategy: 目标权重为0"
+                    ))
+
+        # 处理买入和调仓
+        total_value = cash
+        if current_positions:
+            if hasattr(next(iter(current_positions.values())), 'quantity'):
+                # 旧架构格式
+                total_value = cash + sum(
+                    pos.quantity * (price_map.get(sym, pos.entry_price) if hasattr(pos, 'entry_price') else 1.0)
+                    for sym, pos in current_positions.items()
+                )
+
+        for sym, target_w in target_weights.items():
+            if target_w < self.min_position:
+                continue
+
+            target_value = target_w * total_value
+            current_value = 0.0
+            current_qty = 0
+
+            if sym in current_positions:
+                pos = current_positions[sym]
+                if hasattr(pos, 'quantity'):
+                    current_qty = pos.quantity
+                    current_value = pos.quantity * (price_map.get(sym, pos.entry_price) if hasattr(pos, 'entry_price') else 1.0)
+
+            if abs(target_value - current_value) < 100:  # 100元以下不交易
+                continue
+
+            diff_value = target_value - current_value
+            px = float(price_map.get(sym, 1.0))
+            if px <= 0:
+                continue
+
+            if diff_value > 0:
+                # 买入
+                qty = int(diff_value / px / 100) * 100
+                if qty >= 100:
+                    orders.append(Order(
+                        symbol=sym,
+                        direction='BUY',
+                        quantity=qty,
+                        price=px,
+                        reason=f"SignalStrategy: 目标权重 {target_w:.4f}"
+                    ))
+            elif diff_value < 0:
+                # 卖出
+                qty = int(abs(diff_value) / px / 100) * 100
+                if qty >= 100 and qty <= current_qty:
+                    orders.append(Order(
+                        symbol=sym,
+                        direction='SELL',
+                        quantity=qty,
+                        price=px,
+                        reason=f"SignalStrategy: 目标权重 {target_w:.4f}"
+                    ))
 
         return orders
 

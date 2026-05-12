@@ -1,21 +1,20 @@
-"""core 核心模块。
+"""core 核心模块（新架构）。
 
-为避免 `import core` 触发因子库加载(101 个 alpha 公式),本 __init__
-**不**导入 FactorRunner / 因子注册表。需要时显式 `from core.factor import FactorRunner`。
+所有模块都已迁移到子目录，基类与实现分离。
 
 设计原则:
-  - 顶层只暴露**轻量、无副作用**的类型(数据结构、抽象基类、工具类)
-  - 重量级模块(因子计算、回测、评估)按需 from xxx import yyy
+  - 顶层只暴露轻量、无副作用的类型
+  - 新架构优先使用 SignalStrategy
+  - 旧架构兼容性保留但逐步淘汰
 """
 from __future__ import annotations
 import logging
 
-# ----- 日志:为整个项目配置默认 handler;子模块用 logging.getLogger(__name__) 自动继承 -----
+# ----- 日志:为整个项目配置默认 handler -----
 def _setup_default_logger():
-    # 项目根 logger(名为 "core" / "factors" / "strategies" 等都会继承 root)
     root = logging.getLogger()
     if any(isinstance(h, logging.StreamHandler) for h in root.handlers):
-        return  # 已有 handler,避免重复
+        return
     h = logging.StreamHandler()
     h.setFormatter(logging.Formatter(
         fmt="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -26,29 +25,61 @@ def _setup_default_logger():
 
 _setup_default_logger()
 
-# ----- 轻量类型(纯数据,加载零开销)-----
+# ----- 新架构（推荐）类型 -----
+from .strategy import SignalStrategy, CompositeStrategy, TargetPosition, StrategySignal, IStrategy
+from .signals import IComposer, LayeredComposer, DirectComposer, WeightedComposer, VoteComposer
+from .risk import RiskManager, IConstraint
+from .execution import BacktestEngine, LiveExecutor
+
+# 兼容旧架构（保留但推荐迁移到新架构）
+try:
+    from .strategy_legacy import QuantStrategy, Order, Position, Signal, SignalType
+except ImportError:
+    pass
+
+
+# ----- 数据类型（新旧架构通用）-----
 from .database import Database
 from .data_checker import DataQualityChecker
 from .data_validator import DataValidator, ValidationReport, validate_data
-from .fee import FeeCalculator, RiskManager, TradeCost
-from .strategy import QuantStrategy, Order, Position, Signal, SignalType
+from .fee import FeeCalculator, TradeCost
 
 __all__ = [
+    # 数据库与工具
     "Database",
     "DataQualityChecker",
     "DataValidator",
     "ValidationReport",
     "validate_data",
     "FeeCalculator",
-    "RiskManager",
     "TradeCost",
+    
+    # 新架构（推荐）
+    "IStrategy",
+    "SignalStrategy",
+    "CompositeStrategy",
+    "TargetPosition",
+    "StrategySignal",
+    
+    # 信号组合器
+    "IComposer",
+    "LayeredComposer",
+    "DirectComposer",
+    "WeightedComposer",
+    "VoteComposer",
+    
+    # 风控
+    "RiskManager",
+    "IConstraint",
+    
+    # 执行引擎
+    "BacktestEngine",
+    "LiveExecutor",
+    
+    # 兼容旧架构（请迁移到新架构）
     "QuantStrategy",
     "Order",
     "Position",
     "Signal",
     "SignalType",
 ]
-
-def _lazy_import_submodules():
-    """按需导入子模块（避免启动时加载重量级模块）"""
-    pass
