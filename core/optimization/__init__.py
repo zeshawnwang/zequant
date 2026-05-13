@@ -1,19 +1,17 @@
 """策略优化模块。
 
 包含因子筛选、权重优化、策略归因、配置管理等模块。
+
+目录结构：
+  - base/: 基类和配置管理
+  - impl/: 具体实现
 """
-from .risk_constraints import RiskConstraints, RiskCheckResult
-from .factor_selector import FactorSelector
-from .weight_optimizer import GeneticWeightOptimizer
-from .attribution import StrategyAttribution
-from .config_manager import StrategyConfig, ConfigManager
+from .base.config_manager import StrategyConfig, ConfigManager
+from .base.risk_constraints import RiskConstraints, RiskCheckResult
 
 __all__ = [
-    'RiskConstraints',
-    'RiskCheckResult',
-    'FactorSelector',
-    'GeneticWeightOptimizer',
-    'StrategyAttribution',
-    'StrategyConfig',
-    'ConfigManager',
+    "StrategyConfig",
+    "ConfigManager",
+    "RiskConstraints",
+    "RiskCheckResult",
 ]

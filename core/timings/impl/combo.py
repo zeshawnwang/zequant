@@ -1,21 +1,32 @@
 """复合择时器。
 
 聚合多个子择时器的信号,按"投票"或"加权平均"输出最终决策。
-
-模式:
-  - "vote":     按 BUY/SELL/HOLD 三类信号的票数取多数(平票时取 HOLD)
-  - "weighted": 按 strength 加权平均,正向多数 → BUY、负向多数 → SELL,
-                两者均未过半 → HOLD
-
-关键修复(对比上一版):上一版投票模式下 buy_count > sell_count 时只发 HOLD,
-导致复合择时永远不建仓。本版多数票 BUY 也会发 BUY 信号。
 """
 from __future__ import annotations
-from typing import List
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+from enum import IntEnum
 import pandas as pd
 
-from core.strategy import Signal, SignalType
-from core.timings.base.timing import ITimingGenerator
+from ..base.timing import ITimingGenerator
+
+
+class SignalType(IntEnum):
+    """信号类型。"""
+    SELL = -1
+    HOLD = 0
+    BUY = 1
+
+
+@dataclass
+class Signal:
+    """择时信号。"""
+    symbol: str
+    signal_type: SignalType
+    strength: float
+    price: float
+    reason: str = ""
+    factors: Optional[Dict[str, Any]] = None
 
 
 class CompositeTiming(ITimingGenerator):
@@ -33,7 +44,6 @@ class CompositeTiming(ITimingGenerator):
 
     def generate(self, factor_data: pd.DataFrame,
                  positions: List[str], cash: float, date=None) -> List[Signal]:
-        # 1) 收集所有子择时器的信号,按 symbol 分桶
         bucket: dict = {}
         for timing in self.timings:
             for sig in timing.generate(factor_data, positions, cash, date):
@@ -41,7 +51,6 @@ class CompositeTiming(ITimingGenerator):
         if not bucket:
             return []
 
-        # 2) 聚合
         result: List[Signal] = []
         for symbol, sigs in bucket.items():
             avg_price = sum(s.price for s in sigs) / len(sigs)
@@ -51,7 +60,6 @@ class CompositeTiming(ITimingGenerator):
                 buy = sum(1 for s in sigs if s.signal_type == SignalType.BUY)
                 sell = sum(1 for s in sigs if s.signal_type == SignalType.SELL)
                 hold = sum(1 for s in sigs if s.signal_type == SignalType.HOLD)
-                # 多数投票:BUY/SELL 至少要过半票数才生效,否则视为 HOLD
                 total = len(sigs)
                 if buy > sell and buy > hold:
                     result.append(Signal(
@@ -66,14 +74,13 @@ class CompositeTiming(ITimingGenerator):
                         reason=f"复合择时:多数看空({sell}/{total})",
                     ))
                 else:
-                    # 平票或多数 HOLD,持仓继续持有,空仓不动作
                     if symbol in positions:
                         result.append(Signal(
                             symbol=symbol, signal_type=SignalType.HOLD,
                             strength=avg_strength, price=avg_price,
                             reason=f"复合择时:中性({buy}买/{sell}卖/{hold}持)",
                         ))
-            else:  # weighted
+            else:
                 buy_w = sum(s.strength for s in sigs if s.signal_type == SignalType.BUY)
                 sell_w = sum(s.strength for s in sigs if s.signal_type == SignalType.SELL)
                 if buy_w > sell_w * 1.5:

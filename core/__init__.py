@@ -5,7 +5,6 @@
 设计原则:
   - 顶层只暴露轻量、无副作用的类型
   - 新架构优先使用 SignalStrategy
-  - 旧架构兼容性保留但逐步淘汰
 """
 from __future__ import annotations
 import logging
@@ -26,23 +25,15 @@ def _setup_default_logger():
 _setup_default_logger()
 
 # ----- 新架构（推荐）类型 -----
-from .strategy import SignalStrategy, CompositeStrategy, TargetPosition, StrategySignal, IStrategy
-from .signals import IComposer, LayeredComposer, DirectComposer, WeightedComposer, VoteComposer
-from .risk import RiskManager, IConstraint
-from .execution import BacktestEngine, LiveExecutor
-
-# 兼容旧架构（保留但推荐迁移到新架构）
-try:
-    from .strategy_legacy import QuantStrategy, Order, Position, Signal, SignalType
-except ImportError:
-    pass
-
+from .strategies.base.strategy import SignalStrategy, CompositeStrategy, TargetPosition, StrategySignal, IStrategy
+from .signals import LayeredComposer, DirectComposer
+from .execution import BacktestEngine
 
 # ----- 数据类型（新旧架构通用）-----
 from .database import Database
-from .data_checker import DataQualityChecker
-from .data_validator import DataValidator, ValidationReport, validate_data
-from .fee import FeeCalculator, TradeCost
+from .data.checker import DataQualityChecker
+from .data.validator import DataValidator, ValidationReport, validate_data
+from .risk import FeeCalculator, TradeCost, RiskManager
 
 __all__ = [
     # 数据库与工具
@@ -53,33 +44,21 @@ __all__ = [
     "validate_data",
     "FeeCalculator",
     "TradeCost",
-    
+
     # 新架构（推荐）
     "IStrategy",
     "SignalStrategy",
     "CompositeStrategy",
     "TargetPosition",
     "StrategySignal",
-    
+
     # 信号组合器
-    "IComposer",
     "LayeredComposer",
     "DirectComposer",
-    "WeightedComposer",
-    "VoteComposer",
-    
+
     # 风控
     "RiskManager",
-    "IConstraint",
-    
+
     # 执行引擎
     "BacktestEngine",
-    "LiveExecutor",
-    
-    # 兼容旧架构（请迁移到新架构）
-    "QuantStrategy",
-    "Order",
-    "Position",
-    "Signal",
-    "SignalType",
 ]

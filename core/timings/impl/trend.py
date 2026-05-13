@@ -9,12 +9,32 @@
   - 中间区间不发信号
 """
 from __future__ import annotations
-from typing import List
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+from enum import IntEnum
 import numpy as np
 import pandas as pd
 
-from core.strategy import Signal, SignalType
-from core.timings.base.timing import ITimingGenerator
+
+class SignalType(IntEnum):
+    """信号类型。"""
+    SELL = -1
+    HOLD = 0
+    BUY = 1
+
+
+@dataclass
+class Signal:
+    """择时信号。"""
+    symbol: str
+    signal_type: SignalType
+    strength: float
+    price: float
+    reason: str = ""
+    factors: Optional[Dict[str, Any]] = None
+
+
+from ..base.timing import ITimingGenerator
 
 
 class TrendTiming(ITimingGenerator):

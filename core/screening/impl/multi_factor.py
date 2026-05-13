@@ -23,7 +23,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from core.screening.base.selector import IStockSelector
+from ..base.selector import IStockSelector
 
 
 def _zscore(s: pd.Series, winsorize: float = 0.01) -> pd.Series:

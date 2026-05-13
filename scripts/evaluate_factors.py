@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
-"""因子评估脚本:批量算 IC/IR/分组收益/换手率,落库到 factor_registry。
+"""基于 FactorHub + FactorEvaluator 的因子评估与入库脚本。
 
-设计要点
---------
-- 默认值统一从 [`config/config.yaml`](../config/config.yaml) 的 `factors` / `database`
-  / `backtest` 段读取,命令行参数仅作为按需覆盖
-- category / description 直接从 [`FactorHub`](../core/factor_hub.py:1) 元信息反查,
-  不再写死映射,新增因子无需改本脚本
-
-用法
-----
-    python3 scripts/evaluate_factors.py
-    python3 scripts/evaluate_factors.py --start 2024-01-01 --end 2024-06-30 --days 10
-    python3 scripts/evaluate_factors.py --names momentum_20 rsi_14 a3
+使用:
+    python3 scripts/evaluate_factors.py                                          # 评估所有 technical 因子
+    python3 scripts/evaluate_factors.py --category alpha101 --names a1 a3 a5     # 指定因子
+    python3 scripts/evaluate_factors.py --category alpha101 --years 3            # 近3年
+    python3 scripts/evaluate_factors.py --ir 0.3                                 # 只注册 IC>0.3
+    python3 scripts/evaluate_factors.py --save                                   # 将结果写入数据库
 """
 from __future__ import annotations
 import sys
@@ -22,19 +16,21 @@ if _ROOT not in sys.path:
     sys.path.append(_ROOT)
 
 import argparse
+from datetime import datetime, timedelta
 from typing import Dict
 
-import pandas as pd
-
-from core.config import load_config, get_db_path
+from core.config import load_config
 from core.database import Database
-from core.factor_evaluator import FactorEvaluator
-from core.factor_hub import FactorHub
-import factors  # noqa: F401  触发 @register_factor 注册
+from core.factors.base.factor_hub import FactorHub
+from core.research.impl.evaluation import FactorEvaluator
+
+import core.factors.impl.technical  # noqa: F401  触发注册
+import core.factors.impl.alpha101_full  # noqa: F401
+import core.factors.impl.gtja191_full  # noqa: F401
+import core.factors.impl.fama_french  # noqa: F401
 
 
-def _build_meta_maps() -> tuple:
-    """从 FactorHub 反查 category / description,作为 registry 的元信息源。"""
+def _build_meta_maps() -> tuple[Dict[str, str], Dict[str, str]]:
     cat_map: Dict[str, str] = {}
     desc_map: Dict[str, str] = {}
     for name in FactorHub.list_all():
@@ -45,62 +41,68 @@ def _build_meta_maps() -> tuple:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="因子评估(IC/IR/分组/换手)")
+    parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config/config.yaml")
-    parser.add_argument("--start", default=None, help="评估起始日,默认读 config.backtest.start_date")
-    parser.add_argument("--end",   default=None, help="评估结束日,默认读 config.backtest.end_date")
-    parser.add_argument("--days",  type=int, default=None,
-                        help="前瞻收益窗口,默认读 config.factors.forward_days")
-    parser.add_argument("--groups", type=int, default=5, help="分组数")
-    parser.add_argument("--ir_threshold", type=float, default=None,
-                        help="|IR|<阈值的因子 enabled=False,默认读 config.factors.ir_threshold")
+    parser.add_argument("--category", default=None,
+                        help="评估某分类,默认所有因子")
     parser.add_argument("--names", nargs="*", default=None,
-                        help="只评估这些因子;省略则评估库中全部因子列")
+                        help="指定因子名,覆盖 --category")
+    parser.add_argument("--start", default=None,
+                        help="开始日期,默认3年前")
+    parser.add_argument("--end", default=None,
+                        help="结束日期,默认昨天")
+    parser.add_argument("--groups", type=int, default=5,
+                        help="分组数,默认5")
+    parser.add_argument("--years", type=int, default=None,
+                        help="评估窗口(年),覆盖 --start")
+    parser.add_argument("--ir", type=float, default=-999,
+                        help="写入数据库的 IC IR 阈值")
+    parser.add_argument("--save", action="store_true",
+                        help="将评估结果写入 factor_registry")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
-    start = args.start or cfg["backtest"]["start_date"]
-    end = args.end or cfg["backtest"]["end_date"]
-    days = args.days if args.days is not None else int(cfg["factors"]["forward_days"])
-    ir_thr = args.ir_threshold if args.ir_threshold is not None else float(cfg["factors"]["ir_threshold"])
+    db_path = cfg["database"]["path"]
+    db = Database(db_path)
 
-    db = Database(get_db_path(cfg))
+    end = args.end or (datetime.now() - timedelta(1)).strftime("%Y-%m-%d")
+    if args.years:
+        y = int(end[:4]) - args.years
+        start = f"{y}-01-01"
+    else:
+        start = args.start or (datetime.now() - timedelta(365 * 3)).strftime("%Y-%m-%d")
+
+    if args.names:
+        factor_names = args.names
+    elif args.category:
+        factor_names = FactorHub.list_by_category(args.category)
+    else:
+        factor_names = FactorHub.list_all()
+
+    cat_map, desc_map = _build_meta_maps()
+
+    print(f"评估 {len(factor_names)} 个因子: {start} ~ {end}")
+
     ev = FactorEvaluator(db)
-
-    factor_names = args.names or db.list_factor_columns()
-    if not factor_names:
-        print("[error] 库中无因子列,请先 compute_factors / compute_alpha101_full")
-        db.close()
-        sys.exit(1)
-
-    print(f"准备评估 {len(factor_names)} 个因子(前 10 个: {factor_names[:10]}{'...' if len(factor_names) > 10 else ''})")
-    print(f"期间: {start} ~ {end},前瞻 {days} 日,分组 {args.groups},|IR|阈值 {ir_thr}")
-    print()
-
     summary = ev.evaluate_all(
         factor_names=factor_names,
         start_date=start,
         end_date=end,
-        forward_days=days,
+        forward_days=1,
         n_groups=args.groups,
     )
+    ev.print_summary(summary, desc_map)
 
-    print("\n===== 评估汇总(按 |IR| 降序) =====")
-    pd.set_option("display.max_columns", None)
-    pd.set_option("display.width", 200)
-    print(summary.to_string(index=False))
-
-    cat_map, desc_map = _build_meta_maps()
-    records = ev.to_registry_records(
-        summary,
-        category_map=cat_map,
-        description_map=desc_map,
-        ir_threshold=ir_thr,
-    )
-    db.upsert_factor_registry(records)
-
-    enabled = db.get_enabled_factors(min_abs_ir=ir_thr)
-    print(f"\n[OK] 已写入 factor_registry,启用 |IR|≥{ir_thr} 的因子 {len(enabled)} 个: {enabled[:20]}{'...' if len(enabled) > 20 else ''}")
+    if args.save:
+        ir_used = args.ir if args.ir > -999 else None
+        records = ev.to_registry_records(
+            summary,
+            category_map=cat_map,
+            description_map=desc_map,
+            ir_threshold=ir_used,
+        )
+        ev.write_to_registry(records)
+        print(f"写入 {len(records)} 条因子登记记录")
 
     db.close()
 

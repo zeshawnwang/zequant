@@ -9,28 +9,33 @@
   2. 波动率 < high_threshold 且趋势看多 → BUY
   3. 波动率 < high_threshold 且趋势看空 → SELL
   4. 中间区间 → HOLD
-
-用法
-----
-    from timings.trend_volatility import TrendVolatilityTiming
-
-    timing = TrendVolatilityTiming(
-        sma_short=5,
-        sma_medium=20,
-        buy_threshold=0.6,
-        sell_threshold=0.4,
-        volatility_factor="volatility_20",
-        high_threshold=0.05,    # 5% 年化波动率，高于此值减仓
-        low_threshold=0.03,    # 3% 年化波动率，低于此值正常操作
-    )
 """
 from __future__ import annotations
-from typing import List
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+from enum import IntEnum
 import numpy as np
 import pandas as pd
 
-from core.strategy import Signal, SignalType
-from core.timings.base.timing import ITimingGenerator
+from ..base.timing import ITimingGenerator
+
+
+class SignalType(IntEnum):
+    """信号类型。"""
+    SELL = -1
+    HOLD = 0
+    BUY = 1
+
+
+@dataclass
+class Signal:
+    """择时信号。"""
+    symbol: str
+    signal_type: SignalType
+    strength: float
+    price: float
+    reason: str = ""
+    factors: Optional[Dict[str, Any]] = None
 
 
 class TrendVolatilityTiming(ITimingGenerator):
@@ -40,11 +45,6 @@ class TrendVolatilityTiming(ITimingGenerator):
     核心逻辑:
       - 高波动环境: 强制减仓,不看趋势
       - 正常波动环境: 按趋势信号操作
-
-    适用场景:
-      - 牛市: 趋势信号 + 正常波动 → 持仓
-      - 熊市: 高波动 → 自动减仓避险
-      - 震荡市: 趋势信号切换 → 减少无效交易
     """
 
     def __init__(

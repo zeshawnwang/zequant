@@ -25,10 +25,10 @@ sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 
-from core.config import load_config, get_db_path
+from core.config import load_config
 from core.database import Database
-from core.factor_hub import FactorHub
-import factors.alpha101_full  # noqa: F401  触发注册
+from core.factors.base.factor_hub import FactorHub
+import core.factors.impl.alpha101_full  # noqa: F401  触发注册
 
 
 def main():
@@ -47,7 +47,7 @@ def main():
     args = ap.parse_args()
 
     cfg = load_config(args.config)
-    db_path = args.db or get_db_path(cfg)
+    db_path = args.db or cfg["database"]["path"]
     start = args.start or cfg["backtest"]["start_date"]
     end = args.end or cfg["backtest"]["end_date"]
     eval_start = args.eval_start or start
@@ -80,7 +80,7 @@ def main():
 
     # ---------- 评估 ----------
     print(f"[4/4] evaluating IC/IR on {eval_start} ~ {eval_end} ...")
-    from core.factor_evaluator import FactorEvaluator
+    from core.research.impl.evaluation import FactorEvaluator
     ev = FactorEvaluator(db)
     summary = ev.evaluate_all(
         factor_names=names,

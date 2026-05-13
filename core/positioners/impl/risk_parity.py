@@ -2,25 +2,19 @@
 风险平价仓位分配器（True Risk Parity）
 
 基于协方差矩阵，使每只股票对组合风险的贡献相等。
-
-数学原理:
-    - 组合风险: σ_p = sqrt(w^T Σ w)
-    - 资产i的风险贡献: RC_i = w_i * (Σw)_i / σ_p
-    - 风险平价条件: RC_i = RC_j 对所有 i,j
-    - 即: w_i * (Σw)_i = 常数 (对所有i相同)
-
-求解方法:
-    使用 Cyclical Coordinate Descent 迭代算法:
-    w_i^{new} = sqrt(w_i * portfolio_var / (n * (Σw)_i))
-    然后归一化。重复直到收敛。
-
-回退方案:
-    当协方差矩阵奇异或历史数据不足时，回退到逆波动率权重。
 """
 from typing import Dict, List, Optional
+from enum import IntEnum
 import numpy as np
 import pandas as pd
 from core.positioners.base.portfolio import IPortfolioBuilder
+
+
+class SignalType(IntEnum):
+    """信号类型。"""
+    SELL = -1
+    HOLD = 0
+    BUY = 1
 
 
 class RiskParityBuilder(IPortfolioBuilder):
@@ -61,7 +55,6 @@ class RiskParityBuilder(IPortfolioBuilder):
 
     def allocate(self, signals, total_cash: float,
                  current_positions: Dict) -> Dict[str, int]:
-        from core.strategy import SignalType
         buy_signals = [s for s in signals if s.signal_type == SignalType.BUY]
 
         if not buy_signals:

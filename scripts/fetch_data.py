@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""数据采集脚本 —— 从 AKShare 增量抓取日线。
+"""增量获取 A 股行情数据并写入数据库。
 
-用法:
-    python3 scripts/fetch_data.py --all          # 刷新全市场名册
-    python3 scripts/fetch_data.py 000001         # 抓单只
-    python3 scripts/fetch_data.py --batch 100    # 抓前 N 只
+支持自动补缺失交易日、逐日补量价与复权因子全字段:
+    - 日行情: open/high/low/close/volume/amount
+    - 复权因子: adjust_factor / factor
+
+定期(每日)执行可保证本地数据库与市场同步。
 """
 from __future__ import annotations
 import sys
@@ -14,69 +15,55 @@ if _ROOT not in sys.path:
     sys.path.append(_ROOT)
 
 import argparse
+import logging
 
-from core.config import load_config, get_db_path
+from core.config import load_config
 from core.database import Database
-from core.data_fetcher import IncrementalFetcher
-from core.data_validator import DataValidator
+from core.data.fetcher import IncrementalFetcher
+from core.data.checker import DataQualityChecker
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+_log = logging.getLogger(__name__)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="获取股票日线数据")
-    parser.add_argument("--config", default="config/config.yaml")
-    parser.add_argument("symbol", nargs="?", default=None, help="股票代码")
-    parser.add_argument("--batch", type=int, default=None, help="批量获取前 N 只")
-    parser.add_argument("--start", default=None, help="起始日期 YYYYMMDD")
-    parser.add_argument("--all", action="store_true", help="刷新全市场股票名册")
+    parser = argparse.ArgumentParser(description="增量获取 A 股行情数据")
+    parser.add_argument("--config", default="config/config.yaml",
+                        help="配置文件路径")
+    parser.add_argument("--symbols", nargs="*", default=None,
+                        help="指定股票代码(默认自动发现所有 A 股)")
+    parser.add_argument("--start", default=None,
+                        help="起始日期 (YYYYMMDD/YYYY-MM-DD), 默认 config 中设置")
+    parser.add_argument("--end", default=None,
+                        help="结束日期, 默认今天")
+    parser.add_argument("--no-check", action="store_true",
+                        help="跳过数据质量检查")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
-    db = Database(get_db_path(cfg))
+    db_path = cfg["database"]["path"]
+    db = Database(db_path)
+
+    start = args.start or cfg.get("data", {}).get("start_date", None)
+    end = args.end
+
+    _log.info("开始获取数据, 数据库=%s", db_path)
+
     fetcher = IncrementalFetcher(db)
+    fetcher.fetch_all(symbols=args.symbols, start_date=start, end_date=end)
 
-    if args.all:
-        print("获取全市场股票列表...")
-        symbols_df = fetcher.fetch_all_symbols()
-        print(f"获取到 {len(symbols_df)} 只股票")
-        db.close()
-        return
-
-    validator = DataValidator(db)
-
-    if args.symbol:
-        print(f"获取 {args.symbol} ...")
-        df = fetcher.fetch_daily_bars(args.symbol, args.start)
-        if not df.empty:
-            report = validator.validate_symbol(args.symbol, df=df)
-            if not report.passed:
-                print(f"数据问题: {report.issues}")
-                print(f"质量指标: {report.metrics}")
-            else:
-                print(f"获取成功: {len(df)} 条, {df['date'].min()} ~ {df['date'].max()}")
-                print(f"质量指标: {report.metrics}")
-    elif args.batch:
-        symbols_df = db.get_symbols()
-        symbols = symbols_df["symbol"].tolist()[: args.batch]
-        print(f"批量获取 {len(symbols)} 只股票...")
-        results = fetcher.fetch_batch(symbols)
-        success = sum(1 for v in results.values() if v > 0)
-        print(f"完成: {success}/{len(symbols)} 只成功获取数据")
-
-        # 批量验证
-        print("开始数据验证...")
-        reports = validator.validate_all(symbols=symbols)
-        failed = sum(1 for r in reports.values() if not r.passed)
-        if failed:
-            print(f"验证警告: {failed}/{len(reports)} 只股票存在数据问题")
-            for sym, rep in reports.items():
-                if not rep.passed:
-                    print(f"  [{sym}] {rep.issues}")
+    if not args.no_check:
+        checker = DataQualityChecker(db)
+        issues = checker.check_all(start=start, end=end)
+        if issues:
+            _log.warning("发现 %d 个数据质量问题:", len(issues))
+            for issue in issues:
+                _log.warning("  %s", issue)
         else:
-            print("批量验证通过")
-    else:
-        print("请指定股票代码或使用 --batch / --all")
+            _log.info("数据质量检查通过")
 
     db.close()
+    _log.info("完成")
 
 
 if __name__ == "__main__":

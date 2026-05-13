@@ -8,11 +8,30 @@
 配合 CompositeTiming 使用,或仅作为风控择时叠加在 TrendTiming 之后。
 """
 from __future__ import annotations
-from typing import List
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
+from enum import IntEnum
 import pandas as pd
 
-from core.strategy import Signal, SignalType
-from core.timings.base.timing import ITimingGenerator
+from ..base.timing import ITimingGenerator
+
+
+class SignalType(IntEnum):
+    """信号类型。"""
+    SELL = -1
+    HOLD = 0
+    BUY = 1
+
+
+@dataclass
+class Signal:
+    """择时信号。"""
+    symbol: str
+    signal_type: SignalType
+    strength: float
+    price: float
+    reason: str = ""
+    factors: Optional[Dict[str, Any]] = None
 
 
 class VolatilityTiming(ITimingGenerator):
@@ -30,18 +49,18 @@ class VolatilityTiming(ITimingGenerator):
         self.volatility_factor = volatility_factor
         self.high_threshold = high_threshold
         self.low_threshold = low_threshold
-        self.reduce_ratio = reduce_ratio  # 高波动时保留仓位比例
+        self.reduce_ratio = reduce_ratio
 
     def generate(self, factor_data: pd.DataFrame,
                 positions: List[str], cash: float, date=None) -> List[Signal]:
         signals = []
-        
+
         df = factor_data
         if date is not None and 'date' in df.columns:
             df = df[df['date'] < date]
         if df.empty:
             return []
-        
+
         latest = df.groupby('symbol').tail(1)
 
         for symbol in positions:

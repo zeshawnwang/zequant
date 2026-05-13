@@ -30,10 +30,10 @@ sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 
-from core.config import load_config, get_db_path
+from core.config import load_config
 from core.database import Database
-from core.factor_hub import FactorHub, list_by_category, compute_all
-import factors.gtja191_full  # noqa: F401  触发注册
+from core.factors.base.factor_hub import FactorHub
+import core.factors.impl.gtja191_full  # noqa: F401  触发注册
 
 
 def get_temp_dir():
@@ -154,14 +154,14 @@ def main():
     args = ap.parse_args()
 
     cfg = load_config(args.config)
-    db_path = args.db or get_db_path(cfg)
+    db_path = args.db or cfg["database"]["path"]
     start = args.start or cfg["backtest"]["start_date"]
     end = args.end or cfg["backtest"]["end_date"]
 
     db = Database(db_path)
 
     # 获取所有 GTJA 因子
-    all_gtja = list_by_category("gtja191")
+    all_gtja = FactorHub.list_by_category("gtja191")
     all_factors = sorted(all_gtja, key=lambda x: int(x[4:]) if x[4:].isdigit() else 0)
 
     # 状态模式
@@ -211,7 +211,7 @@ def main():
         print("\n所有因子已完成，无需计算")
     else:
         t0 = time.time()
-        long_df = compute_all(
+        long_df = FactorHub.compute_all(
             bars,
             names=to_compute,
             verbose=True,

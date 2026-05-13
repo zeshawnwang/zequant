@@ -20,7 +20,7 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-from core.screening.base.selector import IStockSelector
+from ..base.selector import IStockSelector
 
 
 def _latest_per_symbol(df: pd.DataFrame, date=None) -> pd.DataFrame:

@@ -1,8 +1,16 @@
 """等权重仓位分配器。"""
 from __future__ import annotations
 from typing import Dict, List
+from enum import IntEnum
 
 from core.positioners.base.portfolio import IPortfolioBuilder
+
+
+class SignalType(IntEnum):
+    """信号类型。"""
+    SELL = -1
+    HOLD = 0
+    BUY = 1
 
 
 class EqualWeightBuilder(IPortfolioBuilder):
@@ -16,7 +24,6 @@ class EqualWeightBuilder(IPortfolioBuilder):
 
     def allocate(self, signals, total_cash: float,
                  current_positions: Dict) -> Dict[str, int]:
-        from core.strategy import SignalType
         buy_signals = [s for s in signals if s.signal_type == SignalType.BUY]
 
         if not buy_signals:

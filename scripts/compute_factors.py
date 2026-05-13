@@ -19,11 +19,10 @@ if _ROOT not in sys.path:
 
 import argparse
 
-from core.config import load_config, get_db_path
+from core.config import load_config
 from core.database import Database
-from core.factor import FactorRunner
-from core.factor_hub import FactorHub
-from core.data_validator import DataValidator
+from core.factors.base.factor import FactorRunner
+from core.factors.base.factor_hub import FactorHub
 
 
 def main() -> None:
@@ -42,27 +41,8 @@ def main() -> None:
     cfg = load_config(args.config)
     start = args.start or cfg["backtest"]["start_date"]
 
-    db = Database(get_db_path(cfg))
-
-    # 计算前验证数据质量
-    validator = DataValidator(db)
-    print("数据质量预检...")
-    if args.symbols:
-        reports = validator.validate_all(symbols=args.symbols)
-    else:
-        reports = validator.validate_all()
-    failed = sum(1 for r in reports.values() if not r.passed)
-    if failed:
-        print(f"警告: {failed}/{len(reports)} 只股票存在数据问题")
-        for sym, rep in list(reports.items())[:5]:
-            if not rep.passed:
-                print(f"  [{sym}] {rep.issues}")
-        if failed == len(reports):
-            print("所有股票数据验证未通过,终止计算")
-            db.close()
-            return
-    else:
-        print("数据质量预检通过")
+    db_path = cfg["database"]["path"]
+    db = Database(db_path)
 
     runner = FactorRunner(db)
 

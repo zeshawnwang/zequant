@@ -27,10 +27,10 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from core.config import load_config, get_db_path
+from core.config import load_config
 from core.database import Database
-from core.factor_hub import FactorHub
-import factors.fama_french
+from core.factors.base.factor_hub import FactorHub
+import core.factors.impl.fama_french
 
 
 def _get_akshare_data(symbols: list, start_date: str, end_date: str) -> dict:
@@ -254,7 +254,7 @@ def main() -> None:
     start = args.start or cfg["backtest"]["start_date"]
     end = args.end or cfg["backtest"]["end_date"]
 
-    db = Database(get_db_path(cfg))
+    db = Database(cfg["database"]["path"])
 
     print(f"Fama-French 因子计算: {start} ~ {end}")
 

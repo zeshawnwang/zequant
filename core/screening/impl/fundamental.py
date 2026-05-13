@@ -23,7 +23,7 @@ from __future__ import annotations
 from typing import List
 import pandas as pd
 
-from core.screening.base.selector import IStockSelector
+from ..base.selector import IStockSelector
 
 
 class FundamentalSelector(IStockSelector):

@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-05-13T10:31:18.649674",
+  "stage": "stage1",
+  "category": "技术指标",
+  "current_factor_index": 15,
+  "completed_categories": [],
+  "selected_factors": {},
+  "best_weights": [],
+  "backtest_records": []
+}
