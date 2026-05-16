@@ -1,0 +1,45 @@
+{
+  "strategy": {
+    "name": "OSR_D10",
+    "description": "OSR超跌反弹+无择时+10d+RP — 超跌反弹代理信号双周频策略",
+    "created": "2026-05-16"
+  },
+  "selector": {
+    "type": "OversoldReboundSelector",
+    "params": {}
+  },
+  "timing": {
+    "type": "none"
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {
+        "max_single_weight": 0.10
+      }
+    ]
+  },
+  "rebal": {
+    "freq_days": 10,
+    "type": "fixed_interval"
+  },
+  "risk": {
+    "stop_loss": null,
+    "max_total_position": 0.95
+  },
+  "positioner": {
+    "type": "RPPortfolioWeights",
+    "params": {
+      "top_n": 40,
+      "min_hold_days": 10,
+      "vol_lookback": 20
+    }
+  },
+  "expected": {
+    "annual_return": 0.2337,
+    "sharpe": 0.856,
+    "max_drawdown": null,
+    "calmar": null
+  }
+}

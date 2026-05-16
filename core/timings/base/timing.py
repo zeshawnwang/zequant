@@ -1,10 +1,11 @@
 """择时器抽象基类。"""
 from __future__ import annotations
-from typing import List
+from abc import ABC, abstractmethod
+from typing import List, Any
 import pandas as pd
 
 
-class ITimingGenerator:
+class ITimingGenerator(ABC):
     """择时器接口。
 
     契约:
@@ -16,6 +17,15 @@ class ITimingGenerator:
       - 不产生信号的标的(既不该买也不该卖)无需返回
     """
 
-    def generate(self, factor_data: pd.DataFrame,
-                 positions: List[str], cash: float, date=None) -> List:
-        raise NotImplementedError
+    @abstractmethod
+    def generate(
+        self,
+        factor_data: pd.DataFrame,
+        positions: List[str],
+        cash: float,
+        date=None,
+    ) -> List[Any]:
+        pass
+
+    def get_description(self) -> str:
+        return self.__class__.__name__

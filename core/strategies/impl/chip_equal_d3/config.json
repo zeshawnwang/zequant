@@ -1,0 +1,45 @@
+{
+  "strategy": {
+    "name": "Chip_Equal_D3",
+    "description": "Chip+等权+3d — 等权分配实现Chip系列最高Sharpe",
+    "created": "2026-05-16"
+  },
+  "selector": {
+    "type": "ChipConcentrationSelector",
+    "max_volume_contraction": 0.5,
+    "max_chip_concentration": 0.05,
+    "max_ma_convergence": 0.05
+  },
+  "timing": {
+    "type": "none"
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {
+        "max_single_weight": 0.10
+      }
+    ]
+  },
+  "rebal": {
+    "freq_days": 3,
+    "type": "fixed_interval"
+  },
+  "risk": {
+    "stop_loss": null,
+    "max_total_position": 0.95
+  },
+  "positioner": {
+    "type": "EqualWeightBuilder",
+    "params": {
+      "reserve_cash_ratio": 0.05
+    }
+  },
+  "expected": {
+    "annual_return": 0.1743,
+    "sharpe": 1.401,
+    "max_drawdown": -0.1119,
+    "calmar": 1.558
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "version": "v3",
+  "results": [
+    {
+      "config_name": "MF_W_RP",
+      "total_return": 0.4501159412797464,
+      "annual_return": 0.054148362008232365,
+      "sharpe": 0.07177951517271904,
+      "max_drawdown": -0.8417153097012736,
+      "calmar": 0.06433096960948675,
+      "win_rate": 0.5502257336343115,
+      "n_trades": 580,
+      "total_tx_cost": 0.5042701484548529
+    },
+    {
+      "config_name": "MF_W_H",
+      "total_return": 0.29029154217997566,
+      "annual_return": 0.03682559236451777,
+      "sharpe": 0.049374556569609894,
+      "max_drawdown": -0.8627146051502459,
+      "calmar": 0.04268571801691524,
+      "win_rate": 0.5553047404063205,
+      "n_trades": 580,
+      "total_tx_cost": 0.4743452606990347
+    },
+    {
+      "config_name": "MF_D_RP",
+      "total_return": 17.492284719959613,
+      "annual_return": 0.5127797039208608,
+      "sharpe": 0.3218062189412911,
+      "max_drawdown": -0.8493318287047881,
+      "calmar": 0.6037448339865449,
+      "win_rate": 0.5408450704225352,
+      "n_trades": 1716,
+      "total_tx_cost": 1.2563959487485565
+    },
+    {
+      "config_name": "MF_D_H",
+      "total_return": 18.929504861981457,
+      "annual_return": 0.5289314641436154,
+      "sharpe": 0.3301289741143751,
+      "max_drawdown": -0.8501193339451164,
+      "calmar": 0.6221849604208192,
+      "win_rate": 0.5453521126760563,
+      "n_trades": 1716,
+      "total_tx_cost": 1.2014680424127666
+    },
+    {
+      "config_name": "TV_W_RP",
+      "total_return": 0.07219855420416321,
+      "annual_return": 0.009940545350745067,
+      "sharpe": 0.04441731925367471,
+      "max_drawdown": -0.5618088512286027,
+      "calmar": 0.017693821179581615,
+      "win_rate": 0.5276523702031602,
+      "n_trades": 590,
+      "total_tx_cost": 0.6206223983801895
+    },
+    {
+      "config_name": "TV_W_H",
+      "total_return": 0.11023754945982134,
+      "annual_return": 0.014948835488515888,
+      "sharpe": 0.06651645840198084,
+      "max_drawdown": -0.5297370420660739,
+      "calmar": 0.028219350925909627,
+      "win_rate": 0.5304740406320542,
+      "n_trades": 590,
+      "total_tx_cost": 0.5678044149890541
+    },
+    {
+      "config_name": "TV_D_RP",
+      "total_return": -0.3541302248987953,
+      "annual_return": -0.060144452118866654,
+      "sharpe": -0.28404244104201476,
+      "max_drawdown": -0.6805167119605022,
+      "calmar": -0.08838056591673753,
+      "win_rate": 0.5098591549295775,
+      "n_trades": 1749,
+      "total_tx_cost": 1.621025631214725
+    },
+    {
+      "config_name": "TV_D_H",
+      "total_return": -0.39202335362198315,
+      "annual_return": -0.06817297233300279,
+      "sharpe": -0.3247913242306617,
+      "max_drawdown": -0.6996300218355138,
+      "calmar": -0.09744146220905106,
+      "win_rate": 0.508169014084507,
+      "n_trades": 1758,
+      "total_tx_cost": 1.496526677739084
+    }
+  ],
+  "timestamp": "2026-05-15T11:28:48.637005"
+}

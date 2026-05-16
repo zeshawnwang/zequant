@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zequant V2 回测报告</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f5f7fa; color: #1a1a2e; line-height: 1.6; }
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+          color: white; padding: 40px 60px; }
+.header h1 { font-size: 28px; margin-bottom: 8px; }
+.header .subtitle { color: #a0aec0; font-size: 14px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+.section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px;
+           box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.section h2 { font-size: 18px; color: #2d3748; margin-bottom: 16px;
+              padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid #e2e8f0; }
+th { background: #f7fafc; font-weight: 600; color: #4a5568; font-size: 12px; }
+td:first-child, th:first-child { text-align: left; }
+tr:hover { background: #f7fafc; }
+.best { background: #c6f6d5 !important; font-weight: 600; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px;
+         font-size: 11px; font-weight: 600; }
+.badge-hys { background: #bee3f8; color: #2b6cb0; }
+.badge-raw { background: #e2e8f0; color: #4a5568; }
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+               gap: 16px; margin-bottom: 20px; }
+.metric-card { background: #f7fafc; border-radius: 8px; padding: 16px; text-align: center; }
+.metric-card .value { font-size: 24px; font-weight: 700; color: #2d3748; }
+.metric-card .label { font-size: 12px; color: #718096; margin-top: 4px; }
+.metric-card .positive { color: #38a169; }
+.metric-card .negative { color: #e53e3e; }
+.summary-table td { vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="header">
+<h1>Zequant 量化策略 V2 回测报告</h1>
+<div class="subtitle">基于V1最佳因子权重继续优化 · 换手惩罚调优 + 迟滞仓位分配器</div>
+</div>
+<div class="container">
+<div class="section"><h2>最佳配置概览</h2><div class="metric-grid"><div class="metric-card"><div class="value positive">11.68%</div><div class="label">年化收益率</div></div><div class="metric-card"><div class="value positive">0.412</div><div class="label">Sharpe比率</div></div><div class="metric-card"><div class="value negative">-64.56%</div><div class="label">最大回撤</div></div><div class="metric-card"><div class="value positive">0.181</div><div class="label">Calmar</div></div><div class="metric-card"><div class="value positive">50.7%</div><div class="label">胜率</div></div><div class="metric-card"><div class="value ">590</div><div class="label">换手次数</div></div></div><p style="font-size:13px;color:#4a5568;"><strong>最佳配置:</strong> pen0.0_迟滞_默认 | 换手惩罚=0.0 | 迟滞分配器 | L1=0.003 | 调仓频率=3天<br><strong>迟滞参数:</strong> 大仓阈值=10%, 最小调整=2%, 保留比例=70%</p></div><div class="section"><h2>全部实验结果排名</h2><table><tr><th>排名</th><th>配置</th><th>分配器</th><th>惩罚</th><th>年化%</th><th>Sharpe</th><th>回撤%</th><th>Calmar</th><th>胜率%</th><th>换手</th></tr><tr class="best"><td>1</td><td>pen0.0_迟滞_默认<br><small>大仓10%/调2%/保70%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.0</td><td>11.68%</td><td>0.412</td><td>-64.56%</td><td>0.181</td><td>50.7%</td><td>590</td></tr><tr class=""><td>2</td><td>pen0.1_迟滞_默认<br><small>大仓10%/调2%/保70%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.1</td><td>11.68%</td><td>0.412</td><td>-64.56%</td><td>0.181</td><td>50.7%</td><td>590</td></tr><tr class=""><td>3</td><td>pen0.3_迟滞_默认<br><small>大仓10%/调2%/保70%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.3</td><td>11.68%</td><td>0.412</td><td>-64.56%</td><td>0.181</td><td>50.7%</td><td>590</td></tr><tr class=""><td>4</td><td>pen0.5_迟滞_默认<br><small>大仓10%/调2%/保70%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.5</td><td>11.68%</td><td>0.412</td><td>-64.56%</td><td>0.181</td><td>50.7%</td><td>590</td></tr><tr class=""><td>5</td><td>pen0.8_迟滞_默认<br><small>大仓10%/调2%/保70%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.8</td><td>11.68%</td><td>0.412</td><td>-64.56%</td><td>0.181</td><td>50.7%</td><td>590</td></tr><tr class=""><td>6</td><td>pen1.0_迟滞_默认<br><small>大仓10%/调2%/保70%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>1.0</td><td>11.68%</td><td>0.412</td><td>-64.56%</td><td>0.181</td><td>50.7%</td><td>590</td></tr><tr class=""><td>7</td><td>pen0.0_原始风险平价</td><td><span class="badge badge-raw">原始</span></td><td>0.0</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>0.178</td><td>50.6%</td><td>590</td></tr><tr class=""><td>8</td><td>pen0.1_原始风险平价</td><td><span class="badge badge-raw">原始</span></td><td>0.1</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>0.178</td><td>50.6%</td><td>590</td></tr><tr class=""><td>9</td><td>pen0.3_原始风险平价</td><td><span class="badge badge-raw">原始</span></td><td>0.3</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>0.178</td><td>50.6%</td><td>590</td></tr><tr class=""><td>10</td><td>pen0.5_原始风险平价</td><td><span class="badge badge-raw">原始</span></td><td>0.5</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>0.178</td><td>50.6%</td><td>590</td></tr><tr class=""><td>11</td><td>pen0.8_原始风险平价</td><td><span class="badge badge-raw">原始</span></td><td>0.8</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>0.178</td><td>50.6%</td><td>590</td></tr><tr class=""><td>12</td><td>pen1.0_原始风险平价</td><td><span class="badge badge-raw">原始</span></td><td>1.0</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>0.178</td><td>50.6%</td><td>590</td></tr><tr class=""><td>13</td><td>pen0.0_迟滞_激进<br><small>大仓5%/调1%/保50%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.0</td><td>11.21%</td><td>0.396</td><td>-64.32%</td><td>0.174</td><td>50.7%</td><td>590</td></tr><tr class=""><td>14</td><td>pen0.1_迟滞_激进<br><small>大仓5%/调1%/保50%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.1</td><td>11.21%</td><td>0.396</td><td>-64.32%</td><td>0.174</td><td>50.7%</td><td>590</td></tr><tr class=""><td>15</td><td>pen0.3_迟滞_激进<br><small>大仓5%/调1%/保50%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.3</td><td>11.21%</td><td>0.396</td><td>-64.32%</td><td>0.174</td><td>50.7%</td><td>590</td></tr><tr class=""><td>16</td><td>pen0.5_迟滞_激进<br><small>大仓5%/调1%/保50%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.5</td><td>11.21%</td><td>0.396</td><td>-64.32%</td><td>0.174</td><td>50.7%</td><td>590</td></tr><tr class=""><td>17</td><td>pen0.8_迟滞_激进<br><small>大仓5%/调1%/保50%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>0.8</td><td>11.21%</td><td>0.396</td><td>-64.32%</td><td>0.174</td><td>50.7%</td><td>590</td></tr><tr class=""><td>18</td><td>pen1.0_迟滞_激进<br><small>大仓5%/调1%/保50%</small></td><td><span class="badge badge-hys">迟滞</span></td><td>1.0</td><td>11.21%</td><td>0.396</td><td>-64.32%</td><td>0.174</td><td>50.7%</td><td>590</td></tr></table></div><div class="section"><h2>惩罚系数对比（原始风险平价）</h2><table><tr><th>惩罚值</th><th>年化%</th><th>Sharpe</th><th>回撤%</th><th>换手</th></tr><tr><td>0.0</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>590</td></tr><tr><td>0.1</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>590</td></tr><tr><td>0.3</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>590</td></tr><tr><td>0.5</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>590</td></tr><tr><td>0.8</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>590</td></tr><tr><td>1.0</td><td>11.48%</td><td>0.406</td><td>-64.59%</td><td>590</td></tr></table></div><div class="section"><h2>迟滞分配器结果（按迟滞类型分组）</h2><h3 style="font-size:14px;margin:12px 0 8px;">激进</h3><table><tr><th>惩罚值</th><th>年化%</th><th>Sharpe</th><th>回撤%</th></tr><tr><td>0.0</td><td>11.21%</td><td>0.396</td><td>-64.32%</td></tr><tr><td>0.1</td><td>11.21%</td><td>0.396</td><td>-64.32%</td></tr><tr><td>0.3</td><td>11.21%</td><td>0.396</td><td>-64.32%</td></tr><tr><td>0.5</td><td>11.21%</td><td>0.396</td><td>-64.32%</td></tr><tr><td>0.8</td><td>11.21%</td><td>0.396</td><td>-64.32%</td></tr><tr><td>1.0</td><td>11.21%</td><td>0.396</td><td>-64.32%</td></tr></table><h3 style="font-size:14px;margin:12px 0 8px;">默认</h3><table><tr><th>惩罚值</th><th>年化%</th><th>Sharpe</th><th>回撤%</th></tr><tr><td>0.0</td><td>11.68%</td><td>0.412</td><td>-64.56%</td></tr><tr><td>0.1</td><td>11.68%</td><td>0.412</td><td>-64.56%</td></tr><tr><td>0.3</td><td>11.68%</td><td>0.412</td><td>-64.56%</td></tr><tr><td>0.5</td><td>11.68%</td><td>0.412</td><td>-64.56%</td></tr><tr><td>0.8</td><td>11.68%</td><td>0.412</td><td>-64.56%</td></tr><tr><td>1.0</td><td>11.68%</td><td>0.412</td><td>-64.56%</td></tr></table></div>
+<div class="section"><h2>注意事项</h2>
+<ul style="font-size:13px;color:#4a5568;padding-left:20px;">
+<li>交易成本: 佣金万3 + 印花税千0.5 + 过户费万0.1 + 滑点万5 = 0.12%</li>
+<li>回测时间: 2018-01-01 至 2026-04-30</li>
+<li>股票池: 全A股（剔除ST、停牌）</li>
+<li>GA优化: 种群30，代数60，早停20代无改善</li>
+<li>风险平价: 20日波动率倒数加权，40只股票</li>
+<li>调仓频率: 每3个交易日</li>
+<li>报告生成时间: 2026-05-15 02:29</li>
+</ul>
+</div>
+</div>
+</body>
+</html>

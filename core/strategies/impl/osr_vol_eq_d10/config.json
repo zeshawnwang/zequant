@@ -1,0 +1,48 @@
+{
+  "strategy": {
+    "name": "OSR_Vol_EQ_D10",
+    "description": "OSR超跌反弹+VolTiming+等权+10d — 超跌反弹+波动率风控",
+    "created": "2026-05-16"
+  },
+  "selector": {
+    "type": "OversoldReboundSelector",
+    "params": {}
+  },
+  "timing": {
+    "type": "VolatilityTiming",
+    "params": {
+      "volatility_factor": "volatility_20",
+      "high_threshold": 0.3,
+      "low_threshold": 0.15
+    }
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {
+        "max_single_weight": 0.10
+      }
+    ]
+  },
+  "rebal": {
+    "freq_days": 10,
+    "type": "fixed_interval"
+  },
+  "risk": {
+    "stop_loss": null,
+    "max_total_position": 0.95
+  },
+  "positioner": {
+    "type": "EqualWeightBuilder",
+    "params": {
+      "reserve_cash_ratio": 0.05
+    }
+  },
+  "expected": {
+    "annual_return": 0.2435,
+    "sharpe": 0.970,
+    "max_drawdown": -0.2844,
+    "calmar": null
+  }
+}

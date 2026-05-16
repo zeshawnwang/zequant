@@ -1,0 +1,54 @@
+{
+  "version": "v4",
+  "results": [
+    {
+      "config_name": "\u65e0\u62e9\u65f6",
+      "total_return": 0.4501159412797464,
+      "annual_return": 0.054148362008232365,
+      "sharpe": 0.07177951517271904,
+      "max_drawdown": -0.8417153097012736,
+      "calmar": 0.06433096960948675,
+      "win_rate": 0.5502257336343115,
+      "n_trades": 580,
+      "total_tx_cost": 0.5042701484548529,
+      "avg_position": 1.0
+    },
+    {
+      "config_name": "TrendVolatilityTiming",
+      "total_return": 0.08130778554124474,
+      "annual_return": 0.011153605230938224,
+      "sharpe": 0.1135284558203878,
+      "max_drawdown": -0.1932924961454242,
+      "calmar": 0.057703250014148375,
+      "win_rate": 0.5174943566591422,
+      "n_trades": 580,
+      "total_tx_cost": 0.5042701484548529,
+      "avg_position": 0.23586082097943462
+    },
+    {
+      "config_name": "MarketRegimeTiming",
+      "total_return": 0.07407805729908357,
+      "annual_return": 0.010191557539475093,
+      "sharpe": 0.0719816249575551,
+      "max_drawdown": -0.2936636893844447,
+      "calmar": 0.034704861063476575,
+      "win_rate": 0.5270880361173815,
+      "n_trades": 580,
+      "total_tx_cost": 0.5042701484548529,
+      "avg_position": 0.30000001192092896
+    },
+    {
+      "config_name": "Composite(TV+MR)",
+      "total_return": 0.07407805729908357,
+      "annual_return": 0.010191557539475093,
+      "sharpe": 0.0719816249575551,
+      "max_drawdown": -0.2936636893844447,
+      "calmar": 0.034704861063476575,
+      "win_rate": 0.5270880361173815,
+      "n_trades": 580,
+      "total_tx_cost": 0.5042701484548529,
+      "avg_position": 0.30000001192092896
+    }
+  ],
+  "timestamp": "2026-05-15T17:54:45.559765"
+}

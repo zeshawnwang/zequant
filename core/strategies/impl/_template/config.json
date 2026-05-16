@@ -1,0 +1,69 @@
+{
+  "strategy": {
+    "name": "StrategyName",
+    "version": "1.0",
+    "category": "multi_factor",
+    "description": "策略设计思路一句话说明",
+    "target_market": "bull_bear_compatible",
+    "risk_level": "moderate",
+    "created": "2026-05-16",
+    "source_experiment": "AXX / BXX / CXX"
+  },
+  "selector": {
+    "type": "MultiFactorSelector",
+    "params": {
+      "weight_source": "v1_ga_optimized",
+      "winsorize": 0.01
+    },
+    "weights": {}
+  },
+  "timing": {
+    "type": "TrendTiming",
+    "params": {
+      "buy_threshold": 0.6,
+      "sell_threshold": 0.4
+    },
+    "note": "输出0~1仓位系数，不另做择时降仓"
+  },
+  "positioner": {
+    "type": "RPPortfolioWeights",
+    "params": {
+      "top_n": 40,
+      "min_hold_days": 5,
+      "vol_lookback": 20
+    },
+    "note": "波动率倒数加权，在 composer 内部使用"
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {"max_single_weight": 0.10},
+      {"reserve_cash": 0.05}
+    ]
+  },
+  "rebal": {
+    "freq_days": 3,
+    "type": "fixed_interval",
+    "note": "每N个交易日调仓一次"
+  },
+  "risk": {
+    "stop_loss": null,
+    "take_profit": null,
+    "max_position_pct": 0.15,
+    "max_total_position": 0.95,
+    "fees": {
+      "stamp_tax": 0.0005,
+      "commission": 0.0003,
+      "slippage": 0.0005,
+      "min_commission": 5
+    }
+  },
+  "expected": {
+    "annual_return": null,
+    "sharpe": null,
+    "max_drawdown": null,
+    "win_rate": null,
+    "calmar": null
+  }
+}

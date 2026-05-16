@@ -1,0 +1,47 @@
+{
+  "strategy": {
+    "name": "Chip_CovRP",
+    "description": "Chip+协方差风险平价+3d — 协方差风险平价实现更优风险分散",
+    "created": "2026-05-16"
+  },
+  "selector": {
+    "type": "ChipConcentrationSelector",
+    "max_volume_contraction": 0.5,
+    "max_chip_concentration": 0.05,
+    "max_ma_convergence": 0.05
+  },
+  "timing": {
+    "type": "none"
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {
+        "max_single_weight": 0.10
+      }
+    ]
+  },
+  "rebal": {
+    "freq_days": 3,
+    "type": "fixed_interval"
+  },
+  "risk": {
+    "stop_loss": null,
+    "max_total_position": 0.95
+  },
+  "positioner": {
+    "type": "RiskParityBuilder",
+    "params": {
+      "max_weight": 0.15,
+      "lookback_window": 60,
+      "min_history": 20
+    }
+  },
+  "expected": {
+    "annual_return": 0.1496,
+    "sharpe": 1.288,
+    "max_drawdown": -0.0968,
+    "calmar": 1.545
+  }
+}

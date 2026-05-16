@@ -1,0 +1,414 @@
+[
+  {
+    "name": "真实_TrendBreakout_无择时_D3",
+    "annual_return": -0.1612,
+    "sharpe": -0.5768,
+    "max_drawdown": -0.8323,
+    "calmar": -0.1937,
+    "win_rate": 0.491,
+    "n_trades": 589
+  },
+  {
+    "name": "真实_TrendBreakout_无择时_D5",
+    "annual_return": -0.164,
+    "sharpe": -0.5759,
+    "max_drawdown": -0.8826,
+    "calmar": -0.1858,
+    "win_rate": 0.4842,
+    "n_trades": 353
+  },
+  {
+    "name": "真实_TrendBreakout_无择时_D10",
+    "annual_return": -0.1517,
+    "sharpe": -0.567,
+    "max_drawdown": -0.8711,
+    "calmar": -0.1741,
+    "win_rate": 0.4997,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_TrendBreakout_VolTiming_D3",
+    "annual_return": -0.1072,
+    "sharpe": -0.5255,
+    "max_drawdown": -0.7011,
+    "calmar": -0.1529,
+    "win_rate": 0.491,
+    "n_trades": 589
+  },
+  {
+    "name": "真实_TrendBreakout_VolTiming_D5",
+    "annual_return": -0.1105,
+    "sharpe": -0.5328,
+    "max_drawdown": -0.7713,
+    "calmar": -0.1433,
+    "win_rate": 0.4842,
+    "n_trades": 353
+  },
+  {
+    "name": "真实_TrendBreakout_VolTiming_D10",
+    "annual_return": -0.1012,
+    "sharpe": -0.5198,
+    "max_drawdown": -0.7574,
+    "calmar": -0.1337,
+    "win_rate": 0.4997,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_TrendBreakout_TrendTiming_D3",
+    "annual_return": -0.0908,
+    "sharpe": -0.5535,
+    "max_drawdown": -0.6311,
+    "calmar": -0.1438,
+    "win_rate": 0.491,
+    "n_trades": 589
+  },
+  {
+    "name": "真实_TrendBreakout_TrendTiming_D5",
+    "annual_return": -0.0733,
+    "sharpe": -0.4232,
+    "max_drawdown": -0.6896,
+    "calmar": -0.1062,
+    "win_rate": 0.4842,
+    "n_trades": 353
+  },
+  {
+    "name": "真实_TrendBreakout_TrendTiming_D10",
+    "annual_return": -0.0653,
+    "sharpe": -0.38,
+    "max_drawdown": -0.6523,
+    "calmar": -0.1001,
+    "win_rate": 0.4997,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_OversoldRebound_无择时_D3",
+    "annual_return": -0.0282,
+    "sharpe": -0.0483,
+    "max_drawdown": -0.7944,
+    "calmar": -0.0355,
+    "win_rate": 0.5384,
+    "n_trades": 587
+  },
+  {
+    "name": "真实_OversoldRebound_无择时_D5",
+    "annual_return": 0.4355,
+    "sharpe": 0.3917,
+    "max_drawdown": -0.5856,
+    "calmar": 0.7438,
+    "win_rate": 0.5452,
+    "n_trades": 352
+  },
+  {
+    "name": "真实_OversoldRebound_无择时_D10",
+    "annual_return": 0.1568,
+    "sharpe": 0.5926,
+    "max_drawdown": -0.3683,
+    "calmar": 0.4258,
+    "win_rate": 0.5428,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_OversoldRebound_VolTiming_D3",
+    "annual_return": 0.0179,
+    "sharpe": 0.0522,
+    "max_drawdown": -0.5849,
+    "calmar": 0.0306,
+    "win_rate": 0.5384,
+    "n_trades": 587
+  },
+  {
+    "name": "真实_OversoldRebound_VolTiming_D5",
+    "annual_return": 0.3774,
+    "sharpe": 0.4185,
+    "max_drawdown": -0.4211,
+    "calmar": 0.8961,
+    "win_rate": 0.5452,
+    "n_trades": 352
+  },
+  {
+    "name": "真实_OversoldRebound_VolTiming_D10",
+    "annual_return": 0.1132,
+    "sharpe": 0.617,
+    "max_drawdown": -0.2745,
+    "calmar": 0.4126,
+    "win_rate": 0.5428,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_OversoldRebound_TrendTiming_D3",
+    "annual_return": -0.0021,
+    "sharpe": -0.0139,
+    "max_drawdown": -0.3849,
+    "calmar": -0.0054,
+    "win_rate": 0.5384,
+    "n_trades": 587
+  },
+  {
+    "name": "真实_OversoldRebound_TrendTiming_D5",
+    "annual_return": 0.1316,
+    "sharpe": 0.4239,
+    "max_drawdown": -0.2715,
+    "calmar": 0.4846,
+    "win_rate": 0.5452,
+    "n_trades": 352
+  },
+  {
+    "name": "真实_OversoldRebound_TrendTiming_D10",
+    "annual_return": 0.0338,
+    "sharpe": 0.217,
+    "max_drawdown": -0.2377,
+    "calmar": 0.1421,
+    "win_rate": 0.5428,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_ChipConcentration_无择时_D3",
+    "annual_return": 0.0831,
+    "sharpe": 0.2861,
+    "max_drawdown": -0.41,
+    "calmar": 0.2028,
+    "win_rate": 0.477,
+    "n_trades": 589
+  },
+  {
+    "name": "真实_ChipConcentration_无择时_D5",
+    "annual_return": 0.1305,
+    "sharpe": 0.3918,
+    "max_drawdown": -0.5114,
+    "calmar": 0.2552,
+    "win_rate": 0.4804,
+    "n_trades": 353
+  },
+  {
+    "name": "真实_ChipConcentration_无择时_D10",
+    "annual_return": 0.0872,
+    "sharpe": 0.2578,
+    "max_drawdown": -0.4993,
+    "calmar": 0.1746,
+    "win_rate": 0.476,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_ChipConcentration_VolTiming_D3",
+    "annual_return": 0.0651,
+    "sharpe": 0.3171,
+    "max_drawdown": -0.3026,
+    "calmar": 0.2152,
+    "win_rate": 0.477,
+    "n_trades": 589
+  },
+  {
+    "name": "真实_ChipConcentration_VolTiming_D5",
+    "annual_return": 0.0995,
+    "sharpe": 0.4252,
+    "max_drawdown": -0.3906,
+    "calmar": 0.2547,
+    "win_rate": 0.4804,
+    "n_trades": 353
+  },
+  {
+    "name": "真实_ChipConcentration_VolTiming_D10",
+    "annual_return": 0.0701,
+    "sharpe": 0.2939,
+    "max_drawdown": -0.3722,
+    "calmar": 0.1884,
+    "win_rate": 0.476,
+    "n_trades": 177
+  },
+  {
+    "name": "真实_ChipConcentration_TrendTiming_D3",
+    "annual_return": 0.0433,
+    "sharpe": 0.2621,
+    "max_drawdown": -0.264,
+    "calmar": 0.1638,
+    "win_rate": 0.477,
+    "n_trades": 589
+  },
+  {
+    "name": "真实_ChipConcentration_TrendTiming_D5",
+    "annual_return": 0.0262,
+    "sharpe": 0.1482,
+    "max_drawdown": -0.3806,
+    "calmar": 0.0688,
+    "win_rate": 0.4804,
+    "n_trades": 353
+  },
+  {
+    "name": "真实_ChipConcentration_TrendTiming_D10",
+    "annual_return": 0.03,
+    "sharpe": 0.1594,
+    "max_drawdown": -0.378,
+    "calmar": 0.0793,
+    "win_rate": 0.476,
+    "n_trades": 177
+  },
+  {
+    "name": "代理_MF_无择时_D3",
+    "annual_return": 0.1323,
+    "sharpe": 0.1691,
+    "max_drawdown": -0.835,
+    "calmar": 0.1584,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "代理_MF_无择时_D5",
+    "annual_return": 0.71,
+    "sharpe": 0.5087,
+    "max_drawdown": -0.7265,
+    "calmar": 0.9773,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "代理_MF_无择时_D10",
+    "annual_return": 0.3803,
+    "sharpe": 1.3062,
+    "max_drawdown": -0.3044,
+    "calmar": 1.2497,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "代理_MF_VolTiming_D3",
+    "annual_return": 0.1591,
+    "sharpe": 0.3706,
+    "max_drawdown": -0.5966,
+    "calmar": 0.2667,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "代理_MF_VolTiming_D5",
+    "annual_return": 0.5943,
+    "sharpe": 0.5439,
+    "max_drawdown": -0.5252,
+    "calmar": 1.1316,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "代理_MF_VolTiming_D10",
+    "annual_return": 0.2613,
+    "sharpe": 1.3344,
+    "max_drawdown": -0.2259,
+    "calmar": 1.1564,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "代理_MF_TrendTiming_D3",
+    "annual_return": 0.0616,
+    "sharpe": 0.349,
+    "max_drawdown": -0.2962,
+    "calmar": 0.2081,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "代理_MF_TrendTiming_D5",
+    "annual_return": 0.2063,
+    "sharpe": 0.5554,
+    "max_drawdown": -0.2622,
+    "calmar": 0.7869,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "代理_MF_TrendTiming_D10",
+    "annual_return": 0.0688,
+    "sharpe": 0.4271,
+    "max_drawdown": -0.2481,
+    "calmar": 0.2774,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "WF_W1_2019-01~2020-06_train_val",
+    "annual_return": 0.3327,
+    "sharpe": 2.0083,
+    "max_drawdown": -0.1137,
+    "calmar": 2.9265,
+    "win_rate": 0.5855,
+    "n_trades": 24,
+    "window": "W1_2019-01~2020-06_train",
+    "phase": "validation"
+  },
+  {
+    "name": "WF_W1_2019-01~2020-06_train_train",
+    "annual_return": 0.0802,
+    "sharpe": 0.4126,
+    "max_drawdown": -0.2259,
+    "calmar": 0.355,
+    "win_rate": 0.5698,
+    "n_trades": 34,
+    "window": "W1_2019-01~2020-06_train",
+    "phase": "training"
+  },
+  {
+    "name": "WF_W2_2020-07~2021-12_train_val",
+    "annual_return": 0.3408,
+    "sharpe": 1.6368,
+    "max_drawdown": -0.115,
+    "calmar": 2.9622,
+    "win_rate": 0.5991,
+    "n_trades": 24,
+    "window": "W2_2020-07~2021-12_train",
+    "phase": "validation"
+  },
+  {
+    "name": "WF_W2_2020-07~2021-12_train_train",
+    "annual_return": 0.5063,
+    "sharpe": 2.8345,
+    "max_drawdown": -0.1137,
+    "calmar": 4.4544,
+    "win_rate": 0.6017,
+    "n_trades": 36,
+    "window": "W2_2020-07~2021-12_train",
+    "phase": "training"
+  },
+  {
+    "name": "WF_W3_2022-01~2023-06_train_val",
+    "annual_return": -0.1167,
+    "sharpe": -0.6366,
+    "max_drawdown": -0.1943,
+    "calmar": -0.6007,
+    "win_rate": 0.4762,
+    "n_trades": 24,
+    "window": "W3_2022-01~2023-06_train",
+    "phase": "validation"
+  },
+  {
+    "name": "WF_W3_2022-01~2023-06_train_train",
+    "annual_return": 0.3269,
+    "sharpe": 1.7121,
+    "max_drawdown": -0.115,
+    "calmar": 2.8416,
+    "win_rate": 0.5914,
+    "n_trades": 35,
+    "window": "W3_2022-01~2023-06_train",
+    "phase": "training"
+  },
+  {
+    "name": "WF_W4_全量_2019-01~2024-12_train_val",
+    "annual_return": 0.3633,
+    "sharpe": 2.1666,
+    "max_drawdown": -0.0997,
+    "calmar": 3.6434,
+    "win_rate": 0.6149,
+    "n_trades": 31,
+    "window": "W4_全量_2019-01~2024-12_train",
+    "phase": "validation"
+  },
+  {
+    "name": "WF_W4_全量_2019-01~2024-12_train_train",
+    "annual_return": 0.2157,
+    "sharpe": 1.0933,
+    "max_drawdown": -0.2259,
+    "calmar": 0.9545,
+    "win_rate": 0.5698,
+    "n_trades": 143,
+    "window": "W4_全量_2019-01~2024-12_train",
+    "phase": "training"
+  }
+]

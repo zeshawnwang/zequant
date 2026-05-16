@@ -23,16 +23,16 @@ class TradeCost:
 class FeeCalculator:
     """
     A股费用计算规则：
-    - 印花税：只在卖出时收取，沪市深市都是0.1%
-    - 过户费：沪市收取0.002%，深市不收
+    - 印花税：只在卖出时收取，沪市深市都是0.05%（2023年8月28日起）
+    - 过户费：沪深统一0.001%（2022年起）
     - 佣金：默认万三，最低5元，双向收取
     - 滑点：按成交金额的百分比估算（实盘损耗）
     """
 
     def __init__(self, config: dict = None):
         cfg = config or {}
-        self.stamp_tax_rate = cfg.get('stamp_tax', 0.001)
-        self.transfer_fee_rate = cfg.get('transfer_fee', 0.00002)
+        self.stamp_tax_rate = cfg.get('stamp_tax', 0.0005)
+        self.transfer_fee_rate = cfg.get('transfer_fee', 0.00001)
         self.commission_rate = cfg.get('commission', 0.0003)
         self.min_commission = cfg.get('min_commission', 5)
         self.slippage_rate = cfg.get('slippage', 0.0005)

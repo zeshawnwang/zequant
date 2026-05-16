@@ -26,3 +26,34 @@ list_all = _strategy_hub.list_all
 list_by_category = _strategy_hub.list_by_category
 categories = _strategy_hub.categories
 describe = _strategy_hub.describe
+
+from .v1_pipeline import run_v1_pipeline
+
+# V1~V4 落地策略
+from .v1_ga_rp import build_v1_ga_rp
+from .v4_mf_rp import build_v4_mf_rp
+from .v4_mf_tv_rp import build_v4_mf_tv_rp
+
+# V5~V6 新发掘策略
+from .mf_vol_d10_rp import build_mf_vol_d10_rp
+from .mf_trend_d5_rp import build_mf_trend_d5_rp
+from .mf_d10_rp import build_mf_d10_rp
+
+# V8 Chip 筹码集中策略
+from .chip_rp import build_chip_rp
+from .chip_vol_rp import build_chip_vol_rp
+
+# V10 新发掘策略
+from .mf60_chip40_combo import build_mf60_chip40_combo
+from .mf50_chip50_combo import build_mf50_chip50_combo
+from .chip_covrp import build_chip_covrp
+from .chip_equal_d3 import build_chip_equal_d3
+from .osr_d10 import build_osr_d10
+from .osr_vol_eq_d10 import build_osr_vol_eq_d10
+
+# X5 GA优化策略
+from .ga_d10 import build_ga_d10
+from .ga_d5 import build_ga_d5
+
+# V10 组合策略
+from .mf50_chipcovrp50_combo import build_mf50_chipcovrp50_combo

@@ -223,6 +223,15 @@ class BacktestEngine:
         self._start_date = str(pd.Timestamp(dates[0]).date())
         self._end_date = str(pd.Timestamp(dates[-1]).date())
 
+        # 解析调仓频率
+        rebalance_days = 1
+        if rebalance_freq and rebalance_freq.endswith('d'):
+            try:
+                rebalance_days = max(1, int(rebalance_freq.rstrip('d')))
+            except (ValueError, TypeError):
+                rebalance_days = 1
+        days_since_rebalance = 0
+
         for current_date in dates:
             day_slice = df[df['date'] <= current_date]
             today_only = df[df['date'] == current_date]
@@ -235,15 +244,21 @@ class BacktestEngine:
             stop_orders = self._check_stops(today_only, date_str, buyable_today)
             self._pending_orders.extend(stop_orders)
 
-            orders = self._generate_orders_signal(strategy, day_slice, date_str)
+            is_rebalance_day = days_since_rebalance >= rebalance_days
+            if is_rebalance_day:
+                days_since_rebalance = 0
+                orders = self._generate_orders_signal(strategy, day_slice, date_str)
+                sel = list(getattr(strategy, "last_selected", []) or [])
+                if sel:
+                    self.selection_log.append({
+                        "date": date_str,
+                        "selected": sel,
+                        "n": len(sel),
+                    })
+            else:
+                orders = []
 
-            sel = list(getattr(strategy, "last_selected", []) or [])
-            if sel:
-                self.selection_log.append({
-                    "date": date_str,
-                    "selected": sel,
-                    "n": len(sel),
-                })
+            days_since_rebalance += 1
 
             for order in orders:
                 order = self._validate_order(order, date_str, buyable_today)

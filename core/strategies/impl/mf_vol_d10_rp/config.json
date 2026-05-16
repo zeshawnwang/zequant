@@ -1,0 +1,99 @@
+{
+  "strategy": {
+    "name": "MF_Vol_D10_RP",
+    "description": "MF+VolTiming+双周+RP — V6系列最优平衡策略",
+    "created": "2026-05-16"
+  },
+  "selector": {
+    "type": "MultiFactorSelector",
+    "winsorize": 0.01,
+    "weights": {
+      "ff_mkt": 0.0413,
+      "gtja142": 0.3005,
+      "gtja144": 0.2045,
+      "gtja171": -0.0443,
+      "gtja103": -0.0147,
+      "gtja85": -0.0258,
+      "a88": -0.035,
+      "a31": -0.0249,
+      "rsi_14": 0.0253,
+      "gtja139": -0.0112,
+      "gtja123": 0.1666,
+      "a42": 0.1999,
+      "a41": 0.2152,
+      "a97": -0.0734,
+      "gtja148": -0.0048,
+      "gtja99": -0.059,
+      "gtja117": 0.2324,
+      "gtja76": 0.0032,
+      "gtja90": 0.0437,
+      "volatility_20": -0.1127,
+      "gtja113": -0.0874,
+      "gtja141": 0.2104,
+      "a99": -0.072,
+      "gtja12": -0.1859,
+      "gtja83": 0.1429,
+      "gtja164": 0.0235,
+      "a98": 0.0657,
+      "gtja49": -0.2478,
+      "gtja121": -0.0095,
+      "a85": 0.1419,
+      "gtja104": -0.1303,
+      "gtja185": -0.0565,
+      "gtja176": -0.075,
+      "a80": 0.1689,
+      "gtja62": 0.1181,
+      "a8": 0.0657,
+      "gtja34": -0.0816,
+      "returns": -0.0508,
+      "gtja168": 0.3003,
+      "gtja108": -0.0791,
+      "gtja105": 0.0686,
+      "gtja127": -0.0506,
+      "a27": -0.0627,
+      "a64": 0.0874,
+      "gtja91": -0.0399,
+      "a30": -0.0666,
+      "a69": -0.0961,
+      "a91": -0.0582,
+      "gtja13": 0.0903,
+      "gtja120": 0.055
+    }
+  },
+  "timing": {
+    "type": "VolatilityTiming",
+    "params": {
+      "volatility_factor": "volatility_20",
+      "high_threshold": 0.3,
+      "low_threshold": 0.15,
+      "reduce_ratio": 0.5
+    }
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {
+        "max_single_weight": 0.1
+      }
+    ]
+  },
+  "risk": {
+    "stop_loss": null,
+    "max_total_position": 0.95
+  },
+  "expected": {
+    "annual_return": 0.2613,
+    "sharpe": 1.334,
+    "max_drawdown": -0.2259,
+    "calmar": 1.156
+  },
+  "positioner": {
+    "type": "RPPortfolioWeights",
+    "params": {
+      "top_n": 50,
+      "min_hold_days": 10,
+      "vol_lookback": 20
+    }
+  }
+}

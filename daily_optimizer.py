@@ -358,7 +358,15 @@ class DailyOptimizer:
             completed_categories = set()
 
         db_factors = get_db_factors_by_category(self.db)
-        all_records = list(checkpoint.backtest_records)
+
+        records_file = self.today_dir / "backtest_records.json"
+        if not checkpoint.backtest_records and records_file.exists():
+            with open(records_file, 'r', encoding='utf-8') as f:
+                all_records = json.load(f)
+            checkpoint.backtest_records = all_records
+            self.logger.info(f"从 backtest_records.json 加载 {len(all_records)} 条记录")
+        else:
+            all_records = list(checkpoint.backtest_records)
 
         for category, factors in db_factors.items():
             if category in completed_categories:
@@ -450,6 +458,16 @@ class DailyOptimizer:
 
         self.logger.info(f"共 {n_factors} 个因子参与权重优化")
 
+        # Save checkpoint: stage2 started
+        ckpt = self._load_checkpoint()
+        if ckpt and ckpt.stage == "stage2" and ckpt.best_weights:
+            self.logger.info(f"Stage2 已有 {len(ckpt.best_weights)} 个结果,跳过")
+            return ckpt.best_weights
+        if ckpt:
+            ckpt.stage = "stage2"
+            ckpt.best_weights = []
+            self._save_checkpoint(ckpt)
+
         required = self._get_required_factors()
         factor_data = self.db.get_factors(
             factor_names=list(set(required + all_factors)),
@@ -457,21 +475,31 @@ class DailyOptimizer:
             end_date=end_date,
             with_close=True,
         )
-
         if factor_data is None or factor_data.empty:
             self.logger.error("无法加载因子数据")
             return []
 
+        t0 = pd.Timestamp.now()
+        eval_data = self._prepare_fast_eval_data(factor_data, all_factors, start_date, end_date)
+        if eval_data is None:
+            self.logger.error("预计算因子矩阵失败")
+            return []
+        prep_time = (pd.Timestamp.now() - t0).total_seconds()
+        self.logger.info(f"预计算完成,耗时 {prep_time:.1f}s")
+
         population_size, generations = 30, 50
+        best_weights, best_scores = [], []
         population = [np.random.randn(n_factors) * 0.3 for _ in range(population_size)]
 
-        best_weights, best_scores = [], []
+        evals_total = population_size * generations
+        eval_count = 0
 
         for gen in range(generations):
             scores = []
             for weights in population:
-                score = self._evaluate_weights(weights, all_factors, factor_data, start_date, end_date)
+                score = self._fast_evaluate(weights, eval_data)
                 scores.append(score)
+                eval_count += 1
 
             indices = np.argsort(scores)[::-1]
             population = [population[i] for i in indices]
@@ -481,8 +509,15 @@ class DailyOptimizer:
                 best_weights.append(population[0].copy())
                 best_scores.append(scores[0])
 
-            if gen % 10 == 0:
-                self.logger.info(f"第 {gen}/{generations} 代: 最佳得分={scores[0]:.4f}")
+            if gen % 10 == 0 or gen == generations - 1:
+                elapsed = (pd.Timestamp.now() - t0).total_seconds()
+                avg = elapsed / max(eval_count, 1)
+                eta = avg * (evals_total - eval_count)
+                self.logger.info(
+                    f"第 {gen+1}/{generations} 代: 最佳得分={scores[0]:.4f} | "
+                    f"评估 {eval_count}/{evals_total} | "
+                    f"耗时 {elapsed:.0f}s | ETA {eta:.0f}s"
+                )
 
             new_pop = population[:3].copy()
             while len(new_pop) < population_size:
@@ -491,76 +526,113 @@ class DailyOptimizer:
                     child = (population[p1] + population[p2]) / 2
                 else:
                     child = population[np.random.randint(len(population) // 2)].copy()
-
                 if np.random.random() < 0.1:
                     child += np.random.randn(n_factors) * 0.2
-
                 new_pop.append(child)
-
             population = new_pop
+
+        self.logger.info(f"\nGA优化完成! 共获得 {len(best_scores)} 个有效配置")
 
         sorted_idx = np.argsort(best_scores)[::-1][:5]
         results = []
         for i, idx in enumerate(sorted_idx):
             weights_dict = {all_factors[j]: float(best_weights[idx][j]) for j in range(n_factors)}
             non_zero = {k: v for k, v in weights_dict.items() if abs(v) > 0.01}
-
             results.append({
                 'name': f'config_{i+1}',
                 'score': float(best_scores[idx]),
                 'weights': weights_dict,
                 'non_zero_count': len(non_zero),
             })
-
             top_weights = sorted(non_zero.items(), key=lambda x: -abs(x[1]))[:5]
             self.logger.info(f"配置{i+1}: 得分={best_scores[idx]:.4f}, 非零因子={len(non_zero)}")
             self.logger.info(f"  主要权重: {dict(top_weights)}")
 
         return results
 
-    def _evaluate_weights(self, weights, factor_names, factor_data, start_date, end_date):
+    def _prepare_fast_eval_data(self, factor_data, factor_names, start_date, end_date):
+        df = factor_data.copy()
+        df["date"] = pd.to_datetime(df["date"])
+        mask = (df["date"] >= pd.Timestamp(start_date)) & (df["date"] <= pd.Timestamp(end_date))
+        df = df[mask].copy()
+        if df.empty:
+            return None
+        valid_factors = [c for c in factor_names if c in df.columns]
+        if not valid_factors:
+            return None
+        all_symbols = sorted(df["symbol"].unique())
+        all_dates = sorted(df["date"].unique())
+        n_dates, n_symbols, n_factors = len(all_dates), len(all_symbols), len(valid_factors)
+        self.logger.info(f"预计算: {n_dates}日 x {n_symbols}标 x {n_factors}因子")
+        factor_vals = np.full((n_dates, n_symbols, n_factors), np.nan, dtype=np.float32)
+        for i, name in enumerate(valid_factors):
+            pivot = df.pivot_table(index="date", columns="symbol", values=name, aggfunc="first")
+            pivot = pivot.reindex(index=all_dates, columns=all_symbols)
+            factor_vals[:, :, i] = pivot.values.astype(np.float32)
+        mean_vals = np.nanmean(factor_vals, axis=1, keepdims=True)
+        std_vals = np.nanstd(factor_vals, axis=1, keepdims=True)
+        factor_z = np.where(std_vals > 1e-10, (factor_vals - mean_vals) / std_vals, 0.0)
+        close_pivot = df.pivot_table(index="date", columns="symbol", values="close", aggfunc="first")
+        close_pivot = close_pivot.reindex(index=all_dates, columns=all_symbols)
+        close_vals = close_pivot.values.astype(np.float32)
+        fwd_ret = np.full_like(close_vals, np.nan, dtype=np.float32)
+        fwd_ret[:-1] = (close_vals[1:] - close_vals[:-1]) / np.maximum(close_vals[:-1], 1e-10)
+        mkt_ret = np.nanmean(fwd_ret, axis=1)
+        return {
+            "factor_z": factor_z, "fwd_ret": fwd_ret, "mkt_ret": mkt_ret,
+            "valid_factors": valid_factors, "n_dates": n_dates,
+        }
+
+    def _fast_evaluate(self, weights, eval_data):
         try:
-            weights_dict = {factor_names[i]: float(weights[i]) for i in range(len(factor_names))}
-
-            selector = MultiFactorSelector(weights=weights_dict, normalize_weights=False)
-
-            if factor_data is None or factor_data.empty:
+            factor_z = eval_data["factor_z"]
+            fwd_ret = eval_data["fwd_ret"]
+            mkt_ret = eval_data["mkt_ret"]
+            n_dates = eval_data["n_dates"]
+            top_n = 30
+            w = np.array(weights, dtype=np.float32)
+            composite = np.dot(factor_z, w)
+            trend = np.full(n_dates, 0.5, dtype=np.float32)
+            for t in range(20, n_dates):
+                short_ma = np.nanmean(mkt_ret[t-5:t])
+                long_ma = np.nanmean(mkt_ret[t-20:t])
+                trend[t] = 1.0 if short_ma > long_ma else 0.5
+            daily_ret = np.zeros(n_dates, dtype=np.float32)
+            for t in range(1, n_dates):
+                scores_t = composite[t-1]
+                valid = ~np.isnan(scores_t)
+                nv = np.sum(valid)
+                if nv < top_n:
+                    pos = max(nv, 1)
+                    idx = np.where(valid)[0][np.argsort(scores_t[valid])[-pos:]]
+                    w_t = np.zeros(len(scores_t))
+                    w_t[idx] = 1.0 / pos
+                else:
+                    idx = np.argsort(scores_t)[-top_n:]
+                    w_t = np.zeros(len(scores_t), dtype=np.float32)
+                    w_t[idx] = 1.0 / top_n
+                daily_ret[t] = np.sum(fwd_ret[t] * w_t, where=~np.isnan(fwd_ret[t])) * trend[t]
+            cum = np.cumprod(1 + daily_ret)
+            total_ret = cum[-1] - 1
+            if total_ret <= 0:
                 return -1
-
-            strategy = SignalStrategy(
-                name="多因子-权重评估",
-                selector=selector,
-                position_sizer=TrendVolatilityTiming(),
-                composer=LayeredComposer(top_n=30),
-                top_n=30,
-            )
-
-            engine = BacktestEngine()
-            report = engine.run(
-                strategy=strategy,
-                factor_data=factor_data,
-                start_date=start_date,
-                end_date=end_date,
-            )
-
-            calmar = report.annualized_return / abs(report.max_drawdown) if report.max_drawdown != 0 else 0
-
+            n_years = n_dates / 252.0
+            ann_ret = (1 + total_ret) ** (1 / n_years) - 1 if n_years > 0 else 0
+            dd = cum / np.maximum.accumulate(cum) - 1
+            max_dd = float(abs(np.min(dd)))
+            ret_s = daily_ret[1:]
+            sharpe = float(np.mean(ret_s) / (np.std(ret_s) + 1e-10) * np.sqrt(252))
+            win_rate = float(np.sum(ret_s > 0) / max(len(ret_s), 1))
+            calmar = ann_ret / max(max_dd, 1e-10)
             risk_result = self.risk_constraints.check_backtest_result(
-                annual_return=report.annualized_return,
-                max_drawdown=abs(report.max_drawdown),
-                volatility=getattr(report, "volatility", 0.5),
-                calmar_ratio=calmar,
-                win_rate=report.win_rate,
-                turnover=getattr(report, "turnover", None),
+                annual_return=ann_ret, max_drawdown=max_dd,
+                volatility=float(np.std(ret_s) * np.sqrt(252)),
+                calmar_ratio=calmar, win_rate=win_rate, turnover=None,
             )
-
             if not risk_result.passed:
                 return -1
-
-            return (report.annualized_return * 0.3 + report.sharpe_ratio * 0.25 +
-                    calmar * 0.3 + report.win_rate * 0.15)
-
-        except Exception as e:
+            return float(ann_ret * 0.3 + sharpe * 0.25 + calmar * 0.3 + win_rate * 0.15)
+        except Exception:
             return -1
 
     def run_full(self, start_date: str = "2019-01-01", end_date: str = None):
@@ -580,6 +652,11 @@ class DailyOptimizer:
         if selected:
             stage2_start = max(start_date, '2021-01-01')
             best_weights = self.run_stage2(selected, stage2_start, end_date)
+
+        ckpt = self._load_checkpoint()
+        if ckpt:
+            ckpt.best_weights = best_weights
+            self._save_checkpoint(ckpt)
 
         config = {
             'timestamp': datetime.now().isoformat(),

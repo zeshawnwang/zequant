@@ -1,0 +1,164 @@
+[
+  {
+    "name": "A01_MF",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A02_FactorRank(momentum20)",
+    "annual_return": -0.2883,
+    "sharpe": -0.9124,
+    "max_drawdown": -0.9684,
+    "calmar": -0.2977,
+    "win_rate": 0.4769,
+    "n_trades": 568
+  },
+  {
+    "name": "A02b_FactorRank(vol20_asc)",
+    "annual_return": 0.0341,
+    "sharpe": 0.4881,
+    "max_drawdown": -0.1076,
+    "calmar": 0.317,
+    "win_rate": 0.3511,
+    "n_trades": 88
+  },
+  {
+    "name": "A02c_FactorRank(rsi14)",
+    "annual_return": 0.1026,
+    "sharpe": 0.3637,
+    "max_drawdown": -0.6574,
+    "calmar": 0.1561,
+    "win_rate": 0.5248,
+    "n_trades": 589
+  },
+  {
+    "name": "A04_TrendBreakout(proxy)",
+    "annual_return": -0.0164,
+    "sharpe": -0.0592,
+    "max_drawdown": -0.5418,
+    "calmar": -0.0303,
+    "win_rate": 0.305,
+    "n_trades": 590
+  },
+  {
+    "name": "A08_MF+TrendTiming",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A09_MF+TVTiming",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A10_MF+VolTiming",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A11_MF+MRTiming",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A13_MF_EqualWeight(proxy)",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A01b_MF_D1",
+    "annual_return": 0.5128,
+    "sharpe": 0.3218,
+    "max_drawdown": -0.8493,
+    "calmar": 0.6037,
+    "win_rate": 0.5408,
+    "n_trades": 1716
+  },
+  {
+    "name": "A16_MF_D2",
+    "annual_return": 0.14,
+    "sharpe": 0.1557,
+    "max_drawdown": -0.8579,
+    "calmar": 0.1631,
+    "win_rate": 0.5494,
+    "n_trades": 866
+  },
+  {
+    "name": "A01_MF_D3",
+    "annual_return": 0.0541,
+    "sharpe": 0.0718,
+    "max_drawdown": -0.8417,
+    "calmar": 0.0643,
+    "win_rate": 0.5502,
+    "n_trades": 580
+  },
+  {
+    "name": "A17_MF_D5",
+    "annual_return": 0.636,
+    "sharpe": 0.4667,
+    "max_drawdown": -0.7322,
+    "calmar": 0.8686,
+    "win_rate": 0.5652,
+    "n_trades": 349
+  },
+  {
+    "name": "A18_MF_D10",
+    "annual_return": 0.3453,
+    "sharpe": 1.2019,
+    "max_drawdown": -0.3094,
+    "calmar": 1.1161,
+    "win_rate": 0.5739,
+    "n_trades": 175
+  },
+  {
+    "name": "A19_MF_D21",
+    "annual_return": 0.1309,
+    "sharpe": 0.17,
+    "max_drawdown": -0.8392,
+    "calmar": 0.156,
+    "win_rate": 0.581,
+    "n_trades": 83
+  },
+  {
+    "name": "A20_MF_EqualWeight(50f)",
+    "annual_return": 0.3485,
+    "sharpe": 0.9782,
+    "max_drawdown": -0.4819,
+    "calmar": 0.7233,
+    "win_rate": 0.5643,
+    "n_trades": 536
+  },
+  {
+    "name": "A21_FactorRank(momentum20)",
+    "annual_return": -0.2883,
+    "sharpe": -0.9124,
+    "max_drawdown": -0.9684,
+    "calmar": -0.2977,
+    "win_rate": 0.4769,
+    "n_trades": 568
+  }
+]

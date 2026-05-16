@@ -1,0 +1,218 @@
+[
+  {
+    "name": "MF_D10_mhd=10(基线)",
+    "annual_return": 0.3786,
+    "sharpe": 1.3047,
+    "max_drawdown": -0.2734,
+    "calmar": 1.3846,
+    "win_rate": 0.579,
+    "n_trades": 175
+  },
+  {
+    "name": "MF+Vol_D10_mhd=10(基线)",
+    "annual_return": 0.275,
+    "sharpe": 1.3268,
+    "max_drawdown": -0.2063,
+    "calmar": 1.3331,
+    "win_rate": 0.579,
+    "n_trades": 175
+  },
+  {
+    "name": "Chip_D3(基线)",
+    "annual_return": 0.145,
+    "sharpe": 1.0714,
+    "max_drawdown": -0.1458,
+    "calmar": 0.9946,
+    "win_rate": 0.5519,
+    "n_trades": 328
+  },
+  {
+    "name": "MF0+Chip1_D10",
+    "annual_return": 0.0759,
+    "sharpe": 0.5352,
+    "max_drawdown": -0.1748,
+    "calmar": 0.4344,
+    "win_rate": 0.5573,
+    "n_trades": 177
+  },
+  {
+    "name": "MF0+Chip1_D10",
+    "annual_return": 0.0759,
+    "sharpe": 0.5352,
+    "max_drawdown": -0.1748,
+    "calmar": 0.4344,
+    "win_rate": 0.5573,
+    "n_trades": 176
+  },
+  {
+    "name": "MF0+Chip0_D10",
+    "annual_return": 0.0759,
+    "sharpe": 0.5352,
+    "max_drawdown": -0.1748,
+    "calmar": 0.4344,
+    "win_rate": 0.5573,
+    "n_trades": 176
+  },
+  {
+    "name": "MF1+Chip0_D10",
+    "annual_return": 0.0759,
+    "sharpe": 0.5352,
+    "max_drawdown": -0.1748,
+    "calmar": 0.4344,
+    "win_rate": 0.5573,
+    "n_trades": 176
+  },
+  {
+    "name": "MF1+Chip0_D10",
+    "annual_return": 0.057,
+    "sharpe": 0.3862,
+    "max_drawdown": -0.1987,
+    "calmar": 0.2869,
+    "win_rate": 0.5533,
+    "n_trades": 176
+  },
+  {
+    "name": "MF1+Chip0_D10",
+    "annual_return": 0.0654,
+    "sharpe": 0.4649,
+    "max_drawdown": -0.1748,
+    "calmar": 0.3743,
+    "win_rate": 0.5509,
+    "n_trades": 176
+  },
+  {
+    "name": "MF0+Chip0+Vol_D10",
+    "annual_return": 0.0607,
+    "sharpe": 0.5583,
+    "max_drawdown": -0.2222,
+    "calmar": 0.2732,
+    "win_rate": 0.5588,
+    "n_trades": 155
+  },
+  {
+    "name": "MF1+Chip0+Vol_D10",
+    "annual_return": 0.0646,
+    "sharpe": 0.5556,
+    "max_drawdown": -0.2222,
+    "calmar": 0.2907,
+    "win_rate": 0.5602,
+    "n_trades": 155
+  },
+  {
+    "name": "MF0+Chip0+RSI0_D10",
+    "annual_return": 0.7846,
+    "sharpe": 1.8039,
+    "max_drawdown": -0.6123,
+    "calmar": 1.2813,
+    "win_rate": 0.5437,
+    "n_trades": 177
+  },
+  {
+    "name": "MF0+Chip0+RSI0_D10+Vol",
+    "annual_return": 0.4402,
+    "sharpe": 1.2194,
+    "max_drawdown": -0.3853,
+    "calmar": 1.1423,
+    "win_rate": 0.5312,
+    "n_trades": 172
+  },
+  {
+    "name": "MF0+Chip0+RSI0_D10",
+    "annual_return": 0.2489,
+    "sharpe": 0.9052,
+    "max_drawdown": -0.4812,
+    "calmar": 0.5173,
+    "win_rate": 0.5324,
+    "n_trades": 177
+  },
+  {
+    "name": "MF0+Chip0+RSI0_D10+Vol",
+    "annual_return": 0.1766,
+    "sharpe": 0.7477,
+    "max_drawdown": -0.3497,
+    "calmar": 0.5049,
+    "win_rate": 0.5258,
+    "n_trades": 160
+  },
+  {
+    "name": "MF1+Chip0+RSI0_D10",
+    "annual_return": 0.7304,
+    "sharpe": 2.1575,
+    "max_drawdown": -0.2894,
+    "calmar": 2.5238,
+    "win_rate": 0.5847,
+    "n_trades": 177
+  },
+  {
+    "name": "MF1+Chip0+RSI0_D10+Vol",
+    "annual_return": 0.2474,
+    "sharpe": 0.9817,
+    "max_drawdown": -0.4888,
+    "calmar": 0.5061,
+    "win_rate": 0.5399,
+    "n_trades": 176
+  },
+  {
+    "name": "MF0+Chip0+RSI0_D10",
+    "annual_return": 0.8589,
+    "sharpe": 1.1115,
+    "max_drawdown": -0.5833,
+    "calmar": 1.4724,
+    "win_rate": 0.5773,
+    "n_trades": 177
+  },
+  {
+    "name": "MF0+Chip0+RSI0_D10+Vol",
+    "annual_return": 0.4004,
+    "sharpe": 0.7362,
+    "max_drawdown": -0.4642,
+    "calmar": 0.8626,
+    "win_rate": 0.5518,
+    "n_trades": 176
+  },
+  {
+    "name": "MF50+Chip50_D5",
+    "annual_return": 0.1206,
+    "sharpe": 0.746,
+    "max_drawdown": -0.2091,
+    "calmar": 0.5769,
+    "win_rate": 0.5545,
+    "n_trades": 317
+  },
+  {
+    "name": "MF50+Chip50_D7",
+    "annual_return": 0.0631,
+    "sharpe": 0.5579,
+    "max_drawdown": -0.1122,
+    "calmar": 0.5624,
+    "win_rate": 0.5635,
+    "n_trades": 252
+  },
+  {
+    "name": "MF50+Chip50_D8",
+    "annual_return": 0.0898,
+    "sharpe": 0.6224,
+    "max_drawdown": -0.2433,
+    "calmar": 0.369,
+    "win_rate": 0.6,
+    "n_trades": 221
+  },
+  {
+    "name": "MF50+Chip50_D10",
+    "annual_return": 0.0759,
+    "sharpe": 0.5352,
+    "max_drawdown": -0.1748,
+    "calmar": 0.4344,
+    "win_rate": 0.5573,
+    "n_trades": 176
+  },
+  {
+    "name": "MF50+Chip50_D12",
+    "annual_return": 0.1024,
+    "sharpe": 0.6574,
+    "max_drawdown": -0.2385,
+    "calmar": 0.4294,
+    "win_rate": 0.5663,
+    "n_trades": 147
+  }
+]

@@ -1,0 +1,200 @@
+[
+  {
+    "name": "A01_MF_无择时(基准)",
+    "annual_return": 0.1323,
+    "sharpe": 0.1691,
+    "max_drawdown": -0.835,
+    "calmar": 0.1584,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "A08_MF+TrendTiming(位置)",
+    "annual_return": 0.0616,
+    "sharpe": 0.349,
+    "max_drawdown": -0.2962,
+    "calmar": 0.2081,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "A09_MF+TVTiming(位置)",
+    "annual_return": 0.0263,
+    "sharpe": 0.1686,
+    "max_drawdown": -0.2636,
+    "calmar": 0.1,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "A10_MF+VolTiming(位置)",
+    "annual_return": 0.1591,
+    "sharpe": 0.3706,
+    "max_drawdown": -0.5966,
+    "calmar": 0.2667,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "A11_MF+MRTiming(位置)",
+    "annual_return": 0.1323,
+    "sharpe": 0.1691,
+    "max_drawdown": -0.835,
+    "calmar": 0.1584,
+    "win_rate": 0.5655,
+    "n_trades": 580
+  },
+  {
+    "name": "B01_MF+TrendTiming+D2",
+    "annual_return": 0.088,
+    "sharpe": 0.4319,
+    "max_drawdown": -0.3472,
+    "calmar": 0.2535,
+    "win_rate": 0.5663,
+    "n_trades": 866
+  },
+  {
+    "name": "B01_MF+TrendTiming+D5",
+    "annual_return": 0.2063,
+    "sharpe": 0.5554,
+    "max_drawdown": -0.2622,
+    "calmar": 0.7869,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "B01_MF+TrendTiming+D10",
+    "annual_return": 0.0688,
+    "sharpe": 0.4271,
+    "max_drawdown": -0.2481,
+    "calmar": 0.2774,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "B02_MF+TVTiming+D2",
+    "annual_return": 0.044,
+    "sharpe": 0.2566,
+    "max_drawdown": -0.3302,
+    "calmar": 0.1331,
+    "win_rate": 0.5663,
+    "n_trades": 866
+  },
+  {
+    "name": "B02_MF+TVTiming+D5",
+    "annual_return": 0.1609,
+    "sharpe": 0.4815,
+    "max_drawdown": -0.2474,
+    "calmar": 0.6505,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "B02_MF+TVTiming+D10",
+    "annual_return": 0.0283,
+    "sharpe": 0.1838,
+    "max_drawdown": -0.2566,
+    "calmar": 0.1102,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "B03_MF+VolTiming+D2",
+    "annual_return": 0.2711,
+    "sharpe": 0.4629,
+    "max_drawdown": -0.6269,
+    "calmar": 0.4325,
+    "win_rate": 0.5663,
+    "n_trades": 866
+  },
+  {
+    "name": "B03_MF+VolTiming+D5",
+    "annual_return": 0.5943,
+    "sharpe": 0.5439,
+    "max_drawdown": -0.5252,
+    "calmar": 1.1316,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "B03_MF+VolTiming+D10",
+    "annual_return": 0.2613,
+    "sharpe": 1.3344,
+    "max_drawdown": -0.2259,
+    "calmar": 1.1564,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "B04_MF+MRTiming+D2",
+    "annual_return": 0.2599,
+    "sharpe": 0.2745,
+    "max_drawdown": -0.8519,
+    "calmar": 0.305,
+    "win_rate": 0.5663,
+    "n_trades": 866
+  },
+  {
+    "name": "B04_MF+MRTiming+D5",
+    "annual_return": 0.71,
+    "sharpe": 0.5087,
+    "max_drawdown": -0.7265,
+    "calmar": 0.9773,
+    "win_rate": 0.5734,
+    "n_trades": 349
+  },
+  {
+    "name": "B04_MF+MRTiming+D10",
+    "annual_return": 0.3803,
+    "sharpe": 1.3062,
+    "max_drawdown": -0.3044,
+    "calmar": 1.2497,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "X01_MF+无择时+D10",
+    "annual_return": 0.3803,
+    "sharpe": 1.3062,
+    "max_drawdown": -0.3044,
+    "calmar": 1.2497,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "X01_MF+TrendTiming+D10",
+    "annual_return": 0.0688,
+    "sharpe": 0.4271,
+    "max_drawdown": -0.2481,
+    "calmar": 0.2774,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "X01_MF+TVTiming+D10",
+    "annual_return": 0.0283,
+    "sharpe": 0.1838,
+    "max_drawdown": -0.2566,
+    "calmar": 0.1102,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "X01_MF+VolTiming+D10",
+    "annual_return": 0.2613,
+    "sharpe": 1.3344,
+    "max_drawdown": -0.2259,
+    "calmar": 1.1564,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  },
+  {
+    "name": "X01_MF+MRTiming+D10",
+    "annual_return": 0.3803,
+    "sharpe": 1.3062,
+    "max_drawdown": -0.3044,
+    "calmar": 1.2497,
+    "win_rate": 0.5762,
+    "n_trades": 175
+  }
+]
