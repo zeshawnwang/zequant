@@ -1,9 +1,0 @@
-[
-  {
-    "symbol": "000001",
-    "direction": "买入",
-    "shares": 100,
-    "price": 10.5,
-    "reason": "测试"
-  }
-]
