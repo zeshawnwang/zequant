@@ -173,9 +173,10 @@ def save_snapshot(live_db: Database, trade_date: str, strategy: str,
 def save_performance(live_db: Database, trade_date: str,
                      total_value: float, last_value: float,
                      position_count: int, turnover: float,
-                     benchmark_ret: float):
-    """写入当日绩效。"""
-    daily_ret = (total_value - last_value) / last_value if last_value > 0 else 0.0
+                     benchmark_ret: float, net_cashflow: float = 0):
+    """写入当日绩效（净 cashflow 已从收益率中剔除）。"""
+    net_asset_change = total_value - net_cashflow
+    daily_ret = (net_asset_change - last_value) / last_value if last_value > 0 else 0.0
 
     # 累计收益率：从第一条记录累乘
     prev = live_db.conn.execute("""
@@ -234,6 +235,8 @@ def main():
     parser.add_argument("--strategy", default="mf_vol_d10_rp", help="策略名")
     parser.add_argument("--date", default=None, help="日期(默认今天)")
     parser.add_argument("--init-cash", type=float, default=None, help="首次建仓初始资金")
+    parser.add_argument("--deposit", type=float, default=0, help="追加资金 (加仓)")
+    parser.add_argument("--withdraw", type=float, default=0, help="提取资金 (减仓)")
     args = parser.parse_args()
 
     trade_date = args.date or datetime.now().strftime("%Y-%m-%d")
@@ -331,13 +334,26 @@ def main():
 
     # 计算总市值和现金
     position_value = calc_position_value(positions, prices, quant_db, trade_date)
-    cash = last["cash"] - total_buy + total_sell
+    cash = last["cash"] - total_buy + total_sell + args.deposit - args.withdraw
+    net_cashflow = args.deposit - args.withdraw  # 纯资金进出，不影响收益率计算
     total_value = position_value + cash
+
+    # 如果本日有资金进出，记录为订单
+    if args.deposit > 0:
+        orders.append({"symbol": "💰", "direction": "入金", "shares": 0,
+                        "price": 0, "reason": f"追加 {args.deposit:,.0f} 元"})
+    if args.withdraw > 0:
+        orders.append({"symbol": "💰", "direction": "出金", "shares": 0,
+                        "price": 0, "reason": f"提取 {args.withdraw:,.0f} 元"})
 
     logger.info(f"\n📊 {trade_date} 实盘快照:")
     logger.info(f"   持仓市值: {position_value:,.0f} 元 ({len(positions)} 只)")
     logger.info(f"   现金余额: {cash:,.0f} 元")
     logger.info(f"   总资产:   {total_value:,.0f} 元")
+    if args.deposit > 0:
+        logger.info(f"   💰 入金:   {args.deposit:,.0f} 元")
+    if args.withdraw > 0:
+        logger.info(f"   💳 出金:   {args.withdraw:,.0f} 元")
 
     # 计算换手率
     turnover = (total_buy + total_sell) / total_value if total_value > 0 else 0
@@ -349,7 +365,7 @@ def main():
     save_trades(live_db, trades, args.strategy, trade_date)
     save_snapshot(live_db, trade_date, args.strategy, total_value, cash, positions, orders)
     save_performance(live_db, trade_date, total_value, last["total_value"],
-                     len(positions), turnover, benchmark_ret)
+                     len(positions), turnover, benchmark_ret, net_cashflow=net_cashflow)
 
     live_db.conn.commit()
     live_db.close()
