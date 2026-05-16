@@ -1,0 +1,43 @@
+{
+  "strategy": {
+    "name": "Chip_Combo",
+    "description": "Chip_CovRP(40%) + Chip_Equal(40%) + Chip_Vol(20%) 资金分配组合",
+    "created": "2026-05-16"
+  },
+  "selector": {
+    "type": "ChipConcentrationSelector",
+    "max_volume_contraction": 0.5,
+    "max_chip_concentration": 0.05,
+    "max_ma_convergence": 0.05
+  },
+  "timing": {
+    "type": "none"
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 40,
+    "constraints": [
+      {
+        "max_single_weight": 0.1
+      }
+    ]
+  },
+  "risk": {
+    "stop_loss": null,
+    "max_total_position": 0.95
+  },
+  "positioner": {
+    "type": "RPPortfolioWeights",
+    "params": {
+      "top_n": 50,
+      "min_hold_days": 5,
+      "vol_lookback": 20
+    }
+  },
+  "expected": {
+    "annual_return": 0.0488,
+    "sharpe": 0.5867,
+    "max_drawdown": -0.1190,
+    "calmar": 0.410
+  }
+}

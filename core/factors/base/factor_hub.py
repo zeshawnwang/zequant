@@ -199,7 +199,7 @@ class FactorHub:
                 if verbose:
                     print(f"  [ERROR] {n} failed: {e}")
                 continue
-            melted = wide.stack(dropna=True).reset_index()
+            melted = wide.stack().reset_index()
             melted.columns = ["date", "symbol", "value"]
             melted["factor_name"] = n
             long_frames.append(melted[["date", "symbol", "factor_name", "value"]])

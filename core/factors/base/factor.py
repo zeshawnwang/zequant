@@ -15,7 +15,6 @@ from typing import List, Optional
 import pandas as pd
 
 from ...database import Database
-from .factor_hub import FactorHub
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +61,13 @@ class FactorRunner:
             return pd.DataFrame()
 
         if names is None:
-            names = FactorHub.list_by_category(category)
+            from .factor_hub import list_by_category, compute_all as hub_compute_all
+            names = list_by_category(category)
         if not names:
             logger.warning("FactorHub 中无 category=%r 的因子,跳过。", category)
             return pd.DataFrame()
 
-        long_df = FactorHub.compute_all(bars, names=names, verbose=verbose)
+        long_df = hub_compute_all(bars, names=names, verbose=verbose)
         if long_df.empty:
             return long_df
 

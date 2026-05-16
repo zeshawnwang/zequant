@@ -35,3 +35,34 @@ optimization*.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Data files
+data/*.db
+data_live/*.db
+
+# Logs
+data_live/*.log
+*.log
+
+# Daily results (JSON/CSV outputs are large)
+daily/**/results.json
+daily/**/all_window_results.csv
+daily/**/oos_results/
+daily/**/bear_verify/
+daily/**/recovery_results/
+daily/**/tuning_results/
+daily/**/x1_results/
+daily/**/x2_results/
+daily/**/x3_results/
+daily/**/x4_x5_results/
+daily/**/x6_results/
+daily/**/x7_results/
+daily/**/x8_results/
+daily/**/x9_results/
+daily/**/v5_results/
+daily/**/v6_results/
+daily/**/v7_results/
+
+# Cache
+__pycache__/
+*.pyc

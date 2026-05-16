@@ -57,3 +57,9 @@ from .ga_d5 import build_ga_d5
 
 # V10 组合策略
 from .mf50_chipcovrp50_combo import build_mf50_chipcovrp50_combo
+
+# X7 GA+CovRP组合策略
+from .ga_covrp_combo import build_ga_covrp_combo
+
+# X8 C01 Layered策略
+from .c01_layered_d5 import build_c01_layered_d5

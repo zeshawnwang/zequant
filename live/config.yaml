@@ -1,0 +1,32 @@
+# === ZEquant 生产配置 ===
+
+mode: paper                # paper | live (模拟盘/实盘)
+
+database:
+  live_path: "./data_live/live_data.db"  # 实盘独立数据库
+
+account:
+  initial_cash: 100000     # 初始资金(元)
+  min_trade_amount: 1000   # 最小交易金额
+  max_positions: 20        # 最大持仓数
+  max_single_weight: 0.15  # 单只上限
+
+strategies:
+  primary: "mf_vol_d10_rp"     # 主力策略
+  secondary: "chip_covrp"      # 防御策略
+  weights: [0.6, 0.4]          # 资金分配
+
+execution:
+  slippage: 0.002          # 滑点(0.2%)
+  min_commission: 5.0      # 最低佣金
+  commission_rate: 0.0003  # 佣金率
+
+monitor:
+  max_daily_loss: -0.03    # 单日最大亏损警报
+  max_drawdown: -0.20      # 历史最大回撤警报
+
+# 券商API(生产时填入)
+broker:
+  name: ""                 # xq / xtp / mock
+  api_key: ""
+  api_secret: ""
