@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from core.config import load_config
-from core.database import Database
+from core.datasourcesourcebase import Database
 from core.execution.impl.backtest import BacktestEngine
 from core.monitor.impl.performance import PerformanceMonitor, PerformanceReport
 from core.strategies.impl.example_signal_strategy import STRATEGIES

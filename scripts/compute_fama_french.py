@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 from core.config import load_config
-from core.database import Database
+from core.datasourcesourcebase import Database
 from core.factors.base.factor_hub import FactorHub
 import core.factors.impl.fama_french
 

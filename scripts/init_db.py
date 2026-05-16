@@ -11,7 +11,7 @@ if _ROOT not in sys.path:
     sys.path.append(_ROOT)
 
 from pathlib import Path
-from core.database import Database
+from core.datasourcesourcebase import Database
 
 
 def main():

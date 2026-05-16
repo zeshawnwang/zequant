@@ -31,7 +31,7 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd
 
 from core.config import load_config
-from core.database import Database
+from core.datasourcesourcebase import Database
 from core.factors.base.factor_hub import FactorHub
 import core.factors.impl.gtja191_full  # noqa: F401  触发注册
 

@@ -20,7 +20,7 @@ if _ROOT not in sys.path:
 import argparse
 
 from core.config import load_config
-from core.database import Database
+from core.datasourcesourcebase import Database
 from core.factors.base.factor import FactorRunner
 from core.factors.base.factor_hub import FactorHub
 

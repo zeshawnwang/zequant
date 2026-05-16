@@ -71,3 +71,31 @@ class PositionStorage:
         """, [today, strategy, total_value, cash,
               json.dumps(positions or {}), json.dumps(orders or [])])
         logger.info("持仓快照已保存: %s", today)
+
+    def load_today_positions(self) -> dict:
+        """读取当日持仓。
+
+        Returns:
+            {symbol: shares}
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        try:
+            row = self.db.conn.execute("""
+                SELECT positions FROM daily_snapshots
+                WHERE date = ? ORDER BY created_at DESC LIMIT 1
+            """, [today]).fetchone()
+            if row and row[0]:
+                return json.loads(row[0])
+        except Exception:
+            pass
+        # 没有当日快照，读最近一次
+        try:
+            row = self.db.conn.execute("""
+                SELECT positions FROM daily_snapshots
+                ORDER BY date DESC LIMIT 1
+            """).fetchone()
+            if row and row[0]:
+                return json.loads(row[0])
+        except Exception:
+            pass
+        return {}

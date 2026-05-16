@@ -1,5 +1,5 @@
-# Data
-data/
+# Data (root only, core/datasource/ is code not data)
+/data/
 *.db
 *.parquet
 
@@ -37,7 +37,7 @@ optimization*.txt
 Thumbs.db
 
 # Data files
-data/*.db
+/data/*.db
 data_live/*.db
 
 # Logs
