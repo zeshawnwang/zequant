@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 from core.config import load_config
-from core.datasourcesourcebase import Database
+from core.database import Database
 from core.factors.base.factor_hub import FactorHub
 from core.research.impl.evaluation import FactorEvaluator
 

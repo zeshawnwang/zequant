@@ -18,9 +18,9 @@ import argparse
 import logging
 
 from core.config import load_config
-from core.datasourcesourcebase import Database
-from core.datasourcesource.fetcher import IncrementalFetcher
-from core.datasourcesource.checker import DataQualityChecker
+from core.database import Database
+from core.datasource.fetcher import IncrementalFetcher
+from core.datasource.checker import DataQualityChecker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 _log = logging.getLogger(__name__)

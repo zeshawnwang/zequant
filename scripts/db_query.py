@@ -17,7 +17,7 @@ if _ROOT not in sys.path:
     sys.path.append(_ROOT)
 
 import pandas as pd
-from core.datasourcesourcebase import Database
+from core.database import Database
 
 
 def print_summary(db: Database) -> None:

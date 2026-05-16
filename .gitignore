@@ -1,11 +1,19 @@
 # Data (root only, core/datasource/ is code not data)
 /data/
+/data/*.db
 *.db
 *.parquet
+
+# Data live
+data_live/*.db
+data_live/*.log
+data_live/signals/*.html
+data_live/signals/*.json
 
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
 *.so
 .eggs/
 *.egg-info/
@@ -23,6 +31,10 @@ env/
 *.swp
 *.swo
 
+# OS
+.DS_Store
+Thumbs.db
+
 # Logs
 logs/
 *.log
@@ -31,18 +43,6 @@ optimization*.txt
 
 # Environment
 .env
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Data files
-/data/*.db
-data_live/*.db
-
-# Logs
-data_live/*.log
-*.log
 
 # Daily results (JSON/CSV outputs are large)
 daily/**/results.json
@@ -55,14 +55,10 @@ daily/**/x1_results/
 daily/**/x2_results/
 daily/**/x3_results/
 daily/**/x4_x5_results/
+daily/**/v5_results/
+daily/**/v6_results/
+daily/**/v7_results/
 daily/**/x6_results/
 daily/**/x7_results/
 daily/**/x8_results/
 daily/**/x9_results/
-daily/**/v5_results/
-daily/**/v6_results/
-daily/**/v7_results/
-
-# Cache
-__pycache__/
-*.pyc
