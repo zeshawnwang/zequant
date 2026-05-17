@@ -7,8 +7,6 @@
 # Data live
 data_live/*.db
 data_live/*.log
-data_live/signals/*.html
-data_live/signals/*.json
 
 # Python
 __pycache__/

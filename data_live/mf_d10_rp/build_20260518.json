@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "strategy": "mf_d10_rp",
+    "signal_date": "2026-05-15",
+    "execution_date": "2026-05-18",
+    "capital": 50000,
+    "n_selected": 20,
+    "total_cost": 40884.0,
+    "remain_cash": 9116.0
+  },
+  "orders": [
+    {
+      "symbol": "000612",
+      "direction": "买入",
+      "shares": 200,
+      "price": 11.91,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002774",
+      "direction": "买入",
+      "shares": 100,
+      "price": 12.76,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "000637",
+      "direction": "买入",
+      "shares": 500,
+      "price": 4.68,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "001236",
+      "direction": "买入",
+      "shares": 200,
+      "price": 9.45,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002237",
+      "direction": "买入",
+      "shares": 100,
+      "price": 15.23,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002572",
+      "direction": "买入",
+      "shares": 200,
+      "price": 12.1,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "000692",
+      "direction": "买入",
+      "shares": 400,
+      "price": 5.11,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002035",
+      "direction": "买入",
+      "shares": 400,
+      "price": 5.55,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "000717",
+      "direction": "买入",
+      "shares": 1000,
+      "price": 2.33,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "000898",
+      "direction": "买入",
+      "shares": 1100,
+      "price": 2.14,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "001965",
+      "direction": "买入",
+      "shares": 200,
+      "price": 9.94,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002216",
+      "direction": "买入",
+      "shares": 100,
+      "price": 13.81,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002639",
+      "direction": "买入",
+      "shares": 100,
+      "price": 17.16,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "000759",
+      "direction": "买入",
+      "shares": 400,
+      "price": 5.15,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002807",
+      "direction": "买入",
+      "shares": 500,
+      "price": 4.45,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002701",
+      "direction": "买入",
+      "shares": 400,
+      "price": 5.19,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "001227",
+      "direction": "买入",
+      "shares": 1100,
+      "price": 2.16,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "300535",
+      "direction": "买入",
+      "shares": 100,
+      "price": 17.98,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "000089",
+      "direction": "买入",
+      "shares": 300,
+      "price": 6.76,
+      "reason": "mf_d10_rp首日建仓"
+    },
+    {
+      "symbol": "002486",
+      "direction": "买入",
+      "shares": 900,
+      "price": 2.73,
+      "reason": "mf_d10_rp首日建仓"
+    }
+  ]
+}
