@@ -1,0 +1,35 @@
+{
+  "strategy": "chip_vol_rp",
+  "pipeline_version": "fixed_0517",
+  "full_range": {
+    "annual_return": 0.2791,
+    "sharpe": 1.0548,
+    "max_drawdown": -0.3733
+  },
+  "windows": [
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.2791,
+      "sharpe": 1.0548,
+      "max_drawdown": -0.3733
+    },
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.2791,
+      "sharpe": 1.0548,
+      "max_drawdown": -0.3733
+    },
+    {
+      "name": "2022\u718a\u5e02",
+      "annual_return": 0.0651,
+      "sharpe": 0.2804,
+      "max_drawdown": -0.2098
+    },
+    {
+      "name": "\u4fee\u590d\u725bOOS",
+      "annual_return": 0.7233,
+      "sharpe": 2.2175,
+      "max_drawdown": -0.1623
+    }
+  ]
+}

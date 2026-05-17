@@ -13,8 +13,7 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 
-@dataclass
-class IConstraint:
+class IConstraint(ABC):
     """约束接口。"""
     @abstractmethod
     def apply(self, weights: Dict[str, float], cash: float) -> Dict[str, float]:

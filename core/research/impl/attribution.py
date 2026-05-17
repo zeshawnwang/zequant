@@ -11,7 +11,7 @@
 
 用法
 ----
-    from core.research.attribution import AttributionAnalyzer
+    from core.research.impl.attribution import AttributionAnalyzer
 
     analyzer = AttributionAnalyzer(db)
     report = analyzer.analyze(

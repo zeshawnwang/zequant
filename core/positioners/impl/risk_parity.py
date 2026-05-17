@@ -47,10 +47,7 @@ class RiskParityBuilder(IPortfolioBuilder):
         self._factor_data: Optional[pd.DataFrame] = None
 
     def set_factor_data(self, factor_data: pd.DataFrame):
-        """接收历史因子数据，用于计算协方差矩阵。
-
-        由 QuantStrategy.generate_orders() 在调用 allocate() 之前自动传入。
-        """
+        """接收历史因子数据，用于计算协方差矩阵。"""
         self._factor_data = factor_data.copy() if factor_data is not None else None
 
     def allocate(self, signals, total_cash: float,

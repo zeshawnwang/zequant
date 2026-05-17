@@ -12,7 +12,7 @@
         name="my_strategy",
         rebal_freq=10, top_n=50, min_hold_days=5,
         positioner_type='rp',  # 'rp' 或 'covrp'
-        tx_cost=0.0012,
+        tx_cost=0.002,
     )
     result = p.run(start='2019-01-01', end='2026-04-30')
     windows = p.window_analysis()
@@ -21,6 +21,11 @@
 
     # 从配置字典创建
     p = StrategyPipeline.from_config(config_dict)
+
+交易成本说明:
+    Pipeline使用 flat 费率模型: txc = 0.5 * turnover * tx_cost。
+    真实A股综合费率约 0.21%（含印花税0.05%+佣金0.06%+滑点0.10%+过户费），
+    tx_cost=0.002 时 round-trip 成本=0.20%，接近实盘水平。
 """
 from __future__ import annotations
 import os, json, logging
@@ -58,6 +63,17 @@ DEFAULT_FACTORS = list(set([
 ]))
 
 
+def get_price_limit_pct(symbol: str, is_st: bool = False) -> float:
+    """按板块返回涨跌停幅度。"""
+    if is_st:
+        return 5.0
+    if symbol.startswith(("688", "689", "300", "301")):
+        return 20.0
+    if symbol.startswith(("43", "83", "87", "88", "92")) or symbol.startswith("4"):
+        return 30.0
+    return 10.0
+
+
 @dataclass
 class BacktestMetrics:
     """回测指标。"""
@@ -70,6 +86,8 @@ class BacktestMetrics:
     win_rate: float = 0.0
     n_trades: int = 0
     n_days: int = 0
+    drawdown_duration: int = 0
+    recovery_days: int = 0
 
     def to_dict(self) -> dict:
         return {
@@ -82,6 +100,8 @@ class BacktestMetrics:
             "win_rate": round(self.win_rate, 4),
             "n_trades": self.n_trades,
             "n_days": self.n_days,
+            "drawdown_duration": self.drawdown_duration,
+            "recovery_days": self.recovery_days,
         }
 
 
@@ -106,9 +126,13 @@ class StrategyPipeline:
     positioner_type : str
         仓位分配器类型: 'rp' (风险平价) 或 'covrp' (协方差风险平价)
     tx_cost : float
-        交易成本费率
+        综合交易成本费率（含印花税/佣金/滑点），默认0.002
     factor_names : list, optional
         因子列表，默认使用 DEFAULT_FACTORS
+    use_universe_filter : bool
+        是否启用universe过滤（ST/新股/涨跌停/停牌），默认True
+    min_listed_days : int
+        新股最低上市天数，默认60
     """
 
     def __init__(
@@ -119,8 +143,10 @@ class StrategyPipeline:
         top_n: int = 40,
         min_hold_days: int = 5,
         positioner_type: str = "rp",
-        tx_cost: float = 0.0012,
+        tx_cost: float = 0.002,
         factor_names: Optional[List[str]] = None,
+        use_universe_filter: bool = True,
+        min_listed_days: int = 60,
     ):
         self.signal_builder = signal_builder
         self.name = name
@@ -130,6 +156,8 @@ class StrategyPipeline:
         self.positioner_type = positioner_type
         self.tx_cost = tx_cost
         self.factor_names = factor_names or list(DEFAULT_FACTORS)
+        self.use_universe_filter = use_universe_filter
+        self.min_listed_days = min_listed_days
 
         self._data_loaded = False
         self._signal_built = False
@@ -137,6 +165,7 @@ class StrategyPipeline:
         self.z3: Optional[np.ndarray] = None
         self.fwd: Optional[np.ndarray] = None
         self.dm: Optional[np.ndarray] = None
+        self.um: Optional[np.ndarray] = None
         self.tks: List[str] = []
         self.nd: int = 0
         self.ns: int = 0
@@ -152,13 +181,7 @@ class StrategyPipeline:
     # 数据加载
     # ──────────────────────────────────────────
     def load(self, start_date: str = "2018-01-01", end_date: str = "2026-04-30"):
-        """加载数据并构建3D因子矩阵。
-
-        Parameters
-        ----------
-        start_date, end_date : str
-            数据加载区间（需覆盖回测区间）
-        """
+        """加载数据并构建3D因子矩阵及Universe掩码。"""
         db = Database()
         df = db.get_factors(
             start_date=start_date, end_date=end_date,
@@ -215,8 +238,105 @@ class StrategyPipeline:
         self.fi = {fn: i for i, fn in enumerate(self.factor_names)}
         self._data_loaded = True
 
+        # 构建universe掩码
+        if self.use_universe_filter:
+            self.um = self._build_universe_mask(db, t2i, d2i)
+            logger.info("Universe过滤激活: 平均每日 %.0f/%.0f 只可交易",
+                        np.mean(np.sum(self.um, axis=1)), ns)
+        else:
+            self.um = dm.copy()
+            logger.info("Universe过滤未启用 (use_universe_filter=False)")
+
         logger.info(f"数据: {nd}天 × {ns}只 × {nf}因子")
         return self
+
+    def _build_universe_mask(
+        self, db: Database, t2i: Dict[str, int], d2i: Dict[str, int]
+    ) -> np.ndarray:
+        """构建每日可选股票掩码 (nd × ns, bool)，True=可交易。
+
+        过滤规则（仅影响新买入，不影响已持仓）：
+        - ST/*ST 股永久排除
+        - 上市不满 N 天排除
+        - 涨停日不可买入
+        - 停牌日(volume=0)不可买入
+        """
+        um = np.ones((self.nd, self.ns), dtype=bool)
+
+        # 1. ST 过滤
+        try:
+            sym_df = db.get_symbols()
+            if not sym_df.empty and 'name' in sym_df.columns:
+                st_mask = sym_df['name'].fillna('').str.upper().str.contains('ST', na=False)
+                st_symbols = set(sym_df.loc[st_mask, 'symbol'].tolist())
+                for sym, idx in t2i.items():
+                    if sym in st_symbols:
+                        um[:, idx] = False
+            logger.info("  ST过滤: %d 只ST股被排除", sum(~um[0]))
+        except Exception as e:
+            logger.warning("  ST过滤失败: %s", e)
+
+        # 2. 新股过滤
+        try:
+            if not sym_df.empty and 'list_date' in sym_df.columns:
+                ld_series = pd.to_datetime(sym_df['list_date'], errors='coerce')
+                list_date_map = {}
+                for i, s in enumerate(sym_df['symbol']):
+                    if s in t2i and pd.notna(ld_series.iloc[i]):
+                        list_date_map[s] = ld_series.iloc[i]
+
+                for sym, idx in t2i.items():
+                    if sym in list_date_map:
+                        list_dt = list_date_map[sym]
+                        for di, d in enumerate(self.ds):
+                            if (d - list_dt).days < self.min_listed_days:
+                                um[di, idx] = False
+                logger.info("  新股过滤: 需满%d天", self.min_listed_days)
+        except Exception as e:
+            logger.warning("  新股过滤失败: %s", e)
+
+        # 3. 停牌 & 涨跌停过滤（从 daily_bars 获取 pct_change/volume）
+        try:
+            bars = db.get_daily_bars(
+                columns=['symbol', 'date', 'pct_change', 'volume'],
+                start_date=str(self.ds[0].date()),
+                end_date=str(self.ds[-1].date()),
+            )
+            if bars is not None and not bars.empty:
+                bars['date'] = pd.to_datetime(bars['date'])
+
+                # 预计算 ST 集合
+                st_set = set()
+                if not sym_df.empty and 'name' in sym_df.columns:
+                    st_msk = sym_df['name'].fillna('').str.upper().str.contains('ST', na=False)
+                    st_set = set(sym_df.loc[st_msk, 'symbol'].tolist())
+
+                # 批量处理
+                for _, r in bars.iterrows():
+                    d, sym = r['date'], r['symbol']
+                    if d not in d2i or sym not in t2i:
+                        continue
+                    di, si = d2i[d], t2i[sym]
+
+                    vol = r.get('volume')
+                    if pd.notna(vol) and float(vol) <= 0:
+                        um[di, si] = False
+                        continue
+
+                    pct = r.get('pct_change')
+                    if pd.notna(pct):
+                        pv = float(pct)
+                        is_st = sym in st_set
+                        limit = get_price_limit_pct(sym, is_st=is_st)
+                        buf = 0.2
+                        if pv >= (limit - buf) or pv <= -(limit - buf):
+                            um[di, si] = False
+
+                logger.info("  日线过滤: 停牌+涨跌停")
+        except Exception as e:
+            logger.warning("  日线过滤失败: %s", e)
+
+        return um
 
     # ──────────────────────────────────────────
     # 信号构建
@@ -244,13 +364,6 @@ class StrategyPipeline:
     # 回测
     # ──────────────────────────────────────────
     def run(self, start: Optional[str] = None, end: Optional[str] = None) -> BacktestMetrics:
-        """执行全区间回测。
-
-        Parameters
-        ----------
-        start, end : str, optional
-            回测区间，默认使用全部数据
-        """
         if not self._data_loaded:
             self.load()
         if not self._signal_built:
@@ -274,6 +387,7 @@ class StrategyPipeline:
             dm = self.dm[sidx:eidx]
             nd = eidx - sidx
 
+        self._backtest_sidx = sidx if start or end else 0
         dr, nt = self._backtest(sig, fwd, dm, nd)
         self._dr = dr
 
@@ -284,7 +398,6 @@ class StrategyPipeline:
     def _backtest(
         self, sig: np.ndarray, fwd: np.ndarray, dm: np.ndarray, nd: int
     ) -> Tuple[np.ndarray, int]:
-        """执行回测核心逻辑。"""
         ns = sig.shape[1]
 
         if self.positioner_type == 'covrp':
@@ -294,7 +407,6 @@ class StrategyPipeline:
     def _backtest_rp(
         self, sig: np.ndarray, fwd: np.ndarray, dm: np.ndarray, nd: int, ns: int
     ) -> Tuple[np.ndarray, int]:
-        """RP风险平价回测。"""
         alloc = RPPortfolioWeights(top_n=self.top_n, min_hold_days=self.min_hold_days)
         pw = np.zeros(ns, dtype=np.float32)
         hs = np.full(ns, -1, dtype=np.int32)
@@ -306,7 +418,12 @@ class StrategyPipeline:
             rebal = (i % self.rebal_freq == 0)
             txc = 0.0
             if rebal:
-                nw = alloc.allocate(sig[i], fwd, i, pw, hs, rh)
+                masked_sig = sig[i].copy()
+                if self.use_universe_filter and self.um is not None:
+                    abs_i = getattr(self, '_backtest_sidx', 0) + i
+                    masked_sig[~self.um[abs_i]] = -1e10
+
+                nw = alloc.allocate(masked_sig, fwd, i, pw, hs, rh)
                 to = float(np.sum(np.abs(nw - pw)))
                 txc = 0.5 * to * self.tx_cost
                 if to > 0.01:
@@ -331,7 +448,6 @@ class StrategyPipeline:
     def _backtest_covrp(
         self, sig: np.ndarray, fwd: np.ndarray, dm: np.ndarray, nd: int, ns: int
     ) -> Tuple[np.ndarray, int]:
-        """协方差风险平价回测。"""
         pw = np.zeros(ns, dtype=np.float32)
         hs = np.full(ns, -1, dtype=np.int32)
         rh = 0
@@ -342,7 +458,12 @@ class StrategyPipeline:
             rebal = (i % self.rebal_freq == 0)
             txc = 0.0
             if rebal:
-                si = np.argsort(-sig[i])[:self.top_n]
+                masked_sig = sig[i].copy()
+                if self.use_universe_filter and self.um is not None:
+                    abs_i = getattr(self, '_backtest_sidx', 0) + i
+                    masked_sig[~self.um[abs_i]] = -1e10
+
+                si = np.argsort(-masked_sig)[:self.top_n]
                 if i >= 20:
                     seg = fwd[max(0, i - 20):i, :]
                     sub = seg[:, si]
@@ -401,6 +522,25 @@ class StrategyPipeline:
         cm = np.maximum.accumulate(eq)
         dd = (eq - cm) / cm
         mdd = float(np.min(dd))
+        
+        # 回撤持续天数（峰→谷）和修复天数（谷→新高）
+        drawdown_duration = 0
+        recovery_days = 0
+        if mdd < -1e-10:
+            valley_idx = int(np.argmin(dd))
+            valley_val = eq[valley_idx]
+            peak_before = np.max(eq[:valley_idx + 1])
+            peak_idx_before = int(np.argmax(eq[:valley_idx + 1]))
+            drawdown_duration = valley_idx - peak_idx_before
+            
+            # 从谷底之后寻找首次恢复到前高的天数
+            after = eq[valley_idx + 1:]
+            recover_hits = np.where(after >= peak_before)[0]
+            if len(recover_hits) > 0:
+                recovery_days = int(recover_hits[0]) + 1
+            else:
+                recovery_days = len(after)  # 尚未修复
+        
         cal = ar / abs(mdd) if abs(mdd) > 0 else 0
         wr = int(np.sum(dr > 0)) / max(int(np.sum(dr > 0)) + int(np.sum(dr < 0)), 1)
 
@@ -412,6 +552,7 @@ class StrategyPipeline:
             name=name, window=wname,
             annual_return=ar, sharpe=sp, max_drawdown=mdd,
             calmar=cal, win_rate=wr, n_trades=nt, n_days=nd,
+            drawdown_duration=drawdown_duration, recovery_days=recovery_days,
         )
 
     # ──────────────────────────────────────────
@@ -420,18 +561,6 @@ class StrategyPipeline:
     def window_analysis(
         self, windows: Optional[List[Tuple[str, str, str]]] = None
     ) -> List[BacktestMetrics]:
-        """对全区间回测做分窗口分析。
-
-        Parameters
-        ----------
-        windows : list of (name, start, end), optional
-            默认使用预定义7窗口
-
-        Returns
-        -------
-        list[BacktestMetrics]
-            每个窗口的指标（第一个为全区间）
-        """
         if self._dr is None:
             self.run()
 
@@ -467,7 +596,6 @@ class StrategyPipeline:
     # 组合分析
     # ──────────────────────────────────────────
     def get_return_series(self) -> np.ndarray:
-        """获取日收益率序列。"""
         if self._dr is None:
             self.run()
         return self._dr.copy()
@@ -475,20 +603,6 @@ class StrategyPipeline:
     def combine(
         self, other: StrategyPipeline, weight: float = 0.5
     ) -> BacktestMetrics:
-        """与另一个策略组合。
-
-        Parameters
-        ----------
-        other : StrategyPipeline
-            另一个策略实例
-        weight : float
-            本策略的权重（对方权重为 1-weight）
-
-        Returns
-        -------
-        BacktestMetrics
-            组合后的指标
-        """
         dr1 = self.get_return_series()
         dr2 = other.get_return_series()
         nd = min(len(dr1), len(dr2))
@@ -503,7 +617,6 @@ class StrategyPipeline:
         dr3: Optional[np.ndarray] = None,
         w1: float = 0.5, w2: float = 0.5, w3: float = 0.0,
     ) -> dict:
-        """直接对收益率序列做组合分析（无需Pipeline实例）。"""
         nd = len(dr1)
         dr = dr1 * w1 + dr2 * w2 + (dr3 * w3 if dr3 is not None else 0)
         eq = np.ones(nd)
@@ -534,15 +647,6 @@ class StrategyPipeline:
     # 导出
     # ──────────────────────────────────────────
     def export(self, folder_name: str, root_dir: Optional[str] = None):
-        """导出策略配置和回测结果到策略文件夹。
-
-        Parameters
-        ----------
-        folder_name : str
-            文件夹名称
-        root_dir : str, optional
-            根目录，默认 daily/{today}/results
-        """
         if root_dir is None:
             today = datetime.now().strftime("%Y-%m-%d")
             root_dir = os.path.join(
@@ -561,6 +665,7 @@ class StrategyPipeline:
             "positioner_type": self.positioner_type,
             "tx_cost": self.tx_cost,
             "n_factors": len(self.factor_names),
+            "use_universe_filter": self.use_universe_filter,
         }
 
         if self._last_result is not None:
@@ -576,43 +681,17 @@ class StrategyPipeline:
         logger.info(f"已导出至: {out_path}")
         return out_path
 
-    # ──────────────────────────────────────────
-    # 类方法：从配置创建
-    # ──────────────────────────────────────────
     @classmethod
     def from_config(cls, config: dict) -> StrategyPipeline:
-        """从配置字典创建管道实例。
-
-        Parameters
-        ----------
-        config : dict
-            配置字典，支持字段:
-            - signal_builder: callable
-            - name: str
-            - rebal_freq: int
-            - top_n: int
-            - min_hold_days: int
-            - positioner_type: str ('rp'|'covrp')
-            - tx_cost: float
-            - factor_names: list[str]
-            - selector_type: str (仅用于文档参考)
-
-        Returns
-        -------
-        StrategyPipeline
-        """
         known_keys = {
             'signal_builder', 'name', 'rebal_freq', 'top_n',
             'min_hold_days', 'positioner_type', 'tx_cost', 'factor_names',
+            'use_universe_filter', 'min_listed_days',
         }
         pipe_kwargs = {k: v for k, v in config.items() if k in known_keys}
         return cls(**pipe_kwargs)
 
-    # ──────────────────────────────────────────
-    # 工具方法
-    # ──────────────────────────────────────────
     def summary(self) -> str:
-        """返回可打印的结果摘要。"""
         lines = []
         lines.append("=" * 60)
         lines.append(f"策略: {self.name}")

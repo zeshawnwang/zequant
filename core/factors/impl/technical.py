@@ -13,8 +13,8 @@
   自然实现「按股票独立计算」的语义,不再需要 .over("symbol")
 
 调用:
-    import factors.technical               # 触发 @register_factor 副作用
-    from core.factor_hub import FactorHub
+    import core.factors.impl.technical               # 触发 @register_factor 副作用
+    from core.factors.base.factor_hub import FactorHub
     long_df = FactorHub.compute_all(bars, names=FactorHub.list_by_category("technical"))
 """
 from __future__ import annotations

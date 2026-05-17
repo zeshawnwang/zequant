@@ -11,7 +11,7 @@
 
 用法
 ----
-    from core.signals.position import (
+    from core.signals.impl.position import (
         FixedPositionSizer, TrendPositionSizer, VolatilityPositionSizer,
     )
 

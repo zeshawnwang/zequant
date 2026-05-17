@@ -213,10 +213,11 @@ class FactorSelector:
         calmar_ratio: float,
         risk_passed: bool,
     ) -> float:
-        """计算因子综合得分。"""
+        """计算因子综合得分（可通过子类覆盖权重）。"""
         if not risk_passed:
             return -1
 
+        # 权重体系: 年化收益30% + Sharpe25% + Calmar30% + 胜率15%
         return (
             report.annualized_return * 0.3 +
             report.sharpe_ratio * 0.25 +

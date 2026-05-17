@@ -71,7 +71,7 @@
   },
   "composer": {
     "type": "LayeredComposer",
-    "top_n": 40,
+    "top_n": 20,
     "constraints": [
       {
         "max_single_weight": 0.10

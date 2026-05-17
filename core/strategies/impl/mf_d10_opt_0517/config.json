@@ -1,8 +1,11 @@
 {
   "strategy": {
-    "name": "MF_Vol_D10_Opt",
-    "description": "MF(V1权重) + VolTiming(ht=0.25) + vol_lookback=60 + 10d + RP — 调优最佳版",
-    "created": "2026-05-16"
+    "name": "MF_D10_OPT_0517",
+    "description": "MF+双周+RP 2026-05-17修正版 — 真实费率+Universe过滤后的验证结论",
+    "created": "2026-05-17",
+    "source_experiment": "2026-05-17 MF全参数扫描(72实验) + 8策略验证",
+    "pipeline_version": "fixed_0517",
+    "key_insight": "top_n=20 优于 30/40/50；rebal_freq=10 优于 3/5；tx_cost=0.002 更接近实盘"
   },
   "selector": {
     "type": "MultiFactorSelector",
@@ -61,12 +64,7 @@
     }
   },
   "timing": {
-    "type": "VolatilityTiming",
-    "params": {
-      "volatility_factor": 20,
-      "high_threshold": 0.25,
-      "low_threshold": 0.15
-    }
+    "type": "none"
   },
   "composer": {
     "type": "LayeredComposer",
@@ -77,22 +75,21 @@
       }
     ]
   },
+  "rebal": {
+    "freq_days": 10,
+    "type": "fixed_interval",
+    "note": "每10个交易日调仓一次（0517实验确认最优）"
+  },
   "risk": {
     "stop_loss": null,
     "max_total_position": 0.95
   },
-  "positioner": {
-    "type": "RPPortfolioWeights",
-    "params": {
-      "top_n": 50,
-      "min_hold_days": 5,
-      "vol_lookback": 60
-    }
-  },
   "expected": {
-    "annual_return": 0.2579,
-    "sharpe": 1.2769,
-    "max_drawdown": -0.2205,
-    "calmar": 1.170
+    "annual_return": 0.3284,
+    "sharpe": 1.208,
+    "max_drawdown": -0.3760,
+    "calmar": 0.874,
+    "bear_annual_return": 0.086,
+    "oos_sharpe": 2.459
   }
 }

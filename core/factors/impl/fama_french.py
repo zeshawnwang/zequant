@@ -10,8 +10,8 @@ Fama-French 三因子模型 (1993):
     R_i - R_f = α_i + β_i·MKT + s_i·SMB + h_i·HML + ε_i
 
 调用:
-    import factors.fama_french
-    from core.factor_hub import FactorHub
+    import core.factors.impl.fama_french
+    from core.factors.base.factor_hub import FactorHub
     long_df = FactorHub.compute_all(bars, names=["ff_mkt", "ff_smb", "ff_hml"])
 """
 from __future__ import annotations

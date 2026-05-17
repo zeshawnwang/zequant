@@ -1,8 +1,6 @@
 """回测引擎
 
-支持两种策略类型的统一回测引擎：
-1. QuantStrategy：旧架构（Selector + Timing + Portfolio）
-2. SignalStrategy：新架构（Selector + PositionSizer + Composer + RiskManager）
+基于 SignalStrategy 的统一回测引擎。
 
 设计要点：
 - 事件驱动，每日按序执行：止损检查 → 策略下单 → 净值计算
@@ -24,24 +22,7 @@ from ...risk import RiskManager
 from ...screening.universe import SymbolUniverse
 from ...strategies.base.strategy import SignalStrategy, TargetPosition
 
-# 兼容旧架构的 Order 和 Position
-try:
-    from ...strategies.base.strategy import Order, Position
-except ImportError:
-    @dataclass
-    class Order:
-        symbol: str
-        direction: str
-        quantity: int
-        price: float = 0.0
-        reason: str = ""
-    
-    @dataclass
-    class Position:
-        symbol: str
-        quantity: int
-        entry_price: float
-        entry_date: str = ""
+from ...strategies.base.strategy import Order, Position
 
 logger = logging.getLogger(__name__)
 
@@ -157,9 +138,8 @@ class BacktestReport:
 class BacktestEngine:
     """统一回测引擎
 
-    支持两种策略类型：
-    - QuantStrategy：旧架构
-    - SignalStrategy：新架构（信号流驱动）
+    基于 SignalStrategy 的信号流驱动回测。
+    支持选股+择时+仓位 和 信号流组合 两类策略。
     """
 
     def __init__(
@@ -199,7 +179,7 @@ class BacktestEngine:
         """执行回测
 
         Args:
-            strategy: 策略实例（QuantStrategy或SignalStrategy）
+            strategy: SignalStrategy 实例
             factor_data: 因子数据，包含date、symbol、及各因子列
             start_date: 回测开始日期
             end_date: 回测结束日期

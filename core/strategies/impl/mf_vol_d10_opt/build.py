@@ -14,7 +14,7 @@ from ....timings import VolatilityTiming
 from ....signals import LayeredComposer, MaxSingleWeightConstraint
 from ....risk import RiskManager
 
-def build_mf_vol_d10_opt(top_n: int = 40, **kwargs) -> SignalStrategy:
+def build_mf_vol_d10_opt(top_n: int = 20, **kwargs) -> SignalStrategy:
     cfg_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(cfg_dir, "config.json")) as f:
         cfg = json.load(f)

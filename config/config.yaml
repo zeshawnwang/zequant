@@ -10,7 +10,7 @@ database:
 # ---- 数据源 -------------------------------------------------------
 data_source:
   primary: akshare       # 主数据源
-  fallback: tushare      # 备用数据源(需要 token)
+  fallback: baostock     # 备用数据源(免费,无需token)
 
 # ---- Universe 过滤 ------------------------------------------------
 # 对应 core.universe.UniverseConfig

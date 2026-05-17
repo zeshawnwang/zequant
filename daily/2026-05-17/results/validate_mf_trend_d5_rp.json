@@ -1,0 +1,41 @@
+{
+  "strategy": "mf_trend_d5_rp",
+  "pipeline_version": "fixed_0517",
+  "config": {
+    "top_n": 20,
+    "rebal_freq": 5,
+    "min_hold_days": 3,
+    "positioner": "rp"
+  },
+  "full_range": {
+    "annual_return": 0.2567,
+    "sharpe": 1.004,
+    "max_drawdown": -0.3106
+  },
+  "windows": [
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.2567,
+      "sharpe": 1.004,
+      "max_drawdown": -0.3106
+    },
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.2567,
+      "sharpe": 1.004,
+      "max_drawdown": -0.3106
+    },
+    {
+      "name": "2022\u718a\u5e02",
+      "annual_return": 0.0629,
+      "sharpe": 0.2753,
+      "max_drawdown": -0.1805
+    },
+    {
+      "name": "\u4fee\u590d\u725bOOS",
+      "annual_return": 0.8869,
+      "sharpe": 2.546,
+      "max_drawdown": -0.1703
+    }
+  ]
+}

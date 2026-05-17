@@ -1,0 +1,41 @@
+{
+  "strategy": "mf_vol_d10_covrp",
+  "pipeline_version": "fixed_0517",
+  "config": {
+    "top_n": 20,
+    "rebal_freq": 10,
+    "min_hold_days": 5,
+    "positioner": "covrp"
+  },
+  "full_range": {
+    "annual_return": 0.3286,
+    "sharpe": 1.2081,
+    "max_drawdown": -0.376
+  },
+  "windows": [
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.3286,
+      "sharpe": 1.2081,
+      "max_drawdown": -0.376
+    },
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.3286,
+      "sharpe": 1.2081,
+      "max_drawdown": -0.376
+    },
+    {
+      "name": "2022\u718a\u5e02",
+      "annual_return": 0.086,
+      "sharpe": 0.3729,
+      "max_drawdown": -0.178
+    },
+    {
+      "name": "\u4fee\u590d\u725bOOS",
+      "annual_return": 0.8508,
+      "sharpe": 2.4589,
+      "max_drawdown": -0.1516
+    }
+  ]
+}

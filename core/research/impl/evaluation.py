@@ -13,15 +13,11 @@
 
 用法
 ----
-    from core.research import FactorEvaluator, FactorMonitor
+    from core.research.impl.evaluation import FactorEvaluator
 
     # 评估因子
     evaluator = FactorEvaluator(db)
     summary = evaluator.evaluate(factors=["a1", "a16"], period=("2020-01-01", "2020-06-30"))
-
-    # 监控因子
-    monitor = FactorMonitor(db)
-    report = monitor.check_decay("a16", recent_periods=5)
 """
 from __future__ import annotations
 from abc import ABC, abstractmethod

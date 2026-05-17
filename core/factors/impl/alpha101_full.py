@@ -13,8 +13,8 @@ Alpha101 全量实现(配合 FactorHub 注册中心)
 - 暂无 cap(市值)和 industry(行业),用到时以 close/sector_proxy 占位
 
 调用:
-    import factors.alpha101_full   # 触发 @register_factor 副作用
-    from core.factor_hub import FactorHub
+    import core.factors.impl.alpha101_full   # 触发 @register_factor 副作用
+    from core.factors.base.factor_hub import FactorHub
     long_df = FactorHub.compute_all(bars, names=['a3','a13','a26','a55'])
 """
 from __future__ import annotations

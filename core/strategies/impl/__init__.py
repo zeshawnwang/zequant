@@ -62,3 +62,11 @@ from .ga_covrp_combo import build_ga_covrp_combo
 
 # X8 C01 Layered策略
 from .c01_layered_d5 import build_c01_layered_d5
+
+# 2026-05-17 修正Pipeline验证策略
+from .mf_d10_opt_0517 import build_mf_d10_opt_0517
+
+# ── 策略注册 ──
+register_strategy("mf_d10_opt_0517", category="multi_factor",
+    description="MF+双周+RP 2026-05-17修正版，真实费率+Universe过滤后三区间通过")(
+    build_mf_d10_opt_0517)

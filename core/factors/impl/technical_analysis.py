@@ -11,7 +11,7 @@
   7. β系数因子: 20日/60日β系数
 
 调用:
-    import factors.technical_analysis  # 触发 @register_factor 副作用
+    import core.factors.impl.technical_analysis  # 触发 @register_factor 副作用
 """
 from __future__ import annotations
 

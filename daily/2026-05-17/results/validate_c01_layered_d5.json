@@ -1,0 +1,35 @@
+{
+  "strategy": "c01_layered_d5",
+  "pipeline_version": "fixed_0517",
+  "full_range": {
+    "annual_return": 0.1704,
+    "sharpe": 0.7029,
+    "max_drawdown": -0.3361
+  },
+  "windows": [
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.1704,
+      "sharpe": 0.7029,
+      "max_drawdown": -0.3361
+    },
+    {
+      "name": "\u5168\u533a\u95f4",
+      "annual_return": 0.1704,
+      "sharpe": 0.7029,
+      "max_drawdown": -0.3361
+    },
+    {
+      "name": "2022\u718a\u5e02",
+      "annual_return": 0.1114,
+      "sharpe": 0.4632,
+      "max_drawdown": -0.1984
+    },
+    {
+      "name": "\u4fee\u590d\u725bOOS",
+      "annual_return": 0.6014,
+      "sharpe": 1.9285,
+      "max_drawdown": -0.1547
+    }
+  ]
+}
