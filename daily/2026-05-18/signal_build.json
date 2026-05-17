@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "strategy": "mf_d10_rp",
+    "strategy_name": "MF_D10_RP",
+    "top_n": 20,
+    "signal_date": "2026-05-15",
+    "execution_date": "2026-05-18",
+    "pipeline": "旧Pipeline（未含Universe过滤和真实费率，仅供参考）",
+    "rank": "综合评分第1（72.6分）",
+    "action": "首日建仓（等权重）"
+  },
+  "universe": {
+    "total_candidates": 1998,
+    "after_filter": 794,
+    "filter_notes": "排除ST/涨停/停牌/新股",
+    "signal_method": "MultiFactorSelector(50因子加权) + LayeredComposer(top=20)"
+  },
+  "positions": [
+    {"symbol": "000612", "name": "焦作万方", "weight": 0.05, "price": 11.91, "shares_per_100w": 4200},
+    {"symbol": "002774", "name": "快意电梯", "weight": 0.05, "price": 12.76, "shares_per_100w": 3900},
+    {"symbol": "000807", "name": "云铝股份", "weight": 0.05, "price": 29.75, "shares_per_100w": 1600},
+    {"symbol": "000637", "name": "茂化实华", "weight": 0.05, "price": 4.68, "shares_per_100w": 10600},
+    {"symbol": "001236", "name": "弘业期货", "weight": 0.05, "price": 9.45, "shares_per_100w": 5200},
+    {"symbol": "002237", "name": "恒邦股份", "weight": 0.05, "price": 15.23, "shares_per_100w": 3200},
+    {"symbol": "002572", "name": "索菲亚", "weight": 0.05, "price": 12.10, "shares_per_100w": 4100},
+    {"symbol": "000692", "name": "惠天热电", "weight": 0.05, "price": 5.11, "shares_per_100w": 9700},
+    {"symbol": "002035", "name": "华帝股份", "weight": 0.05, "price": 5.55, "shares_per_100w": 9000},
+    {"symbol": "002594", "name": "比亚迪", "weight": 0.05, "price": 96.30, "shares_per_100w": 500},
+    {"symbol": "000717", "name": "中南股份", "weight": 0.05, "price": 2.33, "shares_per_100w": 21400},
+    {"symbol": "000898", "name": "鞍钢股份", "weight": 0.05, "price": 2.14, "shares_per_100w": 23300},
+    {"symbol": "001965", "name": "招商公路", "weight": 0.05, "price": 9.94, "shares_per_100w": 5000},
+    {"symbol": "002216", "name": "三全食品", "weight": 0.05, "price": 13.81, "shares_per_100w": 3600},
+    {"symbol": "002639", "name": "雪人集团", "weight": 0.05, "price": 17.16, "shares_per_100w": 2900},
+    {"symbol": "002155", "name": "湖南黄金", "weight": 0.05, "price": 26.32, "shares_per_100w": 1900},
+    {"symbol": "000759", "name": "中百集团", "weight": 0.05, "price": 5.15, "shares_per_100w": 9700},
+    {"symbol": "002807", "name": "江阴银行", "weight": 0.05, "price": 4.45, "shares_per_100w": 11200},
+    {"symbol": "002701", "name": "奥瑞金", "weight": 0.05, "price": 5.19, "shares_per_100w": 9600},
+    {"symbol": "001227", "name": "兰州银行", "weight": 0.05, "price": 2.16, "shares_per_100w": 23100}
+  ]
+}
