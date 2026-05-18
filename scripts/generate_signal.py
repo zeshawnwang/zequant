@@ -23,9 +23,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 STRATEGY_CONFIGS = {
     'mf_d10_rp': {
         'top_n': 20,
-        'rebal_freq': 10,  # 每10个交易日调仓
+        'rebal_freq': 10,
         'cfg_path': 'core/strategies/impl/mf_d10_rp/config.json',
         'name': 'MF_D10_RP',
+    },
+    'mf_d10_emergency_v1': {
+        'top_n': 20,
+        'rebal_freq': 10,
+        'cfg_path': 'core/strategies/impl/mf_d10_emergency_v1/config.json',
+        'name': 'MF_D10_EMERGENCY_V1',
     },
 }
 

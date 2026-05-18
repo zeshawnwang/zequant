@@ -66,7 +66,14 @@ from .c01_layered_d5 import build_c01_layered_d5
 # 2026-05-17 修正Pipeline验证策略
 from .mf_d10_opt_0517 import build_mf_d10_opt_0517
 
+# 2026-05-18 紧急事件处理策略
+from .mf_d10_emergency_v1 import build_mf_d10_emergency_v1
+
 # ── 策略注册 ──
 register_strategy("mf_d10_opt_0517", category="multi_factor",
     description="MF+双周+RP 2026-05-17修正版，真实费率+Universe过滤后三区间通过")(
     build_mf_d10_opt_0517)
+
+register_strategy("mf_d10_emergency_v1", category="multi_factor",
+    description="MF_D10+个股止损10%+大盘熔断4%/3天恢复 紧急处理版本，综合分65.0")(
+    build_mf_d10_emergency_v1)

@@ -1,0 +1,18 @@
+{
+  "experiment": "v1_baseline",
+  "state_distribution": {
+    "bull": 849,
+    "bear": 189,
+    "oscillate": 683,
+    "recovery": 55
+  },
+  "state_transitions": 94,
+  "all_results": [
+    {
+      "name": "c01_layered_d5",
+      "annual_return": -0.0115,
+      "sharpe": -0.0699,
+      "max_drawdown": -0.4595,
+      "calmar": -0.0249,
+      "win_rate": 0.5232,
+      "recovery_days": 

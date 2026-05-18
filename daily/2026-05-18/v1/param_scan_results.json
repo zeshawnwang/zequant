@@ -1,0 +1,1940 @@
+{
+  "n_total": 46,
+  "n_valid": 46,
+  "results": [
+    {
+      "name": "mfd10_slN_ctN_r3",
+      "stop_loss": null,
+      "crash_threshold": null,
+      "recovery_days": 3,
+      "composite_score": 60.6,
+      "annual_return": 0.3284,
+      "sharpe": 1.2076,
+      "max_drawdown": -0.376,
+      "calmar": 0.8735,
+      "win_rate": 0.5636,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.32843432911501313,
+          "sharpe": 1.2076130206432805,
+          "max_drawdown": -0.3759901780465584
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.32843432911501313,
+          "sharpe": 1.2076130206432805,
+          "max_drawdown": -0.3759901780465584
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08597611394198967,
+          "sharpe": 0.37292162115013006,
+          "max_drawdown": -0.17802044008067633
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8507887193162567,
+          "sharpe": 2.458851330998007,
+          "max_drawdown": -0.15163619725313646
+        }
+      ],
+      "elapsed": 99.9
+    },
+    {
+      "name": "mfd10_slN_ct0.04_r3",
+      "stop_loss": null,
+      "crash_threshold": 0.04,
+      "recovery_days": 3,
+      "composite_score": 61.0,
+      "annual_return": 0.3357,
+      "sharpe": 1.2245,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8893,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33569142537365515,
+          "sharpe": 1.224509163893926,
+          "max_drawdown": -0.3774698472182548
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33569142537365515,
+          "sharpe": 1.224509163893926,
+          "max_drawdown": -0.3774698472182548
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.0952153969916465,
+          "sharpe": 0.41106436089340365,
+          "max_drawdown": -0.174208768234691
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.865890243908906,
+          "sharpe": 2.4897639421457503,
+          "max_drawdown": -0.14238725920251666
+        }
+      ],
+      "elapsed": 96.8
+    },
+    {
+      "name": "mfd10_slN_ct0.04_r5",
+      "stop_loss": null,
+      "crash_threshold": 0.04,
+      "recovery_days": 5,
+      "composite_score": 60.7,
+      "annual_return": 0.3303,
+      "sharpe": 1.21,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8752,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33034472789378944,
+          "sharpe": 1.2100032068360667,
+          "max_drawdown": -0.37746984721825444
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33034472789378944,
+          "sharpe": 1.2100032068360667,
+          "max_drawdown": -0.37746984721825444
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.0893088646624205,
+          "sharpe": 0.38674341781933064,
+          "max_drawdown": -0.174208768234691
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8601748202548767,
+          "sharpe": 2.4690411674104373,
+          "max_drawdown": -0.14238725920251696
+        }
+      ],
+      "elapsed": 93.4
+    },
+    {
+      "name": "mfd10_slN_ct0.04_r10",
+      "stop_loss": null,
+      "crash_threshold": 0.04,
+      "recovery_days": 10,
+      "composite_score": 60.7,
+      "annual_return": 0.332,
+      "sharpe": 1.2108,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8796,
+      "win_rate": 0.5648,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3320190306686268,
+          "sharpe": 1.2107685672118829,
+          "max_drawdown": -0.37746984721825466
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3320190306686268,
+          "sharpe": 1.2107685672118829,
+          "max_drawdown": -0.37746984721825466
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.09136324030930831,
+          "sharpe": 0.3949450882597453,
+          "max_drawdown": -0.1753653395642165
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8594444920143398,
+          "sharpe": 2.4701897861908857,
+          "max_drawdown": -0.14238725920251696
+        }
+      ],
+      "elapsed": 95.2
+    },
+    {
+      "name": "mfd10_slN_ct0.05_r3",
+      "stop_loss": null,
+      "crash_threshold": 0.05,
+      "recovery_days": 3,
+      "composite_score": 60.8,
+      "annual_return": 0.3329,
+      "sharpe": 1.2169,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8818,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33287045061690135,
+          "sharpe": 1.2168812048755027,
+          "max_drawdown": -0.3774698472182549
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33287045061690135,
+          "sharpe": 1.2168812048755027,
+          "max_drawdown": -0.3774698472182549
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08597611394198967,
+          "sharpe": 0.37292162115013006,
+          "max_drawdown": -0.17802044008067633
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8510066522187141,
+          "sharpe": 2.45836892012067,
+          "max_drawdown": -0.15163619725313646
+        }
+      ],
+      "elapsed": 97.9
+    },
+    {
+      "name": "mfd10_slN_ct0.05_r5",
+      "stop_loss": null,
+      "crash_threshold": 0.05,
+      "recovery_days": 5,
+      "composite_score": 60.7,
+      "annual_return": 0.3304,
+      "sharpe": 1.2097,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8752,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3303548394147222,
+          "sharpe": 1.2097362631666444,
+          "max_drawdown": -0.3774698472182549
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3303548394147222,
+          "sharpe": 1.2097362631666444,
+          "max_drawdown": -0.3774698472182549
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08597611394198967,
+          "sharpe": 0.37292162115013006,
+          "max_drawdown": -0.17802044008067633
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.844612315963226,
+          "sharpe": 2.438866212999153,
+          "max_drawdown": -0.1516361972531367
+        }
+      ],
+      "elapsed": 94.0
+    },
+    {
+      "name": "mfd10_slN_ct0.05_r10",
+      "stop_loss": null,
+      "crash_threshold": 0.05,
+      "recovery_days": 10,
+      "composite_score": 60.7,
+      "annual_return": 0.3315,
+      "sharpe": 1.2105,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8781,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3314706201836999,
+          "sharpe": 1.2105125812739654,
+          "max_drawdown": -0.3774698472182543
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3314706201836999,
+          "sharpe": 1.2105125812739654,
+          "max_drawdown": -0.3774698472182543
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08761158730152774,
+          "sharpe": 0.3793585464170333,
+          "max_drawdown": -0.1782766908150827
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.844612315963226,
+          "sharpe": 2.438866212999153,
+          "max_drawdown": -0.1516361972531367
+        }
+      ],
+      "elapsed": 91.9
+    },
+    {
+      "name": "mfd10_slN_ct0.06_r3",
+      "stop_loss": null,
+      "crash_threshold": 0.06,
+      "recovery_days": 3,
+      "composite_score": 60.9,
+      "annual_return": 0.3335,
+      "sharpe": 1.2193,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8835,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33350269012504485,
+          "sharpe": 1.2192870173926025,
+          "max_drawdown": -0.3774698472182545
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33350269012504485,
+          "sharpe": 1.2192870173926025,
+          "max_drawdown": -0.3774698472182545
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08597611394198967,
+          "sharpe": 0.37292162115013006,
+          "max_drawdown": -0.17802044008067633
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8507887193162567,
+          "sharpe": 2.458851330998007,
+          "max_drawdown": -0.15163619725313646
+        }
+      ],
+      "elapsed": 92.4
+    },
+    {
+      "name": "mfd10_slN_ct0.06_r5",
+      "stop_loss": null,
+      "crash_threshold": 0.06,
+      "recovery_days": 5,
+      "composite_score": 60.8,
+      "annual_return": 0.3323,
+      "sharpe": 1.2148,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8805,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3323469468134066,
+          "sharpe": 1.214837225497248,
+          "max_drawdown": -0.3774698472182545
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3323469468134066,
+          "sharpe": 1.214837225497248,
+          "max_drawdown": -0.3774698472182545
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08597611394198967,
+          "sharpe": 0.37292162115013006,
+          "max_drawdown": -0.17802044008067633
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8443951359139563,
+          "sharpe": 2.4393378289105616,
+          "max_drawdown": -0.1516361972531367
+        }
+      ],
+      "elapsed": 91.9
+    },
+    {
+      "name": "mfd10_slN_ct0.06_r10",
+      "stop_loss": null,
+      "crash_threshold": 0.06,
+      "recovery_days": 10,
+      "composite_score": 60.8,
+      "annual_return": 0.3327,
+      "sharpe": 1.2155,
+      "max_drawdown": -0.3775,
+      "calmar": 0.8814,
+      "win_rate": 0.5642,
+      "recovery_days_actual": 155,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33270953188451435,
+          "sharpe": 1.2154637927444434,
+          "max_drawdown": -0.37746984721825466
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33270953188451435,
+          "sharpe": 1.2154637927444434,
+          "max_drawdown": -0.37746984721825466
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08796477153737126,
+          "sharpe": 0.38064606455015076,
+          "max_drawdown": -0.17802044008067633
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8443951359139563,
+          "sharpe": 2.4393378289105616,
+          "max_drawdown": -0.1516361972531367
+        }
+      ],
+      "elapsed": 92.6
+    },
+    {
+      "name": "mfd10_sl0.1_ctN_r3",
+      "stop_loss": 0.1,
+      "crash_threshold": null,
+      "recovery_days": 3,
+      "composite_score": 64.5,
+      "annual_return": 0.3422,
+      "sharpe": 1.284,
+      "max_drawdown": -0.3123,
+      "calmar": 1.0957,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34217090559402696,
+          "sharpe": 1.2840420820415392,
+          "max_drawdown": -0.3122760866677917
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34217090559402696,
+          "sharpe": 1.2840420820415392,
+          "max_drawdown": -0.3122760866677917
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8918099055209219,
+          "sharpe": 2.5355687152343727,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 93.2
+    },
+    {
+      "name": "mfd10_sl0.1_ctN_r5",
+      "stop_loss": 0.1,
+      "crash_threshold": null,
+      "recovery_days": 5,
+      "composite_score": 64.5,
+      "annual_return": 0.3422,
+      "sharpe": 1.284,
+      "max_drawdown": -0.3123,
+      "calmar": 1.0957,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34217090559402696,
+          "sharpe": 1.2840420820415392,
+          "max_drawdown": -0.3122760866677917
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34217090559402696,
+          "sharpe": 1.2840420820415392,
+          "max_drawdown": -0.3122760866677917
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8918099055209219,
+          "sharpe": 2.5355687152343727,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 92.6
+    },
+    {
+      "name": "mfd10_sl0.1_ctN_r10",
+      "stop_loss": 0.1,
+      "crash_threshold": null,
+      "recovery_days": 10,
+      "composite_score": 64.5,
+      "annual_return": 0.3422,
+      "sharpe": 1.284,
+      "max_drawdown": -0.3123,
+      "calmar": 1.0957,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34217090559402696,
+          "sharpe": 1.2840420820415392,
+          "max_drawdown": -0.3122760866677917
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34217090559402696,
+          "sharpe": 1.2840420820415392,
+          "max_drawdown": -0.3122760866677917
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8918099055209219,
+          "sharpe": 2.5355687152343727,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 93.7
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.04_r3",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.04,
+      "recovery_days": 3,
+      "composite_score": 65.0,
+      "annual_return": 0.35,
+      "sharpe": 1.3034,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1207,
+      "win_rate": 0.5665,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.35004716741299724,
+          "sharpe": 1.3034167436557866,
+          "max_drawdown": -0.31235371189087896
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.35004716741299724,
+          "sharpe": 1.3034167436557866,
+          "max_drawdown": -0.31235371189087896
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.1166531480160875,
+          "sharpe": 0.5047731280707513,
+          "max_drawdown": -0.17242539295917422
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.9054121604023853,
+          "sharpe": 2.5615562689433906,
+          "max_drawdown": -0.15272035389147975
+        }
+      ],
+      "elapsed": 94.8
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.04_r5",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.04,
+      "recovery_days": 5,
+      "composite_score": 64.7,
+      "annual_return": 0.3449,
+      "sharpe": 1.2895,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1042,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3448997100491067,
+          "sharpe": 1.2894843058656809,
+          "max_drawdown": -0.31235371189087846
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3448997100491067,
+          "sharpe": 1.2894843058656809,
+          "max_drawdown": -0.31235371189087846
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.11110923769533065,
+          "sharpe": 0.48218830714353716,
+          "max_drawdown": -0.17242539295917422
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8998412779428018,
+          "sharpe": 2.5411696827590102,
+          "max_drawdown": -0.15272035389147975
+        }
+      ],
+      "elapsed": 93.6
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.04_r10",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.04,
+      "recovery_days": 10,
+      "composite_score": 64.7,
+      "annual_return": 0.3462,
+      "sharpe": 1.2892,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1085,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3462291290150883,
+          "sharpe": 1.2892313082265892,
+          "max_drawdown": -0.312353711890879
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3462291290150883,
+          "sharpe": 1.2892313082265892,
+          "max_drawdown": -0.312353711890879
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.11317785330886232,
+          "sharpe": 0.49030202578603904,
+          "max_drawdown": -0.17358446181901405
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.899108540252344,
+          "sharpe": 2.5424052964661907,
+          "max_drawdown": -0.15272035389147975
+        }
+      ],
+      "elapsed": 91.5
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.05_r3",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.05,
+      "recovery_days": 3,
+      "composite_score": 64.8,
+      "annual_return": 0.3468,
+      "sharpe": 1.2945,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1104,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3468285983908248,
+          "sharpe": 1.2945289872351073,
+          "max_drawdown": -0.3123537118908789
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3468285983908248,
+          "sharpe": 1.2945289872351073,
+          "max_drawdown": -0.3123537118908789
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8920859437725108,
+          "sharpe": 2.535263821288021,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 91.8
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.05_r5",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.05,
+      "recovery_days": 5,
+      "composite_score": 64.6,
+      "annual_return": 0.3443,
+      "sharpe": 1.2874,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1024,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34433607125656174,
+          "sharpe": 1.2874170955871442,
+          "max_drawdown": -0.3123537118908789
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34433607125656174,
+          "sharpe": 1.2874170955871442,
+          "max_drawdown": -0.3123537118908789
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8858264103609843,
+          "sharpe": 2.516162557134711,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 92.2
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.05_r10",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.05,
+      "recovery_days": 10,
+      "composite_score": 64.6,
+      "annual_return": 0.3447,
+      "sharpe": 1.2857,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1034,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3446627913912086,
+          "sharpe": 1.2857313967875337,
+          "max_drawdown": -0.31235371189087896
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3446627913912086,
+          "sharpe": 1.2857313967875337,
+          "max_drawdown": -0.31235371189087896
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10723427916156814,
+          "sharpe": 0.46582058114896535,
+          "max_drawdown": -0.17721996175276017
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8858264103609843,
+          "sharpe": 2.516162557134711,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 91.8
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.06_r3",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.06,
+      "recovery_days": 3,
+      "composite_score": 64.8,
+      "annual_return": 0.3474,
+      "sharpe": 1.2965,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1121,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34736963588193515,
+          "sharpe": 1.2965338471534327,
+          "max_drawdown": -0.31235371189087874
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34736963588193515,
+          "sharpe": 1.2965338471534327,
+          "max_drawdown": -0.31235371189087874
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8918099055209219,
+          "sharpe": 2.5355687152343727,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 90.9
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.06_r5",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.06,
+      "recovery_days": 5,
+      "composite_score": 64.8,
+      "annual_return": 0.3463,
+      "sharpe": 1.292,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1085,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34625137277724694,
+          "sharpe": 1.2920360246049154,
+          "max_drawdown": -0.31235371189087874
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34625137277724694,
+          "sharpe": 1.2920360246049154,
+          "max_drawdown": -0.31235371189087874
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10556323233904474,
+          "sharpe": 0.45936751416286825,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8855512853187899,
+          "sharpe": 2.516458096556394,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 90.5
+    },
+    {
+      "name": "mfd10_sl0.1_ct0.06_r10",
+      "stop_loss": 0.1,
+      "crash_threshold": 0.06,
+      "recovery_days": 10,
+      "composite_score": 64.8,
+      "annual_return": 0.3466,
+      "sharpe": 1.2924,
+      "max_drawdown": -0.3124,
+      "calmar": 1.1095,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34656360917134177,
+          "sharpe": 1.2924164578566022,
+          "max_drawdown": -0.3123537118908792
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34656360917134177,
+          "sharpe": 1.2924164578566022,
+          "max_drawdown": -0.3123537118908792
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.10759383527464417,
+          "sharpe": 0.4670803340319252,
+          "max_drawdown": -0.17696338167759684
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8855512853187899,
+          "sharpe": 2.516458096556394,
+          "max_drawdown": -0.16089994020600243
+        }
+      ],
+      "elapsed": 90.9
+    },
+    {
+      "name": "mfd10_sl0.15_ctN_r3",
+      "stop_loss": 0.15,
+      "crash_threshold": null,
+      "recovery_days": 3,
+      "composite_score": 63.5,
+      "annual_return": 0.3373,
+      "sharpe": 1.2594,
+      "max_drawdown": -0.3262,
+      "calmar": 1.034,
+      "win_rate": 0.5665,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33729180808978665,
+          "sharpe": 1.2594465667691102,
+          "max_drawdown": -0.32621031696425007
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33729180808978665,
+          "sharpe": 1.2594465667691102,
+          "max_drawdown": -0.32621031696425007
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8732491011198211,
+          "sharpe": 2.5133512446816635,
+          "max_drawdown": -0.150663124329426
+        }
+      ],
+      "elapsed": 90.5
+    },
+    {
+      "name": "mfd10_sl0.15_ctN_r5",
+      "stop_loss": 0.15,
+      "crash_threshold": null,
+      "recovery_days": 5,
+      "composite_score": 63.5,
+      "annual_return": 0.3373,
+      "sharpe": 1.2594,
+      "max_drawdown": -0.3262,
+      "calmar": 1.034,
+      "win_rate": 0.5665,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33729180808978665,
+          "sharpe": 1.2594465667691102,
+          "max_drawdown": -0.32621031696425007
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33729180808978665,
+          "sharpe": 1.2594465667691102,
+          "max_drawdown": -0.32621031696425007
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8732491011198211,
+          "sharpe": 2.5133512446816635,
+          "max_drawdown": -0.150663124329426
+        }
+      ],
+      "elapsed": 90.7
+    },
+    {
+      "name": "mfd10_sl0.15_ctN_r10",
+      "stop_loss": 0.15,
+      "crash_threshold": null,
+      "recovery_days": 10,
+      "composite_score": 63.5,
+      "annual_return": 0.3373,
+      "sharpe": 1.2594,
+      "max_drawdown": -0.3262,
+      "calmar": 1.034,
+      "win_rate": 0.5665,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33729180808978665,
+          "sharpe": 1.2594465667691102,
+          "max_drawdown": -0.32621031696425007
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33729180808978665,
+          "sharpe": 1.2594465667691102,
+          "max_drawdown": -0.32621031696425007
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8732491011198211,
+          "sharpe": 2.5133512446816635,
+          "max_drawdown": -0.150663124329426
+        }
+      ],
+      "elapsed": 92.7
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.04_r3",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.04,
+      "recovery_days": 3,
+      "composite_score": 63.9,
+      "annual_return": 0.3446,
+      "sharpe": 1.2773,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0536,
+      "win_rate": 0.5676,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3446412421305407,
+          "sharpe": 1.2773044053664482,
+          "max_drawdown": -0.3271188871938278
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3446412421305407,
+          "sharpe": 1.2773044053664482,
+          "max_drawdown": -0.3271188871938278
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.07737318344754751,
+          "sharpe": 0.3402649040772292,
+          "max_drawdown": -0.17615064109880882
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8890400039396233,
+          "sharpe": 2.5449886202530823,
+          "max_drawdown": -0.14140357353110006
+        }
+      ],
+      "elapsed": 93.5
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.04_r5",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.04,
+      "recovery_days": 5,
+      "composite_score": 63.6,
+      "annual_return": 0.339,
+      "sharpe": 1.2619,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0364,
+      "win_rate": 0.5665,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33901705055607056,
+          "sharpe": 1.2619062630929792,
+          "max_drawdown": -0.32711888719382765
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33901705055607056,
+          "sharpe": 1.2619062630929792,
+          "max_drawdown": -0.32711888719382765
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.07070114699369046,
+          "sharpe": 0.3120355491656691,
+          "max_drawdown": -0.17615064109880882
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8832406410944502,
+          "sharpe": 2.5239740298255153,
+          "max_drawdown": -0.1414035735311
+        }
+      ],
+      "elapsed": 98.3
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.04_r10",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.04,
+      "recovery_days": 10,
+      "composite_score": 63.6,
+      "annual_return": 0.3405,
+      "sharpe": 1.2621,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0409,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34049518938738066,
+          "sharpe": 1.2621318003805675,
+          "max_drawdown": -0.3271188871938275
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34049518938738066,
+          "sharpe": 1.2621318003805675,
+          "max_drawdown": -0.3271188871938275
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.07271064628121704,
+          "sharpe": 0.32033800687113495,
+          "max_drawdown": -0.17730449324285302
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8825143086988625,
+          "sharpe": 2.5252194100928347,
+          "max_drawdown": -0.1414035735311
+        }
+      ],
+      "elapsed": 104.3
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.05_r3",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.05,
+      "recovery_days": 3,
+      "composite_score": 63.7,
+      "annual_return": 0.3417,
+      "sharpe": 1.269,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0446,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3416935125867844,
+          "sharpe": 1.2689909310096226,
+          "max_drawdown": -0.327118887193828
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3416935125867844,
+          "sharpe": 1.2689909310096226,
+          "max_drawdown": -0.327118887193828
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8735263716593014,
+          "sharpe": 2.5130638896079316,
+          "max_drawdown": -0.150663124329426
+        }
+      ],
+      "elapsed": 94.5
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.05_r5",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.05,
+      "recovery_days": 5,
+      "composite_score": 63.6,
+      "annual_return": 0.3391,
+      "sharpe": 1.2615,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0365,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33906870808881684,
+          "sharpe": 1.2614625461947582,
+          "max_drawdown": -0.327118887193828
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33906870808881684,
+          "sharpe": 1.2614625461947582,
+          "max_drawdown": -0.327118887193828
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8670542683150182,
+          "sharpe": 2.4933630433879346,
+          "max_drawdown": -0.15066312432942602
+        }
+      ],
+      "elapsed": 91.8
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.05_r10",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.05,
+      "recovery_days": 10,
+      "composite_score": 63.6,
+      "annual_return": 0.3396,
+      "sharpe": 1.2606,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0382,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33960813373966725,
+          "sharpe": 1.2605719333791037,
+          "max_drawdown": -0.3271188871938279
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33960813373966725,
+          "sharpe": 1.2605719333791037,
+          "max_drawdown": -0.3271188871938279
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.07149640356385878,
+          "sharpe": 0.31482448711608774,
+          "max_drawdown": -0.180721294428985
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8670542683150182,
+          "sharpe": 2.4933630433879346,
+          "max_drawdown": -0.15066312432942602
+        }
+      ],
+      "elapsed": 91.7
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.06_r3",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.06,
+      "recovery_days": 3,
+      "composite_score": 63.8,
+      "annual_return": 0.3423,
+      "sharpe": 1.2711,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0463,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34226835286733936,
+          "sharpe": 1.2710899924253927,
+          "max_drawdown": -0.3271188871938277
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34226835286733936,
+          "sharpe": 1.2710899924253927,
+          "max_drawdown": -0.3271188871938277
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8732491011198211,
+          "sharpe": 2.5133512446816635,
+          "max_drawdown": -0.150663124329426
+        }
+      ],
+      "elapsed": 92.1
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.06_r5",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.06,
+      "recovery_days": 5,
+      "composite_score": 63.7,
+      "annual_return": 0.3411,
+      "sharpe": 1.2665,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0428,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34110501736276944,
+          "sharpe": 1.266504406368928,
+          "max_drawdown": -0.3271188871938277
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34110501736276944,
+          "sharpe": 1.266504406368928,
+          "max_drawdown": -0.3271188871938277
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.06987929203524978,
+          "sharpe": 0.3082426568595374,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8667779556075776,
+          "sharpe": 2.493640884532073,
+          "max_drawdown": -0.15066312432942602
+        }
+      ],
+      "elapsed": 92.2
+    },
+    {
+      "name": "mfd10_sl0.15_ct0.06_r10",
+      "stop_loss": 0.15,
+      "crash_threshold": 0.06,
+      "recovery_days": 10,
+      "composite_score": 63.7,
+      "annual_return": 0.3415,
+      "sharpe": 1.2671,
+      "max_drawdown": -0.3271,
+      "calmar": 1.0439,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3414709890517058,
+          "sharpe": 1.2671131353001877,
+          "max_drawdown": -0.32711888719382776
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3414709890517058,
+          "sharpe": 1.2671131353001877,
+          "max_drawdown": -0.32711888719382776
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.07184435536953959,
+          "sharpe": 0.31615306362075396,
+          "max_drawdown": -0.18046580550858396
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8667779556075776,
+          "sharpe": 2.493640884532073,
+          "max_drawdown": -0.15066312432942602
+        }
+      ],
+      "elapsed": 94.0
+    },
+    {
+      "name": "mfd10_sl0.2_ctN_r3",
+      "stop_loss": 0.2,
+      "crash_threshold": null,
+      "recovery_days": 3,
+      "composite_score": 63.0,
+      "annual_return": 0.3357,
+      "sharpe": 1.2443,
+      "max_drawdown": -0.3341,
+      "calmar": 1.005,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3357325309634698,
+          "sharpe": 1.244290600389904,
+          "max_drawdown": -0.3340586611657768
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3357325309634698,
+          "sharpe": 1.244290600389904,
+          "max_drawdown": -0.3340586611657768
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8515738376961903,
+          "sharpe": 2.456731647635092,
+          "max_drawdown": -0.15113180847588178
+        }
+      ],
+      "elapsed": 146.7
+    },
+    {
+      "name": "mfd10_sl0.2_ctN_r5",
+      "stop_loss": 0.2,
+      "crash_threshold": null,
+      "recovery_days": 5,
+      "composite_score": 63.0,
+      "annual_return": 0.3357,
+      "sharpe": 1.2443,
+      "max_drawdown": -0.3341,
+      "calmar": 1.005,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3357325309634698,
+          "sharpe": 1.244290600389904,
+          "max_drawdown": -0.3340586611657768
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3357325309634698,
+          "sharpe": 1.244290600389904,
+          "max_drawdown": -0.3340586611657768
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8515738376961903,
+          "sharpe": 2.456731647635092,
+          "max_drawdown": -0.15113180847588178
+        }
+      ],
+      "elapsed": 95.6
+    },
+    {
+      "name": "mfd10_sl0.2_ctN_r10",
+      "stop_loss": 0.2,
+      "crash_threshold": null,
+      "recovery_days": 10,
+      "composite_score": 63.0,
+      "annual_return": 0.3357,
+      "sharpe": 1.2443,
+      "max_drawdown": -0.3341,
+      "calmar": 1.005,
+      "win_rate": 0.5653,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3357325309634698,
+          "sharpe": 1.244290600389904,
+          "max_drawdown": -0.3340586611657768
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3357325309634698,
+          "sharpe": 1.244290600389904,
+          "max_drawdown": -0.3340586611657768
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8515738376961903,
+          "sharpe": 2.456731647635092,
+          "max_drawdown": -0.15113180847588178
+        }
+      ],
+      "elapsed": 92.4
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.04_r3",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.04,
+      "recovery_days": 3,
+      "composite_score": 63.4,
+      "annual_return": 0.3426,
+      "sharpe": 1.2613,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0245,
+      "win_rate": 0.5671,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34258443104487935,
+          "sharpe": 1.2612882352647585,
+          "max_drawdown": -0.3343774452156328
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34258443104487935,
+          "sharpe": 1.2612882352647585,
+          "max_drawdown": -0.3343774452156328
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.09587018098477462,
+          "sharpe": 0.41589089626440484,
+          "max_drawdown": -0.17445067418489438
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8668509644370206,
+          "sharpe": 2.487865367511562,
+          "max_drawdown": -0.14187737132318845
+        }
+      ],
+      "elapsed": 92.3
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.04_r5",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.04,
+      "recovery_days": 5,
+      "composite_score": 63.1,
+      "annual_return": 0.3381,
+      "sharpe": 1.2486,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0112,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33811794739253287,
+          "sharpe": 1.248613747394822,
+          "max_drawdown": -0.3343774452156334
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33811794739253287,
+          "sharpe": 1.248613747394822,
+          "max_drawdown": -0.3343774452156334
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08996012145578969,
+          "sharpe": 0.3914470603436269,
+          "max_drawdown": -0.17445067418489438
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8609137812247922,
+          "sharpe": 2.4667295961035873,
+          "max_drawdown": -0.14187737132318864
+        }
+      ],
+      "elapsed": 91.1
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.04_r10",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.04,
+      "recovery_days": 10,
+      "composite_score": 63.1,
+      "annual_return": 0.3381,
+      "sharpe": 1.2451,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0112,
+      "win_rate": 0.5665,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33812659069986095,
+          "sharpe": 1.2450677196018844,
+          "max_drawdown": -0.33437744521563295
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33812659069986095,
+          "sharpe": 1.2450677196018844,
+          "max_drawdown": -0.33437744521563295
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.09201377781941789,
+          "sharpe": 0.39967748771114037,
+          "max_drawdown": -0.1756069054786094
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8601960599016611,
+          "sharpe": 2.467897262439485,
+          "max_drawdown": -0.14187737132318864
+        }
+      ],
+      "elapsed": 91.7
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.05_r3",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.05,
+      "recovery_days": 3,
+      "composite_score": 63.2,
+      "annual_return": 0.3394,
+      "sharpe": 1.2523,
+      "max_drawdown": -0.3344,
+      "calmar": 1.015,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33939045618677444,
+          "sharpe": 1.2522573565205775,
+          "max_drawdown": -0.33437744521563334
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.33939045618677444,
+          "sharpe": 1.2522573565205775,
+          "max_drawdown": -0.33437744521563334
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8517927205235845,
+          "sharpe": 2.4562545196492684,
+          "max_drawdown": -0.15113180847588178
+        }
+      ],
+      "elapsed": 91.2
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.05_r5",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.05,
+      "recovery_days": 5,
+      "composite_score": 63.1,
+      "annual_return": 0.3378,
+      "sharpe": 1.247,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0102,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3377724338097181,
+          "sharpe": 1.246972263924932,
+          "max_drawdown": -0.33437744521563334
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3377724338097181,
+          "sharpe": 1.246972263924932,
+          "max_drawdown": -0.33437744521563334
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8451914952468376,
+          "sharpe": 2.436357226497942,
+          "max_drawdown": -0.15113180847588165
+        }
+      ],
+      "elapsed": 92.2
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.05_r10",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.05,
+      "recovery_days": 10,
+      "composite_score": 63.0,
+      "annual_return": 0.3372,
+      "sharpe": 1.2435,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0085,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3372189560199381,
+          "sharpe": 1.2435109346704163,
+          "max_drawdown": -0.3343774452156332
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3372189560199381,
+          "sharpe": 1.2435109346704163,
+          "max_drawdown": -0.3343774452156332
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08763452364235702,
+          "sharpe": 0.3813064364907888,
+          "max_drawdown": -0.17851740554300094
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8451914952468376,
+          "sharpe": 2.436357226497942,
+          "max_drawdown": -0.15113180847588165
+        }
+      ],
+      "elapsed": 94.0
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.06_r3",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.06,
+      "recovery_days": 3,
+      "composite_score": 63.3,
+      "annual_return": 0.3401,
+      "sharpe": 1.2548,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0171,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34007917639350316,
+          "sharpe": 1.2547832097150873,
+          "max_drawdown": -0.3343774452156328
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.34007917639350316,
+          "sharpe": 1.2547832097150873,
+          "max_drawdown": -0.3343774452156328
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8515738376961903,
+          "sharpe": 2.456731647635092,
+          "max_drawdown": -0.15113180847588178
+        }
+      ],
+      "elapsed": 95.5
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.06_r5",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.06,
+      "recovery_days": 5,
+      "composite_score": 63.2,
+      "annual_return": 0.3389,
+      "sharpe": 1.2501,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0135,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.338880614033505,
+          "sharpe": 1.250130334622809,
+          "max_drawdown": -0.3343774452156328
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.338880614033505,
+          "sharpe": 1.250130334622809,
+          "max_drawdown": -0.3343774452156328
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.08600130526795713,
+          "sharpe": 0.3748513294074417,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8449733926875787,
+          "sharpe": 2.436823469316148,
+          "max_drawdown": -0.15113180847588165
+        }
+      ],
+      "elapsed": 90.5
+    },
+    {
+      "name": "mfd10_sl0.2_ct0.06_r10",
+      "stop_loss": 0.2,
+      "crash_threshold": 0.06,
+      "recovery_days": 10,
+      "composite_score": 63.2,
+      "annual_return": 0.3392,
+      "sharpe": 1.2507,
+      "max_drawdown": -0.3344,
+      "calmar": 1.0146,
+      "win_rate": 0.5659,
+      "recovery_days_actual": 154,
+      "n_trades": 167,
+      "windows": [
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3392445925623748,
+          "sharpe": 1.250741288516825,
+          "max_drawdown": -0.334377445215633
+        },
+        {
+          "name": "\u5168\u533a\u95f4",
+          "annual_return": 0.3392445925623748,
+          "sharpe": 1.250741288516825,
+          "max_drawdown": -0.334377445215633
+        },
+        {
+          "name": "2022\u718a\u5e02",
+          "annual_return": 0.0879877159172171,
+          "sharpe": 0.3825984373169177,
+          "max_drawdown": -0.17826122944588316
+        },
+        {
+          "name": "\u4fee\u590d\u725bOOS",
+          "annual_return": 0.8449733926875787,
+          "sharpe": 2.436823469316148,
+          "max_drawdown": -0.15113180847588165
+        }
+      ],
+      "elapsed": 91.2
+    }
+  ],
+  "ranking": [
+    "mfd10_sl0.1_ct0.04_r3",
+    "mfd10_sl0.1_ct0.05_r3",
+    "mfd10_sl0.1_ct0.06_r3",
+    "mfd10_sl0.1_ct0.06_r5",
+    "mfd10_sl0.1_ct0.06_r10",
+    "mfd10_sl0.1_ct0.04_r5",
+    "mfd10_sl0.1_ct0.04_r10",
+    "mfd10_sl0.1_ct0.05_r5",
+    "mfd10_sl0.1_ct0.05_r10",
+    "mfd10_sl0.1_ctN_r3",
+    "mfd10_sl0.1_ctN_r5",
+    "mfd10_sl0.1_ctN_r10",
+    "mfd10_sl0.15_ct0.04_r3",
+    "mfd10_sl0.15_ct0.06_r3",
+    "mfd10_sl0.15_ct0.05_r3",
+    "mfd10_sl0.15_ct0.06_r5",
+    "mfd10_sl0.15_ct0.06_r10",
+    "mfd10_sl0.15_ct0.04_r5",
+    "mfd10_sl0.15_ct0.04_r10",
+    "mfd10_sl0.15_ct0.05_r5",
+    "mfd10_sl0.15_ct0.05_r10",
+    "mfd10_sl0.15_ctN_r3",
+    "mfd10_sl0.15_ctN_r5",
+    "mfd10_sl0.15_ctN_r10",
+    "mfd10_sl0.2_ct0.04_r3",
+    "mfd10_sl0.2_ct0.06_r3",
+    "mfd10_sl0.2_ct0.05_r3",
+    "mfd10_sl0.2_ct0.06_r5",
+    "mfd10_sl0.2_ct0.06_r10",
+    "mfd10_sl0.2_ct0.04_r5",
+    "mfd10_sl0.2_ct0.04_r10",
+    "mfd10_sl0.2_ct0.05_r5",
+    "mfd10_sl0.2_ctN_r3",
+    "mfd10_sl0.2_ctN_r5",
+    "mfd10_sl0.2_ctN_r10",
+    "mfd10_sl0.2_ct0.05_r10",
+    "mfd10_slN_ct0.04_r3",
+    "mfd10_slN_ct0.06_r3",
+    "mfd10_slN_ct0.05_r3",
+    "mfd10_slN_ct0.06_r5",
+    "mfd10_slN_ct0.06_r10",
+    "mfd10_slN_ct0.04_r5",
+    "mfd10_slN_ct0.04_r10",
+    "mfd10_slN_ct0.05_r5",
+    "mfd10_slN_ct0.05_r10",
+    "mfd10_slN_ctN_r3"
+  ]
+}

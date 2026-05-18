@@ -1,0 +1,93 @@
+{
+  "strategy": {
+    "name": "MF_D10_EMERGENCY_V1",
+    "version": "2026-05-18",
+    "key_insight": "mf_d10_rp + 个股止损10% + 大盘熔断4%/3天恢复。回测综合分65.0（原版60.6）",
+    "base_strategy": "mf_d10_rp",
+    "emergency_rules": {
+      "stop_loss": 0.10,
+      "description": "持仓累计收益 ≤ -10% 时次日卖出",
+      "crash_threshold": 0.04,
+      "description_crash": "全市场中位数日收益 ≤ -4% 时次日仓位降至50%",
+      "crash_reduce_to": 0.50,
+      "crash_recovery_days": 3
+    }
+  },
+  "selector": {
+    "type": "MultiFactorSelector",
+    "normalize_weights": true,
+    "winsorize": 0.01,
+    "weights": {
+      "alpha101_001": 0.02,
+      "alpha101_002": 0.02,
+      "alpha101_003": 0.02,
+      "alpha101_004": 0.02,
+      "alpha101_005": 0.02,
+      "alpha101_006": 0.02,
+      "alpha101_007": 0.02,
+      "alpha101_008": 0.02,
+      "alpha101_009": 0.02,
+      "alpha101_010": 0.02,
+      "alpha101_011": 0.02,
+      "alpha101_012": 0.02,
+      "alpha101_013": 0.02,
+      "alpha101_014": 0.02,
+      "alpha101_015": 0.02,
+      "alpha101_016": 0.02,
+      "alpha101_017": 0.02,
+      "alpha101_018": 0.02,
+      "alpha101_019": 0.02,
+      "alpha101_020": 0.02,
+      "alpha101_021": 0.02,
+      "alpha101_022": 0.02,
+      "alpha101_023": 0.02,
+      "alpha101_024": 0.02,
+      "alpha101_025": 0.02,
+      "alpha101_026": 0.02,
+      "alpha101_027": 0.02,
+      "alpha101_028": 0.02,
+      "alpha101_029": 0.02,
+      "alpha101_030": 0.02,
+      "alpha101_031": 0.02,
+      "alpha101_032": 0.02,
+      "alpha101_033": 0.02,
+      "alpha101_034": 0.02,
+      "alpha101_035": 0.02,
+      "alpha101_036": 0.02,
+      "alpha101_037": 0.02,
+      "alpha101_038": 0.02,
+      "alpha101_039": 0.02,
+      "alpha101_040": 0.02,
+      "alpha101_041": 0.02,
+      "alpha101_042": 0.02,
+      "alpha101_043": 0.02,
+      "alpha101_044": 0.02,
+      "alpha101_045": 0.02,
+      "alpha101_046": 0.02,
+      "alpha101_047": 0.02,
+      "alpha101_048": 0.02,
+      "alpha101_049": 0.02,
+      "alpha101_050": 0.02
+    }
+  },
+  "composer": {
+    "type": "LayeredComposer",
+    "top_n": 20,
+    "constraints": [
+      {
+        "max_single_weight": 0.1
+      }
+    ]
+  },
+  "risk": {
+    "max_position_pct": 0.1,
+    "max_total_position": 0.85,
+    "stop_loss": null,
+    "take_profit": null
+  },
+  "rebal": {
+    "freq_days": 10,
+    "min_hold_days": 5,
+    "note": "每10个交易日调仓一次"
+  }
+}

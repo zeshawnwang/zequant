@@ -1,0 +1,113 @@
+{
+  "strategy": "mf_d10_rp_emergency",
+  "description": "个股止损-15% + 大盘熔断-5%",
+  "config": {
+    "name": "mf_d10_rp_emergency",
+    "rebal_freq": 10,
+    "top_n": 20,
+    "min_hold_days": 5,
+    "positioner_type": "rp",
+    "factor_names": [
+      "a30",
+      "gtja121",
+      "a99",
+      "gtja168",
+      "a31",
+      "gtja76",
+      "a98",
+      "a42",
+      "gtja104",
+      "gtja62",
+      "gtja12",
+      "a97",
+      "gtja123",
+      "gtja13",
+      "momentum_20",
+      "boll_position",
+      "a88",
+      "gtja144",
+      "ff_mkt",
+      "gtja99",
+      "a8",
+      "a91",
+      "gtja113",
+      "a69",
+      "gtja83",
+      "gtja141",
+      "a80",
+      "volume_ratio",
+      "macd",
+      "gtja108",
+      "gtja164",
+      "rsi_14",
+      "returns",
+      "gtja117",
+      "volatility_20",
+      "gtja34",
+      "gtja49",
+      "a27",
+      "gtja185",
+      "gtja91",
+      "a85",
+      "gtja176",
+      "gtja90",
+      "momentum_5",
+      "gtja103",
+      "gtja139",
+      "gtja171",
+      "gtja142",
+      "macd_signal",
+      "gtja148",
+      "gtja105",
+      "a64",
+      "gtja85",
+      "gtja120",
+      "a41",
+      "gtja127"
+    ],
+    "use_universe_filter": true,
+    "tx_cost": 0.002
+  },
+  "emergency_config": {
+    "stop_loss": 0.15,
+    "crash_threshold": 0.05,
+    "crash_reduce_to": 0.5,
+    "crash_recovery_days": 5
+  },
+  "full_range": {
+    "annual_return": 0.3391,
+    "sharpe": 1.2615,
+    "max_drawdown": -0.3271,
+    "calmar": 1.0365,
+    "win_rate": 0.5671,
+    "n_trades": 167,
+    "drawdown_duration": 50,
+    "recovery_days": 154
+  },
+  "windows": [
+    {
+      "name": "全区间",
+      "annual_return": 0.3391,
+      "sharpe": 1.2615,
+      "max_drawdown": -0.3271
+    },
+    {
+      "name": "全区间",
+      "annual_return": 0.3391,
+      "sharpe": 1.2615,
+      "max_drawdown": -0.3271
+    },
+    {
+      "name": "2022熊市",
+      "annual_return": 0.0699,
+      "sharpe": 0.3082,
+      "max_drawdown": -0.1805
+    },
+    {
+      "name": "修复牛OOS",
+      "annual_return": 0.8671,
+      "sharpe": 2.4934,
+      "max_drawdown": -0.1507
+    }
+  ]
+}
