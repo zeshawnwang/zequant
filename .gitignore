@@ -60,3 +60,6 @@ daily/**/x6_results/
 daily/**/x7_results/
 daily/**/x8_results/
 daily/**/x9_results/
+
+# Cache (APFS clones of quant_data.db)
+data/cache/

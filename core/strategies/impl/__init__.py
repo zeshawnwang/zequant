@@ -69,6 +69,9 @@ from .mf_d10_opt_0517 import build_mf_d10_opt_0517
 # 2026-05-18 紧急事件处理策略
 from .mf_d10_emergency_v1 import build_mf_d10_emergency_v1
 
+# 2026-05-18 MarketStateSelector动态策略切换
+from .mss_dynamic import build_mss_dynamic
+
 # ── 策略注册 ──
 register_strategy("mf_d10_opt_0517", category="multi_factor",
     description="MF+双周+RP 2026-05-17修正版，真实费率+Universe过滤后三区间通过")(
@@ -77,3 +80,7 @@ register_strategy("mf_d10_opt_0517", category="multi_factor",
 register_strategy("mf_d10_emergency_v1", category="multi_factor",
     description="MF_D10+个股止损10%+大盘熔断4%/3天恢复 紧急处理版本，综合分65.0")(
     build_mf_d10_emergency_v1)
+
+register_strategy("mss_dynamic", category="dynamic_switch",
+    description="MarketStateSelector动态策略切换：26.31%/1.472/-13.16%，9/9窗口正收益")(
+    build_mss_dynamic)

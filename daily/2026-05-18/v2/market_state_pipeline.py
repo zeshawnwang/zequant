@@ -1070,7 +1070,29 @@ def run_experiment_final():
     state_counts = {s: states.count(s) for s in ["bull", "bear", "oscillate", "recovery"]}
     logger.info(f"状态分布: {state_counts}")
 
-    # 使用 V6 MF主导版（从调优结果选最佳）
+    # V5_simple: 调优最佳 (26.31%/1.472/-13.16%)
+    best_config_v5 = {
+        "bull": [
+            {"strategy": "mf_d10_rp", "weight": 0.7, "note": ""},
+            {"strategy": "chip_rp", "weight": 0.3, "note": ""},
+        ],
+        "bear": [
+            {"strategy": "chip_covrp", "weight": 0.7, "note": ""},
+            {"strategy": "mf_vol_d10_rp", "weight": 0.3, "note": ""},
+        ],
+        "oscillate": [
+            {"strategy": "mf50_chip50", "weight": 0.5, "note": ""},
+            {"strategy": "chip_covrp", "weight": 0.5, "note": ""},
+        ],
+        "recovery": [
+            {"strategy": "mf60_chip40", "weight": 0.6, "note": ""},
+            {"strategy": "osr_d10", "weight": 0.4, "note": ""},
+        ],
+    }
+    dr_best_v5 = run_mss_simple_backtest(best_config_v5, sub_drs, states, nd)
+    m_best_v5 = compute_metrics(dr_best_v5, name="MSS_v5_simple")
+
+    # 使用 V6 MF主导版
     best_config = {
         "bull": [
             {"strategy": "mf_d10_rp", "weight": 0.8, "note": ""},
@@ -1124,9 +1146,10 @@ def run_experiment_final():
 
     # 窗口分析
     w_best = window_analysis(dr_best, ds, WINDOWS)
+    w_best_v5 = window_analysis(dr_best_v5, ds, WINDOWS)
     w_best_v3 = window_analysis(dr_best_v3, ds, WINDOWS)
 
-    all_results = [m_best, m_best_v3]
+    all_results = [m_best_v5, m_best, m_best_v3]
 
     # 对比基线：各子策略 + 静态组合
     for name in ["mf_d10_rp", "chip_covrp", "osr_d10", "c01_layered_d5",
@@ -1157,6 +1180,20 @@ def run_experiment_final():
         print(f"  {w['name']:<18} {ar:>6.2f}% {sp:>7.3f} {dd:>6.2f}% {ca:>7.3f}")
 
     print(f"\n{'=' * 100}")
+    print("  MSS V5_simple 窗口分析 🏆")
+    print(f"{'=' * 100}")
+    print(f"{'窗口':<20} {'年化%':<8} {'Sharpe':<8} {'回撤%':<8} {'Calmar':<8}")
+    print('-' * 60)
+    for w in w_best_v5:
+        if w.get("n_days", 0) == 0:
+            continue
+        ar = w.get("annual_return", 0) * 100
+        sp = w.get("sharpe", 0)
+        dd = abs(w.get("max_drawdown", 0)) * 100
+        ca = w.get("calmar", 0)
+        print(f"  {w['name']:<18} {ar:>6.2f}% {sp:>7.3f} {dd:>6.2f}% {ca:>7.3f}")
+
+    print(f"\n{'=' * 100}")
     print("  MSS V3 窗口分析")
     print(f"{'=' * 100}")
     print(f"{'窗口':<20} {'年化%':<8} {'Sharpe':<8} {'回撤%':<8} {'Calmar':<8}")
@@ -1174,6 +1211,11 @@ def run_experiment_final():
     out = {
         "experiment": "final",
         "state_distribution": state_counts,
+        "best_config_v5": {
+            "config": best_config_v5,
+            "metrics": m_best_v5,
+            "windows": [w for w in w_best_v5 if w.get("n_days", 0) > 0],
+        },
         "best_config_v6": {
             "config": best_config,
             "metrics": m_best,

@@ -1,0 +1,48 @@
+{
+  "strategy": {
+    "name": "mss_dynamic",
+    "version": "1.0",
+    "description": "MarketStateSelector动态切换策略：根据市场状态自动切换子策略组合",
+    "target_market": "所有市场环境",
+    "created": "2026-05-18"
+  },
+  "state_detection": {
+    "type": "market_state_selector",
+    "note": "基于MA200位置+MA5/MA20/MA60均线斜率的市场状态检测",
+    "bull_condition": "above_ma200>0 and ma20_slope>0",
+    "bear_condition": "above_ma200<0 and ma20_slope<0 and ma60_slope<0",
+    "recovery_condition": "above_ma200<0 and ma5_slope>0.005",
+    "oscillate_condition": "均线缠绕: spread(MA5/MA20/MA60)<3%"
+  },
+  "state_strategies": {
+    "bull": [
+      {"strategy": "mf_d10_rp",     "weight": 0.6, "note": "牛市满仓多因子"},
+      {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动保护择时"},
+      {"strategy": "chip_covrp",    "weight": 0.2, "note": "协方差防御底仓"}
+    ],
+    "bear": [
+      {"strategy": "chip_covrp",    "weight": 0.6, "note": "熊市协方差保护"},
+      {"strategy": "chip_equal_d3", "weight": 0.2, "note": "快速恢复"},
+      {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动择时做多"}
+    ],
+    "oscillate": [
+      {"strategy": "chip_covrp",    "weight": 0.4, "note": "低回撤底仓"},
+      {"strategy": "mf50_chip50",   "weight": 0.3, "note": "均衡配置"},
+      {"strategy": "c01_layered_d5","weight": 0.3, "note": "趋势择时保护"}
+    ],
+    "recovery": [
+      {"strategy": "chip_equal_d3", "weight": 0.4, "note": "快速切换底仓"},
+      {"strategy": "mf60_chip40",   "weight": 0.3, "note": "温和进攻"},
+      {"strategy": "mf_vol_d10_rp", "weight": 0.3, "note": "波动保护做多"}
+    ]
+  },
+  "expected": {
+    "annual_return": 0.2475,
+    "sharpe": 1.421,
+    "max_drawdown": -0.1384,
+    "calmar": 1.788,
+    "recovery_days": 9,
+    "windows_positive": "9/9",
+    "notes": "全区间2019-01~2026-04, 恢复仅9天(大幅提升)"
+  }
+}

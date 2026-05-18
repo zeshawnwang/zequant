@@ -21,24 +21,24 @@ class MarketStateSelector:
     def __init__(self):
         self.state_strategies = {
             "bull": [
-                {"strategy": "mf_d10_rp", "weight": 0.6, "note": "牛市无择时满仓"},
-                {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动保护"},
-                {"strategy": "chip_rp", "weight": 0.2, "note": "低波动防御"},
+                {"strategy": "mf_d10_rp",     "weight": 0.6, "note": "牛市满仓多因子"},
+                {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动保护择时"},
+                {"strategy": "chip_covrp",    "weight": 0.2, "note": "协方差防御底仓"},
             ],
             "bear": [
-                {"strategy": "chip_vol_rp", "weight": 0.5, "note": "熊市主打防守"},
-                {"strategy": "chip_covrp", "weight": 0.3, "note": "低风险底仓"},
-                {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "少量做多"},
+                {"strategy": "chip_covrp",    "weight": 0.6, "note": "熊市协方差保护"},
+                {"strategy": "chip_equal_d3", "weight": 0.2, "note": "快速恢复"},
+                {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动择时做多"},
             ],
             "oscillate": [
-                {"strategy": "mf50_chip50_combo", "weight": 0.4, "note": "均衡配置"},
-                {"strategy": "chip_covrp", "weight": 0.3, "note": "低回撤底仓"},
-                {"strategy": "ga_d10", "weight": 0.3, "note": "GA进攻"},
+                {"strategy": "chip_covrp",    "weight": 0.4, "note": "低回撤底仓"},
+                {"strategy": "mf50_chip50",   "weight": 0.3, "note": "均衡配置"},
+                {"strategy": "c01_layered_d5","weight": 0.3, "note": "趋势择时保护"},
             ],
             "recovery": [
-                {"strategy": "mf60_chip40_combo", "weight": 0.5, "note": "温和进攻"},
-                {"strategy": "osr_d10", "weight": 0.3, "note": "超跌反弹"},
-                {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动保护"},
+                {"strategy": "chip_equal_d3",  "weight": 0.4, "note": "快速切换底仓"},
+                {"strategy": "mf60_chip40",   "weight": 0.3, "note": "温和进攻"},
+                {"strategy": "mf_vol_d10_rp", "weight": 0.3, "note": "波动保护做多"},
             ],
         }
 
