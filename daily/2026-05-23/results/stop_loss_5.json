@@ -1,0 +1,38 @@
+{
+  "stop_loss_pct": 0.05,
+  "label": "-5%",
+  "full_range": {
+    "annual_return": 1.1026,
+    "sharpe": 3.4123,
+    "max_drawdown": -0.1486,
+    "calmar": 7.4204,
+    "win_rate": 0.5953,
+    "n_trades": 1167
+  },
+  "windows": [
+    {
+      "window": "全区间",
+      "annual_return": 1.1026,
+      "sharpe": 3.4123,
+      "max_drawdown": -0.1486
+    },
+    {
+      "window": "全区间",
+      "annual_return": 1.1026,
+      "sharpe": 3.4123,
+      "max_drawdown": -0.1486
+    },
+    {
+      "window": "2022熊市",
+      "annual_return": 0.9352,
+      "sharpe": 2.9874,
+      "max_drawdown": -0.1291
+    },
+    {
+      "window": "修复牛OOS",
+      "annual_return": 1.3962,
+      "sharpe": 3.9341,
+      "max_drawdown": -0.0718
+    }
+  ]
+}

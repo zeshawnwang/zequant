@@ -1,14 +1,125 @@
 {
   "strategy": {
     "name": "mss_dynamic",
-    "version": "1.0",
-    "description": "MarketStateSelector动态切换策略：根据市场状态自动切换子策略组合",
+    "version": "6.0",
+    "description": "V6: 状态级trailing+rf+top_n渐进+TX敏感+walk-forward验证",
     "target_market": "所有市场环境",
-    "created": "2026-05-18"
+    "created": "2026-05-18",
+    "updated": "2026-05-27"
+  },
+  "versions": {
+    "baseline": {
+      "version": "1.0",
+      "description": "原始版，仅名称ST过滤，无止损",
+      "expected": {
+        "annual_return": 0.2356,
+        "sharpe": 1.361,
+        "max_drawdown": -0.1402,
+        "calmar": 1.68
+      }
+    },
+    "v2b": {
+      "version": "2.0",
+      "description": "增强ST过滤 + 差异化个股止损(mf系列-8%/chip系列-10%)",
+      "expected": {
+        "annual_return": 0.3022,
+        "sharpe": 1.597,
+        "max_drawdown": -0.1315,
+        "calmar": 2.298
+      }
+    },
+    "v2c": {
+      "version": "2.0",
+      "description": "V2b + 置信度联动权重",
+      "expected": {
+        "annual_return": 0.3017,
+        "sharpe": 1.607,
+        "max_drawdown": -0.1273,
+        "calmar": 2.369
+      }
+    },
+    "v3": {
+      "version": "3.0",
+      "description": "V3: composite择时+紧止损6/8+mf_rf5频率+市场广度+15%移动止盈",
+      "expected": {
+        "annual_return": 0.5457,
+        "sharpe": 2.592,
+        "max_drawdown": -0.092,
+        "calmar": 5.933
+      }
+    },
+    "v4": {
+      "version": "4.0",
+      "description": "V4极致: V3所有+5%移动止盈(recovery修复未生效, osr替换待验证)",
+      "expected": {
+        "annual_return": 0.5508,
+        "sharpe": 2.613,
+        "max_drawdown": -0.092,
+        "calmar": 5.988
+      },
+      "trail5": {
+        "description": "5%移动止盈极致参数 — 回撤仅4.61%",
+        "expected": {
+          "annual_return": 0.9336,
+          "sharpe": 4.48,
+          "max_drawdown": -0.0461,
+          "calmar": 20.27
+        }
+      }
+    },
+    "v5": {
+      "version": "5.0",
+      "description": "V5: trail细扫描(3%-10%)+chip_v2/osr_v2信号接入+实盘top_n对比",
+      "trail3": {
+        "note": "回测最优 trail=3% + research top_n=50/40",
+        "expected": {
+          "annual_return": 1.4277,
+          "sharpe": 6.875,
+          "max_drawdown": -0.0372,
+          "calmar": 38.412
+        }
+      },
+      "trail5": {
+        "note": "稳健推荐",
+        "expected": {
+          "annual_return": 0.9336,
+          "sharpe": 4.48,
+          "max_drawdown": -0.0461,
+          "calmar": 20.27
+        }
+      },
+      "trail5_live": {
+        "note": "实盘 top_n=10/8/6",
+        "expected": {
+          "annual_return": 0.9952,
+          "sharpe": 4.035,
+          "max_drawdown": -0.1013,
+          "calmar": 9.821
+        }
+      },
+      "chipv2_trail5": {
+        "note": "chip_v2/osr_v2信号源, 年化+56%但回撤+84%",
+        "expected": {
+          "annual_return": 1.4943,
+          "sharpe": 4.819,
+          "max_drawdown": -0.0847,
+          "calmar": 17.653
+        }
+      }
+    },
+    "v6": {
+      "version": "6.0",
+      "description": "V6: 状态级差异化参数验证",
+      "expected": {
+        "annual_return": 0.9214,
+        "sharpe": 4.2716,
+        "max_drawdown": -0.0538,
+        "calmar": 17.1345
+      }
+    }
   },
   "state_detection": {
     "type": "market_state_selector",
-    "note": "基于MA200位置+MA5/MA20/MA60均线斜率的市场状态检测",
     "bull_condition": "above_ma200>0 and ma20_slope>0",
     "bear_condition": "above_ma200<0 and ma20_slope<0 and ma60_slope<0",
     "recovery_condition": "above_ma200<0 and ma5_slope>0.005",
@@ -16,33 +127,85 @@
   },
   "state_strategies": {
     "bull": [
-      {"strategy": "mf_d10_rp",     "weight": 0.6, "note": "牛市满仓多因子"},
-      {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动保护择时"},
-      {"strategy": "chip_covrp",    "weight": 0.2, "note": "协方差防御底仓"}
+      {
+        "strategy": "mf_d10_rp",
+        "weight": 0.6
+      },
+      {
+        "strategy": "mf_vol_d10_rp",
+        "weight": 0.2
+      },
+      {
+        "strategy": "chip_covrp",
+        "weight": 0.2
+      }
     ],
     "bear": [
-      {"strategy": "chip_covrp",    "weight": 0.6, "note": "熊市协方差保护"},
-      {"strategy": "chip_equal_d3", "weight": 0.2, "note": "快速恢复"},
-      {"strategy": "mf_vol_d10_rp", "weight": 0.2, "note": "波动择时做多"}
+      {
+        "strategy": "chip_covrp",
+        "weight": 0.6
+      },
+      {
+        "strategy": "chip_equal_d3",
+        "weight": 0.2
+      },
+      {
+        "strategy": "mf_vol_d10_rp",
+        "weight": 0.2
+      }
     ],
     "oscillate": [
-      {"strategy": "chip_covrp",    "weight": 0.4, "note": "低回撤底仓"},
-      {"strategy": "mf50_chip50",   "weight": 0.3, "note": "均衡配置"},
-      {"strategy": "c01_layered_d5","weight": 0.3, "note": "趋势择时保护"}
+      {
+        "strategy": "chip_covrp",
+        "weight": 0.4
+      },
+      {
+        "strategy": "mf50_chip50",
+        "weight": 0.3
+      },
+      {
+        "strategy": "c01_layered_d5",
+        "weight": 0.3
+      }
     ],
     "recovery": [
-      {"strategy": "chip_equal_d3", "weight": 0.4, "note": "快速切换底仓"},
-      {"strategy": "mf60_chip40",   "weight": 0.3, "note": "温和进攻"},
-      {"strategy": "mf_vol_d10_rp", "weight": 0.3, "note": "波动保护做多"}
+      {
+        "strategy": "chip_covrp",
+        "weight": 0.4
+      },
+      {
+        "strategy": "osr_d10",
+        "weight": 0.3
+      },
+      {
+        "strategy": "mf_vol_d10_rp",
+        "weight": 0.3
+      }
     ]
   },
+  "stop_loss": {
+    "mf_d10_rp": 0.06,
+    "mf_vol_d10_rp": 0.06,
+    "chip_covrp": 0.08,
+    "chip_equal_d3": 0.08,
+    "c01_layered_d5": 0.06,
+    "chip_rp": 0.08,
+    "osr_d10": 0.06,
+    "mf50_chip50": 0.06,
+    "mf60_chip40": 0.06
+  },
+  "confidence_weight_adjustment": {
+    "enabled_in": "v2c",
+    "threshold": 0.5,
+    "adjustments": {
+      "mf_d10_rp": 0.6,
+      "c01_layered_d5": 0.7
+    }
+  },
   "expected": {
-    "annual_return": 0.2475,
-    "sharpe": 1.421,
-    "max_drawdown": -0.1384,
-    "calmar": 1.788,
-    "recovery_days": 9,
-    "windows_positive": "9/9",
-    "notes": "全区间2019-01~2026-04, 恢复仅9天(大幅提升)"
+    "annual_return": 0.9214,
+    "sharpe": 4.2716,
+    "max_drawdown": -0.0538,
+    "calmar": 17.1345
   }
 }

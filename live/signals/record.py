@@ -179,6 +179,71 @@ def parse_trade(text: str) -> Optional[Trade]:
         return None
 
 
+def _verify_execution(trade_date: str, strategy: str):
+    """与信号文件交叉验证成交情况。"""
+    sig_base = f"data_live/{strategy}"
+    if not os.path.exists(sig_base):
+        logger.warning(f"信号目录不存在: {sig_base}，跳过验证")
+        return
+
+    dirs = sorted([d for d in os.listdir(sig_base)
+                   if d.isdigit() and os.path.isdir(os.path.join(sig_base, d))],
+                  reverse=True)
+    sig_dir = None
+    for d in dirs:
+        if d < trade_date.replace('-', ''):
+            sig_dir = os.path.join(sig_base, d)
+            break
+
+    if not sig_dir:
+        logger.warning(f"未找到 {trade_date} 之前的信号目录，跳过验证")
+        return
+
+    sig_path = os.path.join(sig_dir, "build.json")
+    if not os.path.exists(sig_path):
+        logger.warning(f"信号文件不存在: {sig_path}，跳过验证")
+        return
+
+    with open(sig_path) as f:
+        sig = json.load(f)
+
+    expected = {o["symbol"]: o for o in sig.get("buy_orders", [])}
+    if not expected:
+        logger.info("信号无买入，跳过验证")
+        return
+
+    live_db = Database(LIVE_DB_PATH)
+    actual_rows = live_db.conn.execute("""
+        SELECT symbol, direction, shares, price, amount
+        FROM trades WHERE strategy=? AND date=?
+    """, [strategy, trade_date]).fetchall()
+    live_db.close()
+
+    actual = {}
+    for r in actual_rows:
+        if r[1] in ("B", "BUY", "买入"):
+            actual[r[0]] = {"shares": r[2], "price": r[3]}
+
+    matched = 0
+    missed = []
+    for sym, e in expected.items():
+        if sym in actual:
+            matched += 1
+        else:
+            missed.append(sym)
+
+    extra = [sym for sym in actual if sym not in expected]
+
+    logger.info(f"\n📋 成交验证 ({trade_date}):")
+    logger.info(f"  信号买入: {len(expected)}只")
+    logger.info(f"  实际买入: {len(actual)}只")
+    logger.info(f"  已匹配: {matched}只")
+    if missed:
+        logger.warning(f"  ❌ 未执行买入: {', '.join(missed)}")
+    if extra:
+        logger.warning(f"  ❓ 额外买入: {', '.join(extra)}")
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="实盘成交记录")
@@ -188,9 +253,14 @@ def main():
     parser.add_argument("--init-cash", type=float, default=None, help="首次建仓初始资金")
     parser.add_argument("--deposit", type=float, default=0, help="追加资金")
     parser.add_argument("--withdraw", type=float, default=0, help="提取资金")
+    parser.add_argument("--verify", action="store_true", help="与信号文件交叉验证")
     args = parser.parse_args()
 
     trade_date = args.date or datetime.now().strftime("%Y-%m-%d")
+
+    # 成交确认模式：读取信号，比对实际成交
+    if args.verify:
+        _verify_execution(trade_date, args.strategy)
 
     trades: List[Trade] = []
     if args.trades:

@@ -1,0 +1,150 @@
+{
+  "best_combination": [
+    "hysteresis",
+    "trailing_stop"
+  ],
+  "best_calmar": 4.7466,
+  "results": [
+    [
+      "baseline",
+      {
+        "config_name": "combo_baseline",
+        "metrics": {
+          "name": "MSS_dynamic",
+          "annual_return": 0.3355,
+          "sharpe": 1.9997,
+          "max_drawdown": -0.1258,
+          "calmar": 2.6677,
+          "win_rate": 0.5854
+        },
+        "windows": [
+          {
+            "name": "全区间",
+            "annual_return": 0.3355,
+            "sharpe": 1.9997,
+            "max_drawdown": -0.1258,
+            "calmar": 2.6677,
+            "win_rate": 0.5854
+          },
+          {
+            "name": "2022熊市",
+            "annual_return": 0.3398,
+            "sharpe": 1.9029,
+            "max_drawdown": -0.0965,
+            "calmar": 3.5212,
+            "win_rate": 0.6157
+          },
+          {
+            "name": "OOS修复牛",
+            "annual_return": 0.49,
+            "sharpe": 2.2598,
+            "max_drawdown": -0.1017,
+            "calmar": 4.8165,
+            "win_rate": 0.5974
+          }
+        ],
+        "state_distribution": {
+          "bull": 861,
+          "bear": 189,
+          "oscillate": 688,
+          "recovery": 51,
+          "panic": 0
+        }
+      }
+    ],
+    [
+      "hysteresis",
+      {
+        "config_name": "combo_hysteresis",
+        "metrics": {
+          "name": "MSS_dynamic",
+          "annual_return": 0.4712,
+          "sharpe": 1.2088,
+          "max_drawdown": -0.1193,
+          "calmar": 3.9492,
+          "win_rate": 0.5849
+        },
+        "windows": [
+          {
+            "name": "全区间",
+            "annual_return": 0.4712,
+            "sharpe": 1.2088,
+            "max_drawdown": -0.1193,
+            "calmar": 3.9492,
+            "win_rate": 0.5849
+          },
+          {
+            "name": "2022熊市",
+            "annual_return": 0.3876,
+            "sharpe": 2.1026,
+            "max_drawdown": -0.0916,
+            "calmar": 4.2297,
+            "win_rate": 0.624
+          },
+          {
+            "name": "OOS修复牛",
+            "annual_return": 0.441,
+            "sharpe": 2.1098,
+            "max_drawdown": -0.1017,
+            "calmar": 4.334,
+            "win_rate": 0.5952
+          }
+        ],
+        "state_distribution": {
+          "bull": 858,
+          "bear": 190,
+          "oscillate": 695,
+          "recovery": 46,
+          "panic": 0
+        }
+      }
+    ],
+    [
+      "trailing_stop",
+      {
+        "config_name": "combo_trailing_stop",
+        "metrics": {
+          "name": "MSS_dynamic",
+          "annual_return": 0.5131,
+          "sharpe": 1.2733,
+          "max_drawdown": -0.1081,
+          "calmar": 4.7466,
+          "win_rate": 0.586
+        },
+        "windows": [
+          {
+            "name": "全区间",
+            "annual_return": 0.5131,
+            "sharpe": 1.2733,
+            "max_drawdown": -0.1081,
+            "calmar": 4.7466,
+            "win_rate": 0.586
+          },
+          {
+            "name": "2022熊市",
+            "annual_return": 0.4596,
+            "sharpe": 2.4604,
+            "max_drawdown": -0.0791,
+            "calmar": 5.8087,
+            "win_rate": 0.6198
+          },
+          {
+            "name": "OOS修复牛",
+            "annual_return": 0.487,
+            "sharpe": 2.3357,
+            "max_drawdown": -0.0915,
+            "calmar": 5.3243,
+            "win_rate": 0.5952
+          }
+        ],
+        "state_distribution": {
+          "bull": 858,
+          "bear": 190,
+          "oscillate": 695,
+          "recovery": 46,
+          "panic": 0
+        }
+      }
+    ]
+  ]
+}

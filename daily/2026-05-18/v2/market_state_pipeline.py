@@ -84,16 +84,8 @@ import shutil
 
 
 def _get_conn():
-    """获取数据库连接：用 APFS clone 创建数据库副本，避免文件锁冲突。"""
     src = os.path.abspath("./data/quant_data.db")
-    cache_dir = os.path.abspath("./data/cache")
-    os.makedirs(cache_dir, exist_ok=True)
-    tmp = os.path.join(cache_dir, "quant_copy.db")
-    if not os.path.exists(tmp):
-        import subprocess
-        subprocess.run(["cp", "-c", src, tmp], check=True)
-    conn = duckdb.connect(tmp, read_only=True)
-    return conn
+    return duckdb.connect(src, read_only=True)
 
 
 def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray,

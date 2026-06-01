@@ -1,0 +1,145 @@
+{
+  "meta": {
+    "strategy": "mss_dynamic",
+    "config": "V6a_3way",
+    "signal_date": "2026-05-19",
+    "data_date": "2026-05-19",
+    "market_state": "bull",
+    "state_changed": false,
+    "confidence": 0.36,
+    "capital": 50000,
+    "total_cost": 39502.0,
+    "remain": 10498.0,
+    "n_buy": 15,
+    "n_sell": 0,
+    "is_hold": false
+  },
+  "allocation": {
+    "mf_d10_rp": 0.6,
+    "mf_vol_d10_rp": 0.2,
+    "chip_covrp": 0.2
+  },
+  "sell_orders": [],
+  "buy_orders": [
+    {
+      "symbol": "000429",
+      "direction": "买入",
+      "shares": 200,
+      "price": 13.218,
+      "cost": 2644.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002973",
+      "direction": "买入",
+      "shares": 200,
+      "price": 14.068,
+      "cost": 2814.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002700",
+      "direction": "买入",
+      "shares": 400,
+      "price": 7.179,
+      "cost": 2872.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002298",
+      "direction": "买入",
+      "shares": 200,
+      "price": 11.937,
+      "cost": 2387.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "000880",
+      "direction": "买入",
+      "shares": 100,
+      "price": 32.278,
+      "cost": 3228.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002951",
+      "direction": "买入",
+      "shares": 100,
+      "price": 17.05,
+      "cost": 1705.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "001289",
+      "direction": "买入",
+      "shares": 100,
+      "price": 17.721,
+      "cost": 1772.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002068",
+      "direction": "买入",
+      "shares": 300,
+      "price": 10.399,
+      "cost": 3120.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002077",
+      "direction": "买入",
+      "shares": 100,
+      "price": 17.211,
+      "cost": 1721.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002127",
+      "direction": "买入",
+      "shares": 1000,
+      "price": 3.262,
+      "cost": 3262.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002392",
+      "direction": "买入",
+      "shares": 300,
+      "price": 10.319,
+      "cost": 3096.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002283",
+      "direction": "买入",
+      "shares": 200,
+      "price": 11.887,
+      "cost": 2377.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "003001",
+      "direction": "买入",
+      "shares": 100,
+      "price": 21.213,
+      "cost": 2121.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002301",
+      "direction": "买入",
+      "shares": 400,
+      "price": 8.25,
+      "cost": 3300.0,
+      "reason": "mss_dynamic_V6a_3way"
+    },
+    {
+      "symbol": "002396",
+      "direction": "买入",
+      "shares": 100,
+      "price": 30.827,
+      "cost": 3083.0,
+      "reason": "mss_dynamic_V6a_3way"
+    }
+  ]
+}

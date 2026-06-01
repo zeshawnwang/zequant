@@ -291,12 +291,19 @@ class FactorEvaluator(IFactorEvaluator):
             lambda x: pd.qcut(x, n_groups, labels=False, duplicates="drop")
         )
 
-        group_returns = merged.groupby("date")["fwd_ret"].mean()
+        group_returns = merged.groupby(["date", "group"])["fwd_ret"].mean().unstack()
 
-        top_ret = group_returns.iloc[-1] if len(group_returns) > 0 else 0.0
-        bottom_ret = group_returns.iloc[0] if len(group_returns) > 0 else 0.0
+        if group_returns.empty or group_returns.shape[1] < 2:
+            return 0.0, 0.0, False
 
-        monotonic = top_ret > bottom_ret
+        top_ret = group_returns.iloc[:, -1].mean()
+        bottom_ret = group_returns.iloc[:, 0].mean()
+
+        group_means = group_returns.mean()
+        monotonic = all(
+            group_means.iloc[i] < group_means.iloc[i + 1]
+            for i in range(len(group_means) - 1)
+        )
 
         return top_ret, bottom_ret, monotonic
 

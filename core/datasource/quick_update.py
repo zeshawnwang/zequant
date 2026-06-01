@@ -43,19 +43,24 @@ def get_active_symbols(db: Database, min_days: int = ACTIVE_THRESHOLD) -> list:
         return []
 
 
-def get_outdated_symbols(db: Database, cutoff_date: str = "2026-05-13") -> list:
-    """获取最新日期早于截止日期的股票（需要增量更新）。"""
+def get_outdated_symbols(db: Database, days_back: int = 5) -> list:
+    """获取最新数据早于数据库最新日期的股票（需要增量更新）。"""
     try:
-        df = db.conn.execute(f"""
+        # 获取数据库中所有股票的最新日期
+        df = db.conn.execute("""
             SELECT symbol, MAX(date) AS last_date
             FROM daily_bars
             GROUP BY symbol
-            HAVING last_date < '{cutoff_date}'
             ORDER BY last_date
         """).df()
-        symbols = df["symbol"].tolist()
-        logger.info("需要更新的标的: %d 只 (最新数据早于 %s)", len(symbols), cutoff_date)
-        return symbols
+        if df.empty:
+            return []
+        # 找数据库全局最新日期
+        latest_db_date = df["last_date"].max()
+        # 选出最新数据 < 全局最新日期的股票（落后于大部队）
+        outdated = df[df["last_date"] < latest_db_date]["symbol"].tolist()
+        logger.info("需要更新的标的: %d 只 (最新数据 < 全局最新 %s)", len(outdated), latest_db_date)
+        return outdated
     except Exception as e:
         logger.warning("获取过期标的失败: %s", e)
         return []
@@ -74,7 +79,7 @@ def quick_update(days_back: int = 5):
     active = get_active_symbols(db)
 
     # 从活跃标的中筛选需要更新的
-    outdated = get_outdated_symbols(db, cutoff_date="2026-05-13")
+    outdated = get_outdated_symbols(db, days_back=5)
     need_update = [s for s in outdated if s in active]
 
     if not need_update:

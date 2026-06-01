@@ -1,0 +1,437 @@
+[
+  {
+    "config_name": "v3_comptiming",
+    "metrics": {
+      "name": "v3_comptiming",
+      "annual_return": 0.5457,
+      "sharpe": 2.5923,
+      "max_drawdown": -0.092,
+      "calmar": 5.9325,
+      "win_rate": 0.5742
+    },
+    "windows": [
+      {
+        "name": "全区间",
+        "annual_return": 0.5457,
+        "sharpe": 2.5923,
+        "max_drawdown": -0.092,
+        "calmar": 5.9325,
+        "win_rate": 0.5742,
+        "n_days": 1789
+      },
+      {
+        "name": "2022熊市",
+        "annual_return": 1.818,
+        "sharpe": 4.02,
+        "max_drawdown": -0.076,
+        "calmar": 23.9364,
+        "win_rate": 0.6074,
+        "n_days": 242
+      },
+      {
+        "name": "OOS修复牛",
+        "annual_return": 0.4049,
+        "sharpe": 2.0866,
+        "max_drawdown": -0.0869,
+        "calmar": 4.6604,
+        "win_rate": 0.5689,
+        "n_days": 458
+      }
+    ],
+    "elapsed": 18.6,
+    "attribution": {
+      "config": "v3_comptiming",
+      "avg_abs_return": 0.006558,
+      "state_attribution": {
+        "bull": {
+          "n_days": 861,
+          "annual_return": 0.7297,
+          "sharpe": 2.7528
+        },
+        "bear": {
+          "n_days": 189,
+          "annual_return": 0.6534,
+          "sharpe": 3.2058
+        },
+        "oscillate": {
+          "n_days": 683,
+          "annual_return": 0.3648,
+          "sharpe": 2.4613
+        },
+        "recovery": {
+          "n_days": 55,
+          "annual_return": -0.0027,
+          "sharpe": -0.024
+        }
+      },
+      "sub_strategy_returns": {
+        "mf_d10_rp": 1.004,
+        "mf_vol_d10_rp": 0.4884,
+        "chip_rp": 0.1191,
+        "chip_covrp": 0.1191,
+        "osr_d10": 0.4684,
+        "c01_layered_d5": 0.4081,
+        "mf_base": 1.3929,
+        "trend_brk": 0.5514,
+        "mf50_chip50": 0.6568,
+        "mf60_chip40": 0.7866
+      },
+      "mdd_period_states": {
+        "start_day": 1321,
+        "end_day": 1385,
+        "duration_days": 64,
+        "dominant_state": "bear"
+      }
+    },
+    "label": "composite择时(trend+vol融合)",
+    "delta_calmar": 0.915
+  },
+  {
+    "config_name": "v3_elim",
+    "metrics": {
+      "name": "v3_elim",
+      "annual_return": 0.8049,
+      "sharpe": 2.7562,
+      "max_drawdown": -0.1419,
+      "calmar": 5.6712,
+      "win_rate": 0.5754
+    },
+    "windows": [
+      {
+        "name": "全区间",
+        "annual_return": 0.8049,
+        "sharpe": 2.7562,
+        "max_drawdown": -0.1419,
+        "calmar": 5.6712,
+        "win_rate": 0.5754,
+        "n_days": 1789
+      },
+      {
+        "name": "2022熊市",
+        "annual_return": 3.2257,
+        "sharpe": 4.1673,
+        "max_drawdown": -0.0931,
+        "calmar": 34.6338,
+        "win_rate": 0.5975,
+        "n_days": 242
+      },
+      {
+        "name": "OOS修复牛",
+        "annual_return": 0.5161,
+        "sharpe": 2.1968,
+        "max_drawdown": -0.1013,
+        "calmar": 5.0938,
+        "win_rate": 0.5762,
+        "n_days": 458
+      }
+    ],
+    "elapsed": 18.8,
+    "attribution": {
+      "config": "v3_elim",
+      "avg_abs_return": 0.008669,
+      "state_attribution": {
+        "bull": {
+          "n_days": 861,
+          "annual_return": 1.0898,
+          "sharpe": 2.8391
+        },
+        "bear": {
+          "n_days": 189,
+          "annual_return": 0.7042,
+          "sharpe": 2.9801
+        },
+        "oscillate": {
+          "n_days": 683,
+          "annual_return": 0.6078,
+          "sharpe": 3.0307
+        },
+        "recovery": {
+          "n_days": 55,
+          "annual_return": -0.0584,
+          "sharpe": -0.4235
+        }
+      },
+      "sub_strategy_returns": {
+        "mf_d10_rp": 1.004,
+        "mf_vol_d10_rp": 0.4884,
+        "chip_rp": 0.1191,
+        "chip_covrp": 0.1191,
+        "osr_d10": 0.4684,
+        "c01_layered_d5": 0.4081,
+        "mf_base": 1.3929,
+        "trend_brk": 0.5514,
+        "mf50_chip50": 0.6568,
+        "mf60_chip40": 0.7866
+      },
+      "mdd_period_states": {
+        "start_day": 1183,
+        "end_day": 1237,
+        "duration_days": 54,
+        "dominant_state": "oscillate"
+      }
+    },
+    "label": "修复战略淘汰(top2)",
+    "delta_calmar": 0.654
+  },
+  {
+    "config_name": "v3_brk_comp",
+    "metrics": {
+      "name": "v3_brk_comp",
+      "annual_return": 0.5047,
+      "sharpe": 2.5847,
+      "max_drawdown": -0.092,
+      "calmar": 5.4866,
+      "win_rate": 0.5748
+    },
+    "windows": [
+      {
+        "name": "全区间",
+        "annual_return": 0.5047,
+        "sharpe": 2.5847,
+        "max_drawdown": -0.092,
+        "calmar": 5.4866,
+        "win_rate": 0.5748,
+        "n_days": 1789
+      },
+      {
+        "name": "2022熊市",
+        "annual_return": 1.4283,
+        "sharpe": 3.9768,
+        "max_drawdown": -0.0798,
+        "calmar": 17.9043,
+        "win_rate": 0.5992,
+        "n_days": 242
+      },
+      {
+        "name": "OOS修复牛",
+        "annual_return": 0.3924,
+        "sharpe": 2.0751,
+        "max_drawdown": -0.0722,
+        "calmar": 5.4346,
+        "win_rate": 0.5755,
+        "n_days": 458
+      }
+    ],
+    "elapsed": 18.6,
+    "attribution": {
+      "config": "v3_brk_comp",
+      "avg_abs_return": 0.006366,
+      "state_attribution": {
+        "bull": {
+          "n_days": 861,
+          "annual_return": 0.6288,
+          "sharpe": 2.6891
+        },
+        "bear": {
+          "n_days": 189,
+          "annual_return": 0.6534,
+          "sharpe": 3.2058
+        },
+        "oscillate": {
+          "n_days": 683,
+          "annual_return": 0.3648,
+          "sharpe": 2.4613
+        },
+        "recovery": {
+          "n_days": 55,
+          "annual_return": 0.0649,
+          "sharpe": 0.5368
+        }
+      },
+      "sub_strategy_returns": {
+        "mf_d10_rp": 1.004,
+        "mf_vol_d10_rp": 0.4884,
+        "chip_rp": 0.1191,
+        "chip_covrp": 0.1191,
+        "osr_d10": 0.4684,
+        "c01_layered_d5": 0.4081,
+        "mf_base": 1.3929,
+        "trend_brk": 0.5514,
+        "mf50_chip50": 0.6568,
+        "mf60_chip40": 0.7866
+      },
+      "mdd_period_states": {
+        "start_day": 1321,
+        "end_day": 1385,
+        "duration_days": 64,
+        "dominant_state": "bear"
+      }
+    },
+    "label": "trendbrk + composite",
+    "delta_calmar": 0.469
+  },
+  {
+    "config_name": "v3_elim1",
+    "metrics": {
+      "name": "v3_elim1",
+      "annual_return": 0.5633,
+      "sharpe": 2.5403,
+      "max_drawdown": -0.1163,
+      "calmar": 4.845,
+      "win_rate": 0.5725
+    },
+    "windows": [
+      {
+        "name": "全区间",
+        "annual_return": 0.5633,
+        "sharpe": 2.5403,
+        "max_drawdown": -0.1163,
+        "calmar": 4.845,
+        "win_rate": 0.5725,
+        "n_days": 1789
+      },
+      {
+        "name": "2022熊市",
+        "annual_return": 1.9909,
+        "sharpe": 4.0558,
+        "max_drawdown": -0.0798,
+        "calmar": 24.9631,
+        "win_rate": 0.5975,
+        "n_days": 242
+      },
+      {
+        "name": "OOS修复牛",
+        "annual_return": 0.4053,
+        "sharpe": 1.9805,
+        "max_drawdown": -0.0918,
+        "calmar": 4.4153,
+        "win_rate": 0.5673,
+        "n_days": 458
+      }
+    ],
+    "elapsed": 18.9,
+    "attribution": {
+      "config": "v3_elim1",
+      "avg_abs_return": 0.006975,
+      "state_attribution": {
+        "bull": {
+          "n_days": 861,
+          "annual_return": 0.7721,
+          "sharpe": 2.7379
+        },
+        "bear": {
+          "n_days": 189,
+          "annual_return": 0.6733,
+          "sharpe": 2.9657
+        },
+        "oscillate": {
+          "n_days": 683,
+          "annual_return": 0.3648,
+          "sharpe": 2.4613
+        },
+        "recovery": {
+          "n_days": 55,
+          "annual_return": -0.0533,
+          "sharpe": -0.4044
+        }
+      },
+      "sub_strategy_returns": {
+        "mf_d10_rp": 1.004,
+        "mf_vol_d10_rp": 0.4884,
+        "chip_rp": 0.1191,
+        "chip_covrp": 0.1191,
+        "osr_d10": 0.4684,
+        "c01_layered_d5": 0.4081,
+        "mf_base": 1.3929,
+        "trend_brk": 0.5514,
+        "mf50_chip50": 0.6568,
+        "mf60_chip40": 0.7866
+      },
+      "mdd_period_states": {
+        "start_day": 1303,
+        "end_day": 1385,
+        "duration_days": 82,
+        "dominant_state": "bear"
+      }
+    },
+    "label": "修复战略淘汰(top1)",
+    "delta_calmar": -0.173
+  },
+  {
+    "config_name": "v3_trendbrk",
+    "metrics": {
+      "name": "v3_trendbrk",
+      "annual_return": 0.5016,
+      "sharpe": 2.532,
+      "max_drawdown": -0.1083,
+      "calmar": 4.6341,
+      "win_rate": 0.5737
+    },
+    "windows": [
+      {
+        "name": "全区间",
+        "annual_return": 0.5016,
+        "sharpe": 2.532,
+        "max_drawdown": -0.1083,
+        "calmar": 4.6341,
+        "win_rate": 0.5737,
+        "n_days": 1789
+      },
+      {
+        "name": "2022熊市",
+        "annual_return": 1.4965,
+        "sharpe": 3.9879,
+        "max_drawdown": -0.0799,
+        "calmar": 18.7378,
+        "win_rate": 0.5909,
+        "n_days": 242
+      },
+      {
+        "name": "OOS修复牛",
+        "annual_return": 0.3743,
+        "sharpe": 1.9501,
+        "max_drawdown": -0.0802,
+        "calmar": 4.6696,
+        "win_rate": 0.5689,
+        "n_days": 458
+      }
+    ],
+    "elapsed": 18.8,
+    "attribution": {
+      "config": "v3_trendbrk",
+      "avg_abs_return": 0.006352,
+      "state_attribution": {
+        "bull": {
+          "n_days": 861,
+          "annual_return": 0.6456,
+          "sharpe": 2.6597
+        },
+        "bear": {
+          "n_days": 189,
+          "annual_return": 0.6458,
+          "sharpe": 3.117
+        },
+        "oscillate": {
+          "n_days": 683,
+          "annual_return": 0.3451,
+          "sharpe": 2.4295
+        },
+        "recovery": {
+          "n_days": 55,
+          "annual_return": 0.0334,
+          "sharpe": 0.2637
+        }
+      },
+      "sub_strategy_returns": {
+        "mf_d10_rp": 1.004,
+        "mf_vol_d10_rp": 0.6505,
+        "chip_rp": 0.1191,
+        "chip_covrp": 0.1191,
+        "osr_d10": 0.4684,
+        "c01_layered_d5": 0.3119,
+        "mf_base": 1.3929,
+        "trend_brk": 0.5514,
+        "mf50_chip50": 0.6568,
+        "mf60_chip40": 0.7866
+      },
+      "mdd_period_states": {
+        "start_day": 1294,
+        "end_day": 1385,
+        "duration_days": 91,
+        "dominant_state": "bear"
+      }
+    },
+    "label": "trend_breakout子策略",
+    "delta_calmar": -0.384
+  }
+]

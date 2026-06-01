@@ -15,8 +15,6 @@ import json
 import logging
 import os
 import sys
-import shutil
-import subprocess
 from datetime import date, datetime
 from typing import Dict, List, Tuple
 
@@ -57,12 +55,7 @@ V6A_ALLOCATION = {
 
 def get_conn():
     src = os.path.abspath("./data/quant_data.db")
-    cache_dir = os.path.abspath("./data/cache")
-    os.makedirs(cache_dir, exist_ok=True)
-    cache_path = os.path.join(cache_dir, "quant_copy.db")
-    if not os.path.exists(cache_path):
-        subprocess.run(["cp", "-c", src, cache_path], check=True)
-    return duckdb.connect(cache_path, read_only=True)
+    return duckdb.connect(src, read_only=True)
 
 
 def get_factors_df(conn, date_str: str, factor_names: list) -> pd.DataFrame:

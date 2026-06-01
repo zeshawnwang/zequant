@@ -1,0 +1,123 @@
+[
+  {
+    "name": "V5_original",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5a_recovery_eq",
+    "annual_return": 0.2614,
+    "sharpe": 1.4717,
+    "max_drawdown": -0.1316,
+    "calmar": 1.9864,
+    "win_rate": 0.5694,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.3
+  },
+  {
+    "name": "V5b_recovery_c01",
+    "annual_return": 0.2643,
+    "sharpe": 1.492,
+    "max_drawdown": -0.1316,
+    "calmar": 2.0084,
+    "win_rate": 0.5694,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.6
+  },
+  {
+    "name": "V5c_bull_covrp",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5d_bear_eq",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5e_all_chip_equal",
+    "annual_return": 0.2614,
+    "sharpe": 1.4717,
+    "max_drawdown": -0.1316,
+    "calmar": 1.9864,
+    "win_rate": 0.5694,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.3
+  },
+  {
+    "name": "V5f_c01_oscillate",
+    "annual_return": 0.2385,
+    "sharpe": 1.3981,
+    "max_drawdown": -0.1516,
+    "calmar": 1.573,
+    "win_rate": 0.5672,
+    "recovery_days": 59,
+    "drawdown_duration": 71,
+    "composite_score": 50.7
+  },
+  {
+    "name": "V6a_3way_bull_heavy",
+    "annual_return": 0.2475,
+    "sharpe": 1.4207,
+    "max_drawdown": -0.1384,
+    "calmar": 1.788,
+    "win_rate": 0.5722,
+    "recovery_days": 9,
+    "drawdown_duration": 121,
+    "composite_score": 53.3
+  },
+  {
+    "name": "V6b_3way_defense",
+    "annual_return": 0.2233,
+    "sharpe": 1.4172,
+    "max_drawdown": -0.1221,
+    "calmar": 1.8279,
+    "win_rate": 0.5672,
+    "recovery_days": 96,
+    "drawdown_duration": 16,
+    "composite_score": 50.3
+  },
+  {
+    "name": "V6c_3way_c01_core",
+    "annual_return": 0.2475,
+    "sharpe": 1.3387,
+    "max_drawdown": -0.1474,
+    "calmar": 1.6793,
+    "win_rate": 0.5705,
+    "recovery_days": 81,
+    "drawdown_duration": 137,
+    "composite_score": 50.0
+  },
+  {
+    "name": "V7a_minimal",
+    "annual_return": 0.2687,
+    "sharpe": 1.4335,
+    "max_drawdown": -0.1444,
+    "calmar": 1.8607,
+    "win_rate": 0.5711,
+    "recovery_days": 45,
+    "drawdown_duration": 16,
+    "composite_score": 53.0
+  }
+]

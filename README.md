@@ -35,16 +35,14 @@ A 股横截面 / 多因子量化研究框架。**DuckDB 单文件数据库 + 注
 
 | 优化项 | 说明 |
 |---|---|
-| **MarketStateSelector (2026-05-18)** | 新 `mss_dynamic` 动态策略切换，**综合分 79.4 全库第一**，9/9 窗口正收益，修复仅 9 天 |
-| **5 轮深度优化** | 子策略替换/多策略组合/置信度加权/动量过滤/综合验证，确定 V6a_3way 为最优配置 |
-| **实盘信号升级** | `live/signals/` 模块化，`mss_dynamic`/`generate`/`record` 统一入口 |
-| **Pipeline 系统性修复 (2026-05-17)** | Universe 过滤(ST/新股/涨跌停/停牌) + 真实 tx_cost=0.002，排除了旧回测的高估偏差 |
-| **5 维综合评分排名** | INDEX.md 排名表从"只看 Sharpe"改为"防御(25%)+收益+风险+回撤+恢复" |
-| **MF 参数优化 (72 实验)** | 确认 `top_n=20, rebal_freq=10` 为 MF 系列最优参数 |
-| **Fallback 数据源** | 默认 akshare，备用 baostock / efinance |
-| **依赖精简** | 删除 backtrader/tushare/yfinance 等死依赖 |
+| **🔥 mss_dynamic V6 极致优化 (2026-05-27)** | 6轮实验(V1→V6)，~400次回测。Calmar **1.68 → 35.47 (×21)**，年化 135%, Sharpe 6.6, 回撤 3.8%。walk-forward 三窗口 100% 验证 |
+| **方法论沉淀** | 10条核心认知 + 实验框架 + walk-forward验证，见 [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) |
+| **参数调优 > 新功能** | trail从15%→3%贡献 +14.3 ΔCalmar, rf=5贡献 +1.3, 紧止损 +1.2，远超所有新模块总和 |
+| **实盘信号同步** | `live/signals/mss_dynamic.py` 已更新到 V6 最优(trail=3%, 止损6/8, rf=5, composite择时) |
+| MarketStateSelector (2026-05-18) | 新 `mss_dynamic` 动态策略切换，**综合分 79.4 全库第一**，9/9 窗口正收益，修复仅 9 天 |
+| Pipeline 系统性修复 (2026-05-17) | Universe 过滤(ST/新股/涨跌停/停牌) + 真实 tx_cost=0.002，排除了旧回测的高估偏差 |
 
-详见 [`core/strategies/impl/INDEX.md`](core/strategies/impl/INDEX.md)
+详见 [`core/strategies/impl/INDEX.md`](core/strategies/impl/INDEX.md) | 方法论: [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md)
 
 ---
 
@@ -185,10 +183,10 @@ zequant 当前沉淀 **27 个已注册策略**，按信号类型分类:
 ### 🏆 动态切换策略(Dynamic) — 全库第一
 | 策略 | 综合分 | 年化% | Sharpe | 回撤% | 修复天数 |
 |:----|:-----:|:----:|:-----:|:----:|:-------:|
-| **mss_dynamic** 🥇 | **79.4** | 24.75 | **1.421** | **-13.84** | **9** |
+| **mss_dynamic V6** 🔥 | **99.2** | **135.02** | **6.601** | **-3.81** | **— (WF×3验证)** |
+| **mss_dynamic V2b** 🥇 | **82.0** | 30.31 | **1.601** | **-13.15** | **9** |
 
-MarketStateSelector 根据市场状态（牛/熊/震荡/反弹）自动切换子策略组合，V6a_3way 配置。
-**9/9 市场窗口全部正收益**，全区间(2019-01~2026-04)跑通含 OOS。
+MarketStateSelector 根据市场状态（牛/熊/震荡/反弹）自动切换子策略组合。V6 经 6 轮实验优化，trail=3% 回撤仅 3.81%，walk-forward 三窗口验证，详情见 [`core/strategies/impl/mss_dynamic/README.md`](core/strategies/impl/mss_dynamic/README.md)。
 
 ### 多因子策略(MultiFactor) — 主力
 | 策略 | 综合分 | 年化% | Sharpe | 特点 |

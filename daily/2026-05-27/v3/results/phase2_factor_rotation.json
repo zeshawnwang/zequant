@@ -1,0 +1,88 @@
+[
+  {
+    "config_name": "v3_facrot",
+    "metrics": {
+      "name": "v3_facrot",
+      "annual_return": 0.3547,
+      "sharpe": 1.9851,
+      "max_drawdown": -0.11,
+      "calmar": 3.2244,
+      "win_rate": 0.5619
+    },
+    "windows": [
+      {
+        "name": "全区间",
+        "annual_return": 0.3547,
+        "sharpe": 1.9851,
+        "max_drawdown": -0.11,
+        "calmar": 3.2244,
+        "win_rate": 0.5619,
+        "n_days": 1789
+      },
+      {
+        "name": "2022熊市",
+        "annual_return": 0.3305,
+        "sharpe": 2.0198,
+        "max_drawdown": -0.0674,
+        "calmar": 4.9062,
+        "win_rate": 0.5868,
+        "n_days": 242
+      },
+      {
+        "name": "OOS修复牛",
+        "annual_return": 0.3529,
+        "sharpe": 1.5826,
+        "max_drawdown": -0.11,
+        "calmar": 3.2079,
+        "win_rate": 0.5646,
+        "n_days": 458
+      }
+    ],
+    "elapsed": 19.6,
+    "attribution": {
+      "config": "v3_facrot",
+      "avg_abs_return": 0.00611,
+      "state_attribution": {
+        "bull": {
+          "n_days": 861,
+          "annual_return": 0.3804,
+          "sharpe": 1.8191
+        },
+        "bear": {
+          "n_days": 189,
+          "annual_return": 0.6727,
+          "sharpe": 3.3271
+        },
+        "oscillate": {
+          "n_days": 683,
+          "annual_return": 0.272,
+          "sharpe": 2.0358
+        },
+        "recovery": {
+          "n_days": 55,
+          "annual_return": 0.0759,
+          "sharpe": 0.6419
+        }
+      },
+      "sub_strategy_returns": {
+        "mf_d10_rp": 0.7967,
+        "mf_vol_d10_rp": 0.3902,
+        "chip_rp": 0.1191,
+        "chip_covrp": 0.1191,
+        "osr_d10": 0.4684,
+        "c01_layered_d5": 0.2801,
+        "mf_base": 1.1711,
+        "trend_brk": 0.5514,
+        "mf50_chip50": 0.5739,
+        "mf60_chip40": 0.681
+      },
+      "mdd_period_states": {
+        "start_day": 1502,
+        "end_day": 1516,
+        "duration_days": 14,
+        "dominant_state": "bull"
+      }
+    },
+    "delta_calmar": -1.793
+  }
+]

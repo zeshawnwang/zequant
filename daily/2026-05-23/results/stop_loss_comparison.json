@@ -1,0 +1,194 @@
+{
+  "test_cases": [
+    {
+      "stop_loss_pct": 0.0,
+      "label": "无止损",
+      "full_range": {
+        "annual_return": 0.3233,
+        "sharpe": 1.0958,
+        "max_drawdown": -0.3262,
+        "calmar": 0.9913,
+        "win_rate": 0.5653,
+        "n_trades": 175
+      },
+      "windows": [
+        {
+          "window": "全区间",
+          "annual_return": 0.3233,
+          "sharpe": 1.0958,
+          "max_drawdown": -0.3262
+        },
+        {
+          "window": "全区间",
+          "annual_return": 0.3233,
+          "sharpe": 1.0958,
+          "max_drawdown": -0.3262
+        },
+        {
+          "window": "2022熊市",
+          "annual_return": 0.355,
+          "sharpe": 1.1567,
+          "max_drawdown": -0.2234
+        },
+        {
+          "window": "修复牛OOS",
+          "annual_return": 0.6362,
+          "sharpe": 1.8976,
+          "max_drawdown": -0.1645
+        }
+      ]
+    },
+    {
+      "stop_loss_pct": 0.05,
+      "label": "-5%",
+      "full_range": {
+        "annual_return": 1.1026,
+        "sharpe": 3.4123,
+        "max_drawdown": -0.1486,
+        "calmar": 7.4204,
+        "win_rate": 0.5953,
+        "n_trades": 1167
+      },
+      "windows": [
+        {
+          "window": "全区间",
+          "annual_return": 1.1026,
+          "sharpe": 3.4123,
+          "max_drawdown": -0.1486
+        },
+        {
+          "window": "全区间",
+          "annual_return": 1.1026,
+          "sharpe": 3.4123,
+          "max_drawdown": -0.1486
+        },
+        {
+          "window": "2022熊市",
+          "annual_return": 0.9352,
+          "sharpe": 2.9874,
+          "max_drawdown": -0.1291
+        },
+        {
+          "window": "修复牛OOS",
+          "annual_return": 1.3962,
+          "sharpe": 3.9341,
+          "max_drawdown": -0.0718
+        }
+      ]
+    },
+    {
+      "stop_loss_pct": 0.08,
+      "label": "-8%",
+      "full_range": {
+        "annual_return": 0.5597,
+        "sharpe": 1.8947,
+        "max_drawdown": -0.2512,
+        "calmar": 2.2287,
+        "win_rate": 0.5774,
+        "n_trades": 480
+      },
+      "windows": [
+        {
+          "window": "全区间",
+          "annual_return": 0.5597,
+          "sharpe": 1.8947,
+          "max_drawdown": -0.2512
+        },
+        {
+          "window": "全区间",
+          "annual_return": 0.5597,
+          "sharpe": 1.8947,
+          "max_drawdown": -0.2512
+        },
+        {
+          "window": "2022熊市",
+          "annual_return": 0.6098,
+          "sharpe": 1.9234,
+          "max_drawdown": -0.1595
+        },
+        {
+          "window": "修复牛OOS",
+          "annual_return": 0.8935,
+          "sharpe": 2.6988,
+          "max_drawdown": -0.1621
+        }
+      ]
+    },
+    {
+      "stop_loss_pct": 0.1,
+      "label": "-10%",
+      "full_range": {
+        "annual_return": 0.4567,
+        "sharpe": 1.5513,
+        "max_drawdown": -0.2837,
+        "calmar": 1.6097,
+        "win_rate": 0.5711,
+        "n_trades": 328
+      },
+      "windows": [
+        {
+          "window": "全区间",
+          "annual_return": 0.4567,
+          "sharpe": 1.5513,
+          "max_drawdown": -0.2837
+        },
+        {
+          "window": "全区间",
+          "annual_return": 0.4567,
+          "sharpe": 1.5513,
+          "max_drawdown": -0.2837
+        },
+        {
+          "window": "2022熊市",
+          "annual_return": 0.4897,
+          "sharpe": 1.5537,
+          "max_drawdown": -0.184
+        },
+        {
+          "window": "修复牛OOS",
+          "annual_return": 0.7174,
+          "sharpe": 2.203,
+          "max_drawdown": -0.1621
+        }
+      ]
+    },
+    {
+      "stop_loss_pct": 0.15,
+      "label": "-15%",
+      "full_range": {
+        "annual_return": 0.3351,
+        "sharpe": 1.1452,
+        "max_drawdown": -0.3316,
+        "calmar": 1.0105,
+        "win_rate": 0.5653,
+        "n_trades": 195
+      },
+      "windows": [
+        {
+          "window": "全区间",
+          "annual_return": 0.3351,
+          "sharpe": 1.1452,
+          "max_drawdown": -0.3316
+        },
+        {
+          "window": "全区间",
+          "annual_return": 0.3351,
+          "sharpe": 1.1452,
+          "max_drawdown": -0.3316
+        },
+        {
+          "window": "2022熊市",
+          "annual_return": 0.3586,
+          "sharpe": 1.1676,
+          "max_drawdown": -0.2214
+        },
+        {
+          "window": "修复牛OOS",
+          "annual_return": 0.6439,
+          "sharpe": 1.9633,
+          "max_drawdown": -0.1645
+        }
+      ]
+    }
+  ]
+}

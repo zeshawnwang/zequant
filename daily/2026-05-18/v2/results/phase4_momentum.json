@@ -1,0 +1,101 @@
+[
+  {
+    "name": "V5_mom10",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5_mom20",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5_mom30",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5_mom60",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5a_recovery_eq_mom20",
+    "annual_return": 0.2614,
+    "sharpe": 1.4717,
+    "max_drawdown": -0.1316,
+    "calmar": 1.9864,
+    "win_rate": 0.5694,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.3
+  },
+  {
+    "name": "V5b_recovery_c01_mom20",
+    "annual_return": 0.2643,
+    "sharpe": 1.492,
+    "max_drawdown": -0.1316,
+    "calmar": 2.0084,
+    "win_rate": 0.5694,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.6
+  },
+  {
+    "name": "V5c_bull_covrp_mom20",
+    "annual_return": 0.2692,
+    "sharpe": 1.5002,
+    "max_drawdown": -0.1316,
+    "calmar": 2.046,
+    "win_rate": 0.57,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.9
+  },
+  {
+    "name": "V5e_all_chip_equal_mom20",
+    "annual_return": 0.2614,
+    "sharpe": 1.4717,
+    "max_drawdown": -0.1316,
+    "calmar": 1.9864,
+    "win_rate": 0.5694,
+    "recovery_days": 86,
+    "drawdown_duration": 16,
+    "composite_score": 52.3
+  },
+  {
+    "name": "V6a_3way_bull_heavy_mom20",
+    "annual_return": 0.2475,
+    "sharpe": 1.4207,
+    "max_drawdown": -0.1384,
+    "calmar": 1.788,
+    "win_rate": 0.5722,
+    "recovery_days": 9,
+    "drawdown_duration": 121,
+    "composite_score": 53.3
+  }
+]

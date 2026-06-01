@@ -1,0 +1,82 @@
+[
+  {
+    "name": "MSS_v1_original",
+    "annual_return": 0.2456,
+    "sharpe": 1.4055,
+    "max_drawdown": -0.1587,
+    "calmar": 1.5482,
+    "win_rate": 0.57,
+    "recovery_days": 73,
+    "drawdown_duration": 142
+  },
+  {
+    "name": "MSS_v2_mf_heavy_bear_defense",
+    "annual_return": 0.258,
+    "sharpe": 1.4207,
+    "max_drawdown": -0.1505,
+    "calmar": 1.7143,
+    "win_rate": 0.57,
+    "recovery_days": 73,
+    "drawdown_duration": 71
+  },
+  {
+    "name": "MSS_v3_bear_covrp_heavy",
+    "annual_return": 0.247,
+    "sharpe": 1.418,
+    "max_drawdown": -0.1466,
+    "calmar": 1.6847,
+    "win_rate": 0.5717,
+    "recovery_days": 73,
+    "drawdown_duration": 71
+  },
+  {
+    "name": "MSS_v4_trend_oscillate",
+    "annual_return": 0.2256,
+    "sharpe": 1.3889,
+    "max_drawdown": -0.1484,
+    "calmar": 1.5201,
+    "win_rate": 0.5688,
+    "recovery_days": 73,
+    "drawdown_duration": 71
+  },
+  {
+    "name": "MSS_v5_simple",
+    "annual_return": 0.2631,
+    "sharpe": 1.4721,
+    "max_drawdown": -0.1316,
+    "calmar": 1.9993,
+    "win_rate": 0.57,
+    "recovery_days": 93,
+    "drawdown_duration": 16
+  },
+  {
+    "name": "MSS_v6_mf_dominant",
+    "annual_return": 0.2818,
+    "sharpe": 1.3825,
+    "max_drawdown": -0.2092,
+    "calmar": 1.3473,
+    "win_rate": 0.5722,
+    "recovery_days": 79,
+    "drawdown_duration": 142
+  },
+  {
+    "name": "MSS_v7_recovery_osr",
+    "annual_return": 0.252,
+    "sharpe": 1.4388,
+    "max_drawdown": -0.1351,
+    "calmar": 1.8656,
+    "win_rate": 0.5728,
+    "recovery_days": 93,
+    "drawdown_duration": 16
+  },
+  {
+    "name": "MSS_v8_conservative",
+    "annual_return": 0.2157,
+    "sharpe": 1.4464,
+    "max_drawdown": -0.1395,
+    "calmar": 1.5467,
+    "win_rate": 0.5722,
+    "recovery_days": 73,
+    "drawdown_duration": 71
+  }
+]

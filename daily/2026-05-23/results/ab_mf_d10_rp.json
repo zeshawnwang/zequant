@@ -1,0 +1,89 @@
+{
+  "label": "mf_d10_rp",
+  "config": {
+    "top_n": 20,
+    "rebal_freq": 10,
+    "min_hold_days": 5,
+    "positioner": "rp"
+  },
+  "baseline": {
+    "full_range": {
+      "annual_return": 0.3495,
+      "sharpe": 1.1331,
+      "max_drawdown": -0.3763,
+      "calmar": 0.9287,
+      "win_rate": 0.5659,
+      "n_trades": 175
+    },
+    "windows": [
+      {
+        "window": "全区间",
+        "annual_return": 0.3495,
+        "sharpe": 1.1331,
+        "max_drawdown": -0.3763,
+        "calmar": 0.9287
+      },
+      {
+        "window": "全区间",
+        "annual_return": 0.3495,
+        "sharpe": 1.1331,
+        "max_drawdown": -0.3763,
+        "calmar": 0.9287
+      },
+      {
+        "window": "2022熊市",
+        "annual_return": 0.5578,
+        "sharpe": 1.5781,
+        "max_drawdown": -0.2017,
+        "calmar": 2.765
+      },
+      {
+        "window": "修复牛OOS",
+        "annual_return": 1.0413,
+        "sharpe": 2.6418,
+        "max_drawdown": -0.1575,
+        "calmar": 6.6114
+      }
+    ]
+  },
+  "v2_stop_08": {
+    "full_range": {
+      "annual_return": 0.5597,
+      "sharpe": 1.8947,
+      "max_drawdown": -0.2512,
+      "calmar": 2.2287,
+      "win_rate": 0.5774,
+      "n_trades": 480
+    },
+    "windows": [
+      {
+        "window": "全区间",
+        "annual_return": 0.5597,
+        "sharpe": 1.8947,
+        "max_drawdown": -0.2512,
+        "calmar": 2.2287
+      },
+      {
+        "window": "全区间",
+        "annual_return": 0.5597,
+        "sharpe": 1.8947,
+        "max_drawdown": -0.2512,
+        "calmar": 2.2287
+      },
+      {
+        "window": "2022熊市",
+        "annual_return": 0.6098,
+        "sharpe": 1.9234,
+        "max_drawdown": -0.1595,
+        "calmar": 3.8226
+      },
+      {
+        "window": "修复牛OOS",
+        "annual_return": 0.8935,
+        "sharpe": 2.6988,
+        "max_drawdown": -0.1621,
+        "calmar": 5.5117
+      }
+    ]
+  }
+}

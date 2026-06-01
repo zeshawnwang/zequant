@@ -10,9 +10,254 @@
   "all_results": [
     {
       "name": "c01_layered_d5",
-      "annual_return": -0.0115,
-      "sharpe": -0.0699,
-      "max_drawdown": -0.4595,
-      "calmar": -0.0249,
-      "win_rate": 0.5232,
-      "recovery_days": 
+      "annual_return": 0.2065,
+      "sharpe": 0.556,
+      "max_drawdown": -0.2627,
+      "calmar": 0.7859,
+      "win_rate": 0.5734,
+      "recovery_days": 1,
+      "drawdown_duration": 304
+    },
+    {
+      "name": "chip_covrp",
+      "annual_return": 0.145,
+      "sharpe": 1.0714,
+      "max_drawdown": -0.1458,
+      "calmar": 0.9946,
+      "win_rate": 0.5519,
+      "recovery_days": 67,
+      "drawdown_duration": 206
+    },
+    {
+      "name": "chip_rp",
+      "annual_return": 0.145,
+      "sharpe": 1.0714,
+      "max_drawdown": -0.1458,
+      "calmar": 0.9946,
+      "win_rate": 0.5519,
+      "recovery_days": 67,
+      "drawdown_duration": 206
+    },
+    {
+      "name": "chip_vol_rp",
+      "annual_return": 0.1037,
+      "sharpe": 1.1008,
+      "max_drawdown": -0.1051,
+      "calmar": 0.9869,
+      "win_rate": 0.5519,
+      "recovery_days": 67,
+      "drawdown_duration": 206
+    },
+    {
+      "name": "mf50_chip50",
+      "annual_return": 0.2075,
+      "sharpe": 0.6794,
+      "max_drawdown": -0.434,
+      "calmar": 0.4781,
+      "win_rate": 0.5677,
+      "recovery_days": 329,
+      "drawdown_duration": 8
+    },
+    {
+      "name": "mf60_chip40",
+      "annual_return": 0.2098,
+      "sharpe": 0.5684,
+      "max_drawdown": -0.5135,
+      "calmar": 0.4085,
+      "win_rate": 0.5688,
+      "recovery_days": 352,
+      "drawdown_duration": 8
+    },
+    {
+      "name": "mf_base",
+      "annual_return": 0.1326,
+      "sharpe": 0.1695,
+      "max_drawdown": -0.835,
+      "calmar": 0.1588,
+      "win_rate": 0.566,
+      "recovery_days": 1125,
+      "drawdown_duration": 92
+    },
+    {
+      "name": "mf_d10_rp",
+      "annual_return": 0.3788,
+      "sharpe": 1.305,
+      "max_drawdown": -0.2734,
+      "calmar": 1.3854,
+      "win_rate": 0.579,
+      "recovery_days": 27,
+      "drawdown_duration": 44
+    },
+    {
+      "name": "mf_vol_d10_rp",
+      "annual_return": 0.2598,
+      "sharpe": 1.3316,
+      "max_drawdown": -0.1962,
+      "calmar": 1.3243,
+      "win_rate": 0.579,
+      "recovery_days": 35,
+      "drawdown_duration": 44
+    },
+    {
+      "name": "osr_d10",
+      "annual_return": 0.0842,
+      "sharpe": 0.3027,
+      "max_drawdown": -0.5095,
+      "calmar": 0.1654,
+      "win_rate": 0.5371,
+      "recovery_days": 331,
+      "drawdown_duration": 634
+    },
+    {
+      "name": "MSS_dynamic_simple",
+      "annual_return": 0.2456,
+      "sharpe": 1.4055,
+      "max_drawdown": -0.1587,
+      "calmar": 1.5482,
+      "win_rate": 0.57,
+      "recovery_days": 73,
+      "drawdown_duration": 142
+    },
+    {
+      "name": "MSS_dynamic_full",
+      "annual_return": 0.2153,
+      "sharpe": 1.2472,
+      "max_drawdown": -0.1826,
+      "calmar": 1.179,
+      "win_rate": 0.5601,
+      "recovery_days": 29,
+      "drawdown_duration": 192
+    },
+    {
+      "name": "static_40_30_20_10",
+      "annual_return": 0.2572,
+      "sharpe": 1.2989,
+      "max_drawdown": -0.1858,
+      "calmar": 1.3842,
+      "win_rate": 0.5714,
+      "recovery_days": 27,
+      "drawdown_duration": 44
+    },
+    {
+      "name": "equal_weight_all",
+      "annual_return": 0.2005,
+      "sharpe": 1.1967,
+      "max_drawdown": -0.1505,
+      "calmar": 1.3319,
+      "win_rate": 0.5604,
+      "recovery_days": 9,
+      "drawdown_duration": 171
+    },
+    {
+      "name": "market_index_ew",
+      "annual_return": 0.208,
+      "sharpe": 0.7456,
+      "max_drawdown": -0.3326,
+      "calmar": 0.6254,
+      "win_rate": 0.5493,
+      "recovery_days": 157,
+      "drawdown_duration": 240
+    }
+  ],
+  "windows_mss_simple": [
+    {
+      "name": "全区间",
+      "annual_return": 0.2456,
+      "sharpe": 1.4055,
+      "max_drawdown": -0.1587,
+      "calmar": 1.5482,
+      "win_rate": 0.57,
+      "recovery_days": 73,
+      "drawdown_duration": 142,
+      "n_days": 1776
+    },
+    {
+      "name": "2019修复牛",
+      "annual_return": 0.2947,
+      "sharpe": 1.8755,
+      "max_drawdown": -0.0884,
+      "calmar": 3.3337,
+      "win_rate": 0.5851,
+      "recovery_days": 97,
+      "drawdown_duration": 76,
+      "n_days": 244
+    },
+    {
+      "name": "2020疫情",
+      "annual_return": 0.0215,
+      "sharpe": 0.1274,
+      "max_drawdown": -0.1194,
+      "calmar": 0.1801,
+      "win_rate": 0.5432,
+      "recovery_days": 23,
+      "drawdown_duration": 9,
+      "n_days": 243
+    },
+    {
+      "name": "2021结构牛",
+      "annual_return": 0.4315,
+      "sharpe": 3.0505,
+      "max_drawdown": -0.0663,
+      "calmar": 6.5097,
+      "win_rate": 0.5844,
+      "recovery_days": 48,
+      "drawdown_duration": 12,
+      "n_days": 243
+    },
+    {
+      "name": "2022熊市",
+      "annual_return": 0.3095,
+      "sharpe": 1.657,
+      "max_drawdown": -0.1028,
+      "calmar": 3.0109,
+      "win_rate": 0.6033,
+      "recovery_days": 15,
+      "drawdown_duration": 64,
+      "n_days": 242
+    },
+    {
+      "name": "2023震荡",
+      "annual_return": 0.1982,
+      "sharpe": 1.8344,
+      "max_drawdown": -0.0448,
+      "calmar": 4.4261,
+      "win_rate": 0.5455,
+      "recovery_days": 4,
+      "drawdown_duration": 16,
+      "n_days": 242
+    },
+    {
+      "name": "2024反弹",
+      "annual_return": 0.0702,
+      "sharpe": 0.3095,
+      "max_drawdown": -0.1574,
+      "calmar": 0.4462,
+      "win_rate": 0.5331,
+      "recovery_days": 73,
+      "drawdown_duration": 71,
+      "n_days": 242
+    },
+    {
+      "name": "2025至今",
+      "annual_return": 0.4277,
+      "sharpe": 2.2778,
+      "max_drawdown": -0.1016,
+      "calmar": 4.208,
+      "win_rate": 0.5893,
+      "recovery_days": 34,
+      "drawdown_duration": 14,
+      "n_days": 320
+    },
+    {
+      "name": "OOS修复牛",
+      "annual_return": 0.4404,
+      "sharpe": 1.9541,
+      "max_drawdown": -0.1351,
+      "calmar": 3.2606,
+      "win_rate": 0.5878,
+      "recovery_days": 93,
+      "drawdown_duration": 16,
+      "n_days": 445
+    }
+  ]
+}

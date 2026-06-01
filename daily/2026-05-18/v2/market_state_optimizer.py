@@ -77,20 +77,12 @@ WINDOWS = [
 # 数据加载 & 信号构建（复用 market_state_pipeline 的逻辑）
 # ═══════════════════════════════════════════════
 
-import shutil
-import subprocess
 import duckdb
 
 
 def _get_conn():
     src = os.path.abspath("./data/quant_data.db")
-    cache_dir = os.path.abspath("./data/cache")
-    os.makedirs(cache_dir, exist_ok=True)
-    tmp = os.path.join(cache_dir, "quant_copy.db")
-    if not os.path.exists(tmp):
-        subprocess.run(["cp", "-c", src, tmp], check=True)
-    conn = duckdb.connect(tmp, read_only=True)
-    return conn
+    return duckdb.connect(src, read_only=True)
 
 
 def load_data():
@@ -290,6 +282,34 @@ def bt_sub_strategy(sig, fwd, dm, rebal_freq=10, top_n=50, min_hold_days=10,
         rt = pr * float(np.dot(pw, fwd[i]))
         dr[i] = 0.0 if (np.isnan(rt) or np.isinf(rt)) else rt
         rh += 1
+
+    return dr
+
+
+def run_mss_unified_backtest(state_strategies, sub_drs, states, nd, rebal_freq=10):
+    """统一间隔回测：每 rebal_freq 天检测状态并分配权重，中间固定持有。"""
+    dr = np.zeros(nd, dtype=np.float64)
+
+    # 每期的起始权重
+    block_weights = {}
+    for i in range(1, nd):
+        if i % rebal_freq == 0 or i == 1:
+            state = states[i] if i < len(states) else "oscillate"
+            allocs = state_strategies.get(state, state_strategies.get("oscillate", []))
+            block_weights = {}
+            for a in allocs:
+                block_weights[a["strategy"]] = a["weight"]
+            tw = sum(block_weights.values()) or 1.0
+            block_weights = {k: v/tw for k, v in block_weights.items()}
+
+        combined_ret = 0.0
+        total_w = 0.0
+        for name, w in block_weights.items():
+            if name in sub_drs:
+                combined_ret += w * sub_drs[name][i]
+                total_w += w
+
+        dr[i] = combined_ret / total_w if total_w > 0 else 0.0
 
     return dr
 
@@ -857,6 +877,89 @@ def run_phase4():
     return results
 
 
+def run_phase_compare():
+    """对比实验：统一10天 vs 子策略各自周期。"""
+    logger.info("=" * 60)
+    logger.info("Phase Compare: 统一10天 vs 子策略各自周期")
+    logger.info("=" * 60)
+
+    z3, fwd, dm, cl, tks, fnames, nd, ns, ds = load_data()
+    signals = build_signals(z3, fwd, dm, cl, fnames, nd, ns, ds)
+    sub_drs = compute_all_sub_drs(signals, fwd, dm, nd)
+
+    mkt_idx = signals["market_index"]
+    states, conf = detect_market_state(mkt_idx, nd, bull_easy=True)
+
+    results = []
+
+    for cname, alloc in {
+        "V5_original": {
+            "bull": [("mf_d10_rp", 0.7), ("chip_rp", 0.3)],
+            "bear": [("chip_covrp", 0.7), ("mf_vol_d10_rp", 0.3)],
+            "oscillate": [("mf50_chip50", 0.5), ("chip_covrp", 0.5)],
+            "recovery": [("mf60_chip40", 0.6), ("osr_d10", 0.4)],
+        },
+        "V6a_3way": {
+            "bull": [("mf_d10_rp", 0.6), ("mf_vol_d10_rp", 0.2), ("chip_covrp", 0.2)],
+            "bear": [("chip_covrp", 0.6), ("chip_equal_d3", 0.2), ("mf_vol_d10_rp", 0.2)],
+            "oscillate": [("chip_covrp", 0.4), ("mf50_chip50", 0.3), ("c01_layered_d5", 0.3)],
+            "recovery": [("chip_equal_d3", 0.4), ("mf60_chip40", 0.3), ("mf_vol_d10_rp", 0.3)],
+        },
+    }.items():
+        ssm = {s: [{"strategy": n, "weight": w} for n, w in alloc[s]]
+               for s in ["bull", "bear", "oscillate", "recovery"]}
+
+        # A: 子策略各自周期（每日状态检测）
+        dr_daily = run_mss_backtest(ssm, sub_drs, states, nd)
+        m_daily = compute_metrics(dr_daily, name=f"{cname}_每日状态")
+
+        # B: 统一10天（每10天检测一次状态）
+        dr_uni = run_mss_unified_backtest(ssm, sub_drs, states, nd, rebal_freq=10)
+        m_uni = compute_metrics(dr_uni, name=f"{cname}_统一10天")
+
+        # C: 统一5天
+        dr_uni5 = run_mss_unified_backtest(ssm, sub_drs, states, nd, rebal_freq=5)
+        m_uni5 = compute_metrics(dr_uni5, name=f"{cname}_统一5天")
+
+        # D: 统一3天
+        dr_uni3 = run_mss_unified_backtest(ssm, sub_drs, states, nd, rebal_freq=3)
+        m_uni3 = compute_metrics(dr_uni3, name=f"{cname}_统一3天")
+
+        results += [m_daily, m_uni, m_uni5, m_uni3]
+
+        for m in [m_daily, m_uni, m_uni5, m_uni3]:
+            w = window_analysis(_get_dr_by_name(m['name'], {
+                f"{cname}_每日状态": dr_daily,
+                f"{cname}_统一10天": dr_uni,
+                f"{cname}_统一5天": dr_uni5,
+                f"{cname}_统一3天": dr_uni3,
+            }), ds, WINDOWS)
+            pos = sum(1 for ww in w if ww.get("annual_return", 0) > 0 and ww.get("n_days", 0) > 0)
+            total = sum(1 for ww in w if ww.get("n_days", 0) > 0)
+            m["windows_positive"] = f"{pos}/{total}"
+
+        logger.info(f"  {cname}:")
+        logger.info(f"    每日状态: 年化={m_daily['annual_return']*100:.2f}% Sharpe={m_daily['sharpe']:.3f} 回撤={m_daily['max_drawdown']*100:.2f}% 窗口={m_daily['windows_positive']}")
+        logger.info(f"    统一10天: 年化={m_uni['annual_return']*100:.2f}% Sharpe={m_uni['sharpe']:.3f} 回撤={m_uni['max_drawdown']*100:.2f}% 窗口={m_uni['windows_positive']}")
+        logger.info(f"    统一5天:  年化={m_uni5['annual_return']*100:.2f}% Sharpe={m_uni5['sharpe']:.3f} 回撤={m_uni5['max_drawdown']*100:.2f}% 窗口={m_uni5['windows_positive']}")
+        logger.info(f"    统一3天:  年化={m_uni3['annual_return']*100:.2f}% Sharpe={m_uni3['sharpe']:.3f} 回撤={m_uni3['max_drawdown']*100:.2f}% 窗口={m_uni3['windows_positive']}")
+
+    print_results_table(results, "对比: 每日状态 vs 统一间隔")
+
+    out_path = os.path.join(RESULTS_DIR, "phase_compare.json")
+    with open(out_path, "w") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    logger.info("已保存到 %s", out_path)
+    return results
+
+
+def _get_dr_by_name(name, dr_map):
+    for k, v in dr_map.items():
+        if k == name:
+            return v
+    return None
+
+
 def run_phase5():
     """Phase 5: 综合最优 — 组合所有最佳配置做完整窗口分析。"""
     logger.info("=" * 60)
@@ -996,7 +1099,7 @@ def run_phase5():
 
 def main():
     parser = argparse.ArgumentParser(description="MarketStateSelector 深度优化")
-    parser.add_argument("--phase", choices=["base", "1", "2", "3", "4", "5", "all"],
+    parser.add_argument("--phase", choices=["base", "1", "2", "3", "4", "5", "compare", "all"],
                         default="all")
     args = parser.parse_args()
 
@@ -1012,6 +1115,8 @@ def main():
         run_phase4()
     elif args.phase == "5":
         run_phase5()
+    elif args.phase == "compare":
+        run_phase_compare()
     elif args.phase == "all":
         logger.info("⚠️ 运行全部phase，每个phase独立加载数据")
         run_phase1()

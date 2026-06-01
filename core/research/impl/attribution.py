@@ -92,10 +92,10 @@ class AttributionAnalyzer:
         """
         excess_returns = portfolio_returns - benchmark_returns
 
-        timing_contrib = self._timing Attribution(portfolio_returns, benchmark_returns)
-        selection_contrib = self._selection Attribution(portfolio_returns, benchmark_returns)
-        industry_contrib = self._industry Attribution(positions)
-        style_contrib = self._style Attribution(positions)
+        timing_contrib = self._timing_attribution(portfolio_returns, benchmark_returns)
+        selection_contrib = self._selection_attribution(portfolio_returns, benchmark_returns)
+        industry_contrib = self._industry_attribution(positions)
+        style_contrib = self._style_attribution(positions)
 
         total_return = portfolio_returns.sum()
 
@@ -113,7 +113,7 @@ class AttributionAnalyzer:
             residual=residual,
         )
 
-    def _timing Attribution(
+    def _timing_attribution(
         self,
         portfolio_returns: pd.Series,
         benchmark_returns: pd.Series,
@@ -131,7 +131,7 @@ class AttributionAnalyzer:
 
         return timing_return
 
-    def _selection Attribution(
+    def _selection_attribution(
         self,
         portfolio_returns: pd.Series,
         benchmark_returns: pd.Series,
@@ -148,7 +148,7 @@ class AttributionAnalyzer:
 
         return selection_return
 
-    def _industry Attribution(self, positions: pd.DataFrame) -> float:
+    def _industry_attribution(self, positions: pd.DataFrame) -> float:
         """行业归因。"""
         if "industry" not in positions.columns:
             return 0.0
@@ -160,7 +160,7 @@ class AttributionAnalyzer:
 
         return contribution
 
-    def _style Attribution(self, positions: pd.DataFrame) -> float:
+    def _style_attribution(self, positions: pd.DataFrame) -> float:
         """风格归因。"""
         if "style" not in positions.columns:
             return 0.0
@@ -215,7 +215,7 @@ class AttributionAnalyzer:
             interaction_effect=interaction_effect,
         )
 
-    def factor Attribution(
+    def factor_attribution(
         self,
         portfolio_returns: pd.Series,
         factor_returns: Dict[str, pd.Series],
