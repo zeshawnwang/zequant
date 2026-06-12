@@ -1,11 +1,11 @@
 {
   "strategy": {
     "name": "mss_dynamic",
-    "version": "6.0",
-    "description": "V6: 状态级trailing+rf+top_n渐进+TX敏感+walk-forward验证",
+    "version": "7.0",
+    "description": "V7: mf50_chip50替换c01(bull) + mf止损5% + osr进bull",
     "target_market": "所有市场环境",
     "created": "2026-05-18",
-    "updated": "2026-05-27"
+    "updated": "2026-06-02"
   },
   "versions": {
     "baseline": {
@@ -116,6 +116,25 @@
         "max_drawdown": -0.0538,
         "calmar": 17.1345
       }
+    },
+    "v7": {
+      "version": "7.0",
+      "description": "V7: c01替换chip_covrp + mf止损5% + osr进bull (实盘口径t5)",
+      "expected": {
+        "annual_return": 1.259,
+        "sharpe": 4.714,
+        "max_drawdown": -0.1315,
+        "calmar": 9.576
+      },
+      "trail3": {
+        "description": "实盘口径 trail=3%",
+        "expected": {
+          "annual_return": 2.3743,
+          "sharpe": 6.601,
+          "max_drawdown": -0.1012,
+          "calmar": 23.472
+        }
+      }
     }
   },
   "state_detection": {
@@ -127,72 +146,37 @@
   },
   "state_strategies": {
     "bull": [
-      {
-        "strategy": "mf_d10_rp",
-        "weight": 0.6
-      },
-      {
-        "strategy": "mf_vol_d10_rp",
-        "weight": 0.2
-      },
-      {
-        "strategy": "chip_covrp",
-        "weight": 0.2
-      }
+      {"strategy": "mf_d10_rp", "weight": 0.6},
+      {"strategy": "mf_vol_d10_rp", "weight": 0.2},
+      {"strategy": "mf50_chip50", "weight": 0.15},
+      {"strategy": "osr_d10", "weight": 0.05}
     ],
     "bear": [
-      {
-        "strategy": "chip_covrp",
-        "weight": 0.6
-      },
-      {
-        "strategy": "chip_equal_d3",
-        "weight": 0.2
-      },
-      {
-        "strategy": "mf_vol_d10_rp",
-        "weight": 0.2
-      }
+      {"strategy": "c01_layered_d5", "weight": 0.5},
+      {"strategy": "chip_equal_d3", "weight": 0.25},
+      {"strategy": "mf_vol_d10_rp", "weight": 0.25}
     ],
     "oscillate": [
-      {
-        "strategy": "chip_covrp",
-        "weight": 0.4
-      },
-      {
-        "strategy": "mf50_chip50",
-        "weight": 0.3
-      },
-      {
-        "strategy": "c01_layered_d5",
-        "weight": 0.3
-      }
+      {"strategy": "mf_d10_rp", "weight": 0.4},
+      {"strategy": "mf50_chip50", "weight": 0.3},
+      {"strategy": "c01_layered_d5", "weight": 0.3}
     ],
     "recovery": [
-      {
-        "strategy": "chip_covrp",
-        "weight": 0.4
-      },
-      {
-        "strategy": "osr_d10",
-        "weight": 0.3
-      },
-      {
-        "strategy": "mf_vol_d10_rp",
-        "weight": 0.3
-      }
+      {"strategy": "c01_layered_d5", "weight": 0.4},
+      {"strategy": "osr_d10", "weight": 0.3},
+      {"strategy": "mf_vol_d10_rp", "weight": 0.3}
     ]
   },
   "stop_loss": {
-    "mf_d10_rp": 0.06,
-    "mf_vol_d10_rp": 0.06,
+    "mf_d10_rp": 0.05,
+    "mf_vol_d10_rp": 0.05,
     "chip_covrp": 0.08,
     "chip_equal_d3": 0.08,
-    "c01_layered_d5": 0.06,
+    "c01_layered_d5": 0.05,
     "chip_rp": 0.08,
-    "osr_d10": 0.06,
-    "mf50_chip50": 0.06,
-    "mf60_chip40": 0.06
+    "osr_d10": 0.05,
+    "mf50_chip50": 0.05,
+    "mf60_chip40": 0.05
   },
   "confidence_weight_adjustment": {
     "enabled_in": "v2c",
@@ -203,9 +187,9 @@
     }
   },
   "expected": {
-    "annual_return": 0.9214,
-    "sharpe": 4.2716,
-    "max_drawdown": -0.0538,
-    "calmar": 17.1345
+    "annual_return": 1.259,
+    "sharpe": 4.714,
+    "max_drawdown": -0.1315,
+    "calmar": 9.576
   }
 }

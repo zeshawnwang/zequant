@@ -499,9 +499,9 @@ def main():
     all_factors = db.list_factor_columns()
     db.close()
 
-    from core.strategies.pipeline import DEFAULT_FACTORS
-    available = [f for f in DEFAULT_FACTORS if f in all_factors]
-    logger.info(f"可用因子: {len(all_factors)} 个, 默认因子可用: {len(available)}/{len(DEFAULT_FACTORS)}")
+    from core.factors.defaults import DEFAULT_FACTOR_NAMES
+    available = [f for f in DEFAULT_FACTOR_NAMES if f in all_factors]
+    logger.info(f"可用因子: {len(all_factors)} 个, 默认因子可用: {len(available)}/{len(DEFAULT_FACTOR_NAMES)}")
 
     chip_available = [f for f in CHIP_FACTORS if f in all_factors]
     logger.info(f"Chip因子可用: {len(chip_available)}/{len(CHIP_FACTORS)}")

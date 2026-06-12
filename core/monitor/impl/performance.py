@@ -130,7 +130,7 @@ class PerformanceMonitor:
         report.sharpe_ratio = self._calc_sharpe(returns)
         report.sortino_ratio = self._calc_sortino(returns)
         report.max_drawdown, report.max_drawdown_date, report.max_drawdown_duration = self._calc_max_drawdown(df)
-        report.calmar_ratio = abs(report.max_drawdown) / report.annualized_return if report.annualized_return > 0 else 0
+        report.calmar_ratio = report.annualized_return / abs(report.max_drawdown) if abs(report.max_drawdown) > 0 else 0
 
         if trades:
             report.total_trades = len(trades)

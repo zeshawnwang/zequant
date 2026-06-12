@@ -12,171 +12,20 @@ import sys
 import os
 import json
 import logging
-from datetime import datetime, date
-from typing import List, Dict, Optional
-from dataclasses import dataclass
+from datetime import datetime
+from typing import List
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from live.storage.record_base import (
+    Trade, _init_live_db, get_last_snapshot, get_closing_prices,
+    get_latest_close, get_benchmark_return, calc_position_value,
+    save_trades, save_snapshot, save_performance, parse_trade,
+    LIVE_DB_PATH, QUANT_DB_PATH,
+)
 from core.database import Database
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("record_live")
-
-LIVE_DB_PATH = "./data_live/live_data.db"
-QUANT_DB_PATH = "./data/quant_data.db"
-
-
-@dataclass
-class Trade:
-    symbol: str
-    direction: str
-    shares: int
-    price: float
-
-
-def _init_live_db(db: Database):
-    db.conn.execute("""
-        CREATE TABLE IF NOT EXISTS daily_snapshots (
-            date         DATE, strategy     VARCHAR,
-            total_value  DOUBLE, cash       DOUBLE,
-            positions    JSON, orders       JSON,
-            created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    db.conn.execute("""
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_snapshot_date_strategy
-        ON daily_snapshots (date, strategy)
-    """)
-    db.conn.execute("""
-        CREATE TABLE IF NOT EXISTS trades (
-            trade_id    VARCHAR PRIMARY KEY, date   DATE,
-            symbol      VARCHAR, direction VARCHAR,
-            price       DOUBLE, shares     INT,
-            amount      DOUBLE, fee        DOUBLE DEFAULT 0,
-            strategy    VARCHAR DEFAULT '', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    db.conn.execute("""
-        CREATE TABLE IF NOT EXISTS daily_performance (
-            date            DATE PRIMARY KEY, total_value     DOUBLE,
-            daily_return    DOUBLE, cumulative      DOUBLE DEFAULT 0,
-            max_drawdown    DOUBLE DEFAULT 0, positions_count INT DEFAULT 0,
-            turnover        DOUBLE DEFAULT 0, benchmark_ret   DOUBLE DEFAULT 0,
-            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    db.conn.commit()
-
-
-def get_last_snapshot(live_db: Database) -> dict:
-    row = live_db.conn.execute("""
-        SELECT date, total_value, cash, positions, orders
-        FROM daily_snapshots ORDER BY date DESC LIMIT 1
-    """).fetchone()
-    if row:
-        return {
-            "date": row[0], "total_value": row[1], "cash": row[2],
-            "positions": json.loads(row[3]) if row[3] else {},
-            "orders": json.loads(row[4]) if row[4] else [],
-        }
-    return {"date": None, "total_value": 0, "cash": 0, "positions": {}, "orders": []}
-
-
-def get_closing_prices(quant_db: Database, symbols: List[str], trade_date: str) -> Dict[str, float]:
-    if not symbols:
-        return {}
-    ph = ",".join("?" for _ in symbols)
-    rows = quant_db.conn.execute(
-        f"SELECT symbol, close FROM daily_bars WHERE date=? AND symbol IN ({ph})",
-        [trade_date] + symbols
-    ).fetchall()
-    return {r[0]: float(r[1]) for r in rows}
-
-
-def get_latest_close(quant_db: Database, symbol: str, before_date: str) -> Optional[float]:
-    row = quant_db.conn.execute("""
-        SELECT close FROM daily_bars
-        WHERE symbol=? AND date<=? ORDER BY date DESC LIMIT 1
-    """, [symbol, before_date]).fetchone()
-    return float(row[0]) if row else None
-
-
-def get_benchmark_return(quant_db: Database, trade_date: str) -> float:
-    row = quant_db.conn.execute("""
-        SELECT pct_change FROM daily_bars
-        WHERE symbol='000300' AND date=?
-    """, [trade_date]).fetchone()
-    return float(row[0]) / 100.0 if row else 0.0
-
-
-def calc_position_value(positions: Dict[str, int], prices: Dict[str, float],
-                        quant_db: Database, trade_date: str) -> float:
-    total = 0.0
-    for sym, shares in positions.items():
-        p = prices.get(sym) or get_latest_close(quant_db, sym, trade_date) or 0
-        total += p * shares
-    return total
-
-
-def save_trades(live_db: Database, trades: List[Trade], strategy: str, trade_date: str):
-    for t in trades:
-        tid = f"{trade_date}_{t.symbol}_{t.direction}_{abs(t.shares)}"
-        amount = t.price * t.shares
-        live_db.conn.execute("""
-            INSERT INTO trades (trade_id,date,symbol,direction,price,shares,amount,strategy)
-            VALUES (?,?,?,?,?,?,?,?) ON CONFLICT (trade_id) DO NOTHING
-        """, [tid, trade_date, t.symbol, t.direction, t.price, t.shares, amount, strategy])
-
-
-def save_snapshot(live_db: Database, trade_date: str, strategy: str,
-                  total_value: float, cash: float, positions: dict, orders: list):
-    live_db.conn.execute("""
-        INSERT INTO daily_snapshots (date,strategy,total_value,cash,positions,orders)
-        VALUES (?,?,?,?,?,?) ON CONFLICT (date,strategy) DO UPDATE SET
-            total_value=EXCLUDED.total_value, cash=EXCLUDED.cash,
-            positions=EXCLUDED.positions, orders=EXCLUDED.orders
-    """, [trade_date, strategy, total_value, cash,
-          json.dumps(positions), json.dumps(orders)])
-
-
-def save_performance(live_db: Database, trade_date: str, total_value: float,
-                     last_value: float, position_count: int, turnover: float,
-                     benchmark_ret: float, net_cashflow: float = 0):
-    net_change = total_value - net_cashflow
-    daily_ret = (net_change - last_value) / last_value if last_value > 0 else 0.0
-    prev = live_db.conn.execute("""
-        SELECT cumulative FROM daily_performance ORDER BY date DESC LIMIT 1
-    """).fetchone()
-    prev_cum = float(prev[0]) if prev else 1.0
-    cumulative = prev_cum * (1 + daily_ret)
-    max_cum = live_db.conn.execute("SELECT MAX(cumulative) FROM daily_performance").fetchone()
-    peak = max(float(max_cum[0]), cumulative) if max_cum and max_cum[0] else cumulative
-    max_dd = (cumulative - peak) / peak if peak > 0 else 0.0
-    live_db.conn.execute("""
-        INSERT INTO daily_performance (date,total_value,daily_return,cumulative,
-            max_drawdown,positions_count,turnover,benchmark_ret)
-        VALUES (?,?,?,?,?,?,?,?) ON CONFLICT (date) DO UPDATE SET
-            total_value=EXCLUDED.total_value, daily_return=EXCLUDED.daily_return,
-            cumulative=EXCLUDED.cumulative, max_drawdown=EXCLUDED.max_drawdown,
-            positions_count=EXCLUDED.positions_count, turnover=EXCLUDED.turnover,
-            benchmark_ret=EXCLUDED.benchmark_ret
-    """, [trade_date, total_value, daily_ret, cumulative, max_dd,
-          position_count, turnover, benchmark_ret])
-
-
-def parse_trade(text: str) -> Optional[Trade]:
-    parts = text.strip().split()
-    if len(parts) < 4:
-        return None
-    sym = parts[0].zfill(6)
-    d = parts[1].upper()
-    direction = "B" if d in ("B", "BUY", "买入") else "S" if d in ("S", "SELL", "卖出", "卖") else ""
-    if not direction:
-        return None
-    try:
-        return Trade(symbol=sym, direction=direction, shares=int(parts[2]), price=float(parts[3]))
-    except ValueError:
-        return None
 
 
 def _verify_execution(trade_date: str, strategy: str):
@@ -248,7 +97,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="实盘成交记录")
     parser.add_argument("--trades", help='成交列表, 逗号分隔, 格式: "000001 B 100 10.52,600519 S 50 1350"')
-    parser.add_argument("--strategy", default="mf_vol_d10_rp", help="策略名")
+    parser.add_argument("--strategy", default="mss_dynamic", help="策略名")
     parser.add_argument("--date", default=None, help="日期(默认今天)")
     parser.add_argument("--init-cash", type=float, default=None, help="首次建仓初始资金")
     parser.add_argument("--deposit", type=float, default=0, help="追加资金")
@@ -298,7 +147,7 @@ def main():
     quant_db = Database(QUANT_DB_PATH)
     _init_live_db(live_db)
 
-    last = get_last_snapshot(live_db)
+    last = get_last_snapshot(live_db, args.strategy)
     is_first = last["date"] is None
     if is_first:
         init_cash = args.init_cash
@@ -358,11 +207,55 @@ def main():
     turnover = (total_buy + total_sell) / total_value if total_value > 0 else 0
     benchmark_ret = get_benchmark_return(quant_db, trade_date)
 
+    # 事务保护：三张表同时写入，避免中间崩溃导致状态不一致
+    live_db.conn.execute("BEGIN TRANSACTION")
     save_trades(live_db, trades, args.strategy, trade_date)
     save_snapshot(live_db, trade_date, args.strategy, total_value, cash, positions, orders)
     save_performance(live_db, trade_date, total_value, last["total_value"],
                      len(positions), turnover, benchmark_ret, net_cashflow=net_cashflow)
-    live_db.conn.commit()
+
+    # 同步 sub_strategy_state：移除已卖出的 + 添加新买入的
+    bought_symbols = [t for t in trades if t.direction == "B"]
+    sold_symbols = [t.symbol for t in trades if t.direction == "S"]
+
+    # 复用 mss_dynamic 的信号归属映射（避免重复维护相同逻辑）
+    try:
+        from live.signals.mss_dynamic import _build_signal_symbol_map
+        sig_map = _build_signal_symbol_map()
+    except Exception:
+        sig_map = {}
+
+    for name_row in live_db.conn.execute(
+        "SELECT name, holdings FROM sub_strategy_state"
+    ).fetchall():
+        name = name_row[0]
+        h = json.loads(name_row[1]) if name_row[1] and name_row[1] != "{}" else {}
+        changed = False
+
+        # 移除已卖出的
+        for sym in sold_symbols:
+            if sym in h:
+                del h[sym]
+                changed = True
+
+        # 添加新买入的（仅限属于本子策略的）
+        for t in bought_symbols:
+            if sig_map.get(t.symbol) == name and t.symbol not in h:
+                h[t.symbol] = {"shares": t.shares, "price": t.price, "peak": t.price}
+                changed = True
+
+        if changed:
+            used = sum(h[s].get("shares", 0) * h[s].get("price", 0) for s in h)
+            live_db.conn.execute(
+                "UPDATE sub_strategy_state SET holdings=?, used_capital=?, last_date=? WHERE name=?",
+                [json.dumps(h), used, trade_date, name]
+            )
+            if sold_symbols:
+                logger.info(f"  [sync] 从 {name} 移除已卖出的 {len(sold_symbols)} 只")
+            if [t for t in bought_symbols if sig_map.get(t.symbol) == name]:
+                logger.info(f"  [sync] {name} 已记录新买入成交")
+
+    live_db.conn.execute("COMMIT")
     live_db.close()
     quant_db.close()
 

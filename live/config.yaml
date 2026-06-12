@@ -6,15 +6,14 @@ database:
   live_path: "./data_live/live_data.db"
 
 account:
-  initial_cash: 100000
+  initial_cash: 50000
   min_trade_amount: 1000
   max_positions: 20
   max_single_weight: 0.15
 
 strategies:
-  primary: "mf_vol_d10_rp"
-  secondary: "chip_covrp"
-  weights: [0.6, 0.4]
+  primary: "mss_dynamic"
+  note: "mss_dynamic V7 — MarketStateSelector 动态切换，子策略权重按市场状态分布"
 
 execution:
   slippage: 0.002
@@ -27,9 +26,9 @@ monitor:
 
 # 邮件通知（无券商API，纯信号输出）
 mail:
-  backend: "file"           # smtp | file
+  backend: "smtp"           # smtp | file
   smtp_host: "smtp.qq.com"
-  smtp_port: 587
+  smtp_port: 465
   # smtp_user 和 smtp_pass 通过环境变量 SMTP_USER / SMTP_PASS 设置
   # 收件人通过环境变量 MAIL_TO 设置
   output_dir: "./data_live/signals"  # file模式输出路径

@@ -236,13 +236,6 @@ class HysteresisRiskParityBuilder(RiskParityBuilder):
         if n_keep < n:
             cutoff = np.sort(abs_delta)[-n_keep]
             delta[abs_delta < cutoff] = 0.0
-            # 重归一化：被跳过的部分均摊到其余标的上
-            skipped_mask = abs_delta < cutoff
-            if skipped_mask.any() and (~skipped_mask).any():
-                remaining_delta = delta[~skipped_mask].sum()
-                if remaining_delta > 0:
-                    delta[~skipped_mask] = delta[~skipped_mask] / remaining_delta * delta[~skipped_mask].sum()
-                delta[skipped_mask] = 0.0
 
         # 6. 新权重 = 当前权重 + 过滤后的调整差
         new_w = current_w + delta

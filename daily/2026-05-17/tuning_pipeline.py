@@ -83,9 +83,9 @@ def experiment_mf_params():
     logger.info("可用因子: %d 个", len(all_factors))
 
     # 使用 DEFAULT_FACTORS (从 pipeline 导入)
-    from core.strategies.pipeline import DEFAULT_FACTORS
-    factor_names = [f for f in DEFAULT_FACTORS if f in all_factors]
-    logger.info("使用 %d/%d 个默认因子", len(factor_names), len(DEFAULT_FACTORS))
+    from core.factors.defaults import DEFAULT_FACTOR_NAMES
+    factor_names = [f for f in DEFAULT_FACTOR_NAMES if f in all_factors]
+    logger.info("使用 %d/%d 个默认因子", len(factor_names), len(DEFAULT_FACTOR_NAMES))
 
     params = list(product(
         [20, 30, 40, 50],    # top_n
@@ -154,11 +154,11 @@ def experiment_validate(strategy_name: str):
     """验证单个已沉淀策略在修正Pipeline下的表现。"""
     from core.strategies.impl import hub as strategy_hub
 
-    # 获取策略的因子列表（简化：使用 DEFAULT_FACTORS）
-    from core.strategies.pipeline import DEFAULT_FACTORS
+    # 获取策略的因子列表（简化：使用 DEFAULT_FACTOR_NAMES）
+    from core.factors.defaults import DEFAULT_FACTOR_NAMES
     db = Database()
     all_factors = db.list_factor_columns()
-    factor_names = [f for f in DEFAULT_FACTORS if f in all_factors]
+    factor_names = [f for f in DEFAULT_FACTOR_NAMES if f in all_factors]
 
     logger.info("验证策略: %s", strategy_name)
 

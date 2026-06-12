@@ -8,22 +8,16 @@ D5调仓频率，回撤仅-7.55%。
 """
 from __future__ import annotations
 import json, os
-from ...base.strategy import SignalStrategy
 from ....screening import MultiFactorSelector
 from ....timings import TrendTiming
-from ....signals import LayeredComposer, MaxSingleWeightConstraint
-from ....risk import RiskManager
+from .._factory import _build_signal_strategy
 
 
-def build_c01_layered_d5(top_n: int = 40, **kwargs) -> SignalStrategy:
+def build_c01_layered_d5(top_n: int = 40, **kwargs):
     cfg_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(cfg_dir, "config.json")) as f:
         cfg = json.load(f)
     selector = MultiFactorSelector(weights=cfg["selector"]["weights"],
         winsorize=cfg["selector"].get("winsorize", 0.01), top_n=top_n, normalize_weights=True)
     timing = TrendTiming(**cfg["timing"]["params"])
-    composer = LayeredComposer(top_n=top_n, constraints=[
-        MaxSingleWeightConstraint(max_weight=cfg["composer"]["constraints"][0]["max_single_weight"])])
-    risk = RiskManager(config=cfg.get("risk", {}))
-    return SignalStrategy(name=cfg["strategy"]["name"], selector=selector,
-        position_sizer=timing, composer=composer, risk_manager=risk, top_n=top_n)
+    return _build_signal_strategy(cfg_dir, selector, top_n=top_n, position_sizer=timing)

@@ -1,63 +1,61 @@
-"""项目级配置加载器(零依赖,纯函数)。
+"""项目级配置加载器（Pydantic 校验版）。
 
-统一从 [`config/config.yaml`](../config/config.yaml) 读出全部段;调用方按需取字段,
-避免每个 script 各自 PyYAML 解析散落,便于将来切换配置后端(env / TOML / DB)。
-
-注意：这里不再维护重复的默认配置了！唯一真实配置源是 config/config.yaml。
+统一从 config/config.yaml 读出全部段，过 Pydantic schema 校验后返回。
+调用方通过字段访问（cfg.database.path / cfg.fees.stamp_tax），
+替代手写 dict 键名拼写。
 
 用法
 ----
     from core.config import load_config
-    cfg = load_config()                       # 默认 config/config.yaml
-    cfg = load_config("path/to/other.yaml")
-    db_path        = cfg["database"]["path"]
-    ir_threshold   = cfg["factors"]["ir_threshold"]
-    forward_days   = cfg["factors"]["forward_days"]
+    cfg = load_config()                       # ZeQuantConfig 对象
+    db_path      = cfg.database.path
+    ir_threshold = cfg.factors.ir_threshold
+    forward_days = cfg.factors.forward_days
 
-    # 读取策略专属配置
-    strat_cfg = get_strategy_config(cfg, "momentum_top50")
+    # 读取策略专属配置（仍为 dict，因为是动态结构）
+    strat_cfg = cfg.strategies.get("momentum_top50", {})
     top_n = strat_cfg.get("top_n", 50)
-
-约定
-----
-- 找不到配置文件时会抛出异常，不再隐藏
-- 路径相对工作目录，不做 cwd 推断；调用方负责 chdir 或传绝对路径
 """
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 import yaml
 
+from core.config_model import ZeQuantConfig
 
-def load_config(config_path: str | Path = "config/config.yaml") -> Dict[str, Any]:
-    """从 YAML 文件加载完整配置。
+
+def load_config(config_path: str | Path = "config/config.yaml") -> ZeQuantConfig:
+    """从 YAML 加载并校验配置。
 
     Args:
         config_path: 配置文件路径，默认 "config/config.yaml"
 
     Returns:
-        完整配置字典
+        经过 Pydantic 校验的 ZeQuantConfig 对象
 
     Raises:
         FileNotFoundError: 配置文件不存在
         yaml.YAMLError: YAML 解析错误
+        pydantic.ValidationError: 配置字段类型/值校验失败
     """
     config_path = Path(config_path)
     if not config_path.exists():
         raise FileNotFoundError(f"配置文件不存在: {config_path}")
 
     with open(config_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        raw: Dict[str, Any] = yaml.safe_load(f)
+
+    return ZeQuantConfig.from_dict(raw)
 
 
-def get_strategy_config(cfg: Dict[str, Any], strategy_name: str) -> Dict[str, Any]:
-    """从完整配置中提取策略专属配置段。
+def get_strategy_config(cfg: ZeQuantConfig, strategy_name: str) -> Dict[str, Any]:
+    """从 ZeQuantConfig 中提取策略专属配置段。
 
     Args:
-        cfg: load_config() 返回的完整配置
-        strategy_name: 策略名（对应 cfg["strategies"] 中的键）
+        cfg: load_config() 返回的 ZeQuantConfig 对象
+        strategy_name: 策略名（对应 cfg.strategies 中的键）
 
     Returns:
-        策略专属配置字典，没有时返回空字典
+        策略配置 dict，没有时返回空 dict
     """
-    return cfg.get("strategies", {}).get(strategy_name, {})
+    return cfg.strategies.get(strategy_name, {})

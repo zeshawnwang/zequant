@@ -36,8 +36,8 @@ class MarketStateSelector:
                 {"strategy": "c01_layered_d5","weight": 0.3, "note": "趋势择时保护"},
             ],
             "recovery": [
-                {"strategy": "chip_equal_d3",  "weight": 0.4, "note": "快速切换底仓"},
-                {"strategy": "mf60_chip40",   "weight": 0.3, "note": "温和进攻"},
+                {"strategy": "chip_covrp",    "weight": 0.4, "note": "协方差防御底仓"},
+                {"strategy": "osr_d10",       "weight": 0.3, "note": "超跌反弹"},
                 {"strategy": "mf_vol_d10_rp", "weight": 0.3, "note": "波动保护做多"},
             ],
         }

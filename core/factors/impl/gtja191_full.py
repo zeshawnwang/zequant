@@ -1211,7 +1211,7 @@ def gtja96(ctx: FactorContext) -> pd.DataFrame:
     high = ctx.high
     low = ctx.low
     ts_min_low = op.ts_min(low, 9)
-    ts_max_high = op.ts_min(high, 9)
+    ts_max_high = op.ts_max(high, 9)
     numerator = close - ts_min_low
     denominator = (ts_max_high - ts_min_low).replace(0, np.nan)
     result = (numerator / denominator) * 100

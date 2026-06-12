@@ -9,223 +9,23 @@
     python3 scripts/record_live.py --trades "000001 B 100 10.52,600519 S 50 1350"
 """
 from __future__ import annotations
-import sys, os, json, logging
-from datetime import datetime, date
-from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass, field
+import sys
+import os
+import logging
+from datetime import datetime
+from typing import List
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from live.storage.record_base import (
+    Trade, _init_live_db, get_last_snapshot, get_closing_prices,
+    get_latest_close, get_benchmark_return, calc_position_value,
+    save_trades, save_snapshot, save_performance, parse_trade,
+    LIVE_DB_PATH, QUANT_DB_PATH,
+)
 from core.database import Database
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("record_live")
-
-LIVE_DB_PATH = "./data_live/live_data.db"
-QUANT_DB_PATH = "./data/quant_data.db"
-
-
-@dataclass
-class Trade:
-    symbol: str
-    direction: str          # B=买入, S=卖出
-    shares: int
-    price: float
-
-
-def _init_live_db(db: Database):
-    """初始化实盘数据库表。"""
-    db.conn.execute("""
-        CREATE TABLE IF NOT EXISTS daily_snapshots (
-            date         DATE,
-            strategy     VARCHAR,
-            total_value  DOUBLE,
-            cash         DOUBLE,
-            positions    JSON,
-            orders       JSON,
-            created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    # 创建唯一索引供 ON CONFLICT 使用
-    db.conn.execute("""
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_snapshot_date_strategy
-        ON daily_snapshots (date, strategy)
-    """)
-    db.conn.execute("""
-        CREATE TABLE IF NOT EXISTS trades (
-            trade_id    VARCHAR PRIMARY KEY,
-            date        DATE,
-            symbol      VARCHAR,
-            direction   VARCHAR,
-            price       DOUBLE,
-            shares      INT,
-            amount      DOUBLE,
-            fee         DOUBLE DEFAULT 0,
-            strategy    VARCHAR DEFAULT '',
-            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    db.conn.execute("""
-        CREATE TABLE IF NOT EXISTS daily_performance (
-            date            DATE PRIMARY KEY,
-            total_value     DOUBLE,
-            daily_return    DOUBLE,
-            cumulative      DOUBLE DEFAULT 0,
-            max_drawdown    DOUBLE DEFAULT 0,
-            positions_count INT DEFAULT 0,
-            turnover        DOUBLE DEFAULT 0,
-            benchmark_ret   DOUBLE DEFAULT 0,
-            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    db.conn.commit()
-
-
-def get_last_snapshot(live_db: Database) -> dict:
-    """获取最近一次持仓快照。"""
-    row = live_db.conn.execute("""
-        SELECT date, total_value, cash, positions, orders
-        FROM daily_snapshots
-        ORDER BY date DESC LIMIT 1
-    """).fetchone()
-    if row:
-        return {
-            "date": row[0],
-            "total_value": row[1],
-            "cash": row[2],
-            "positions": json.loads(row[3]) if row[3] else {},
-            "orders": json.loads(row[4]) if row[4] else [],
-        }
-    return {"date": None, "total_value": 0, "cash": 0, "positions": {}, "orders": []}
-
-
-def get_closing_prices(quant_db: Database, symbols: List[str], trade_date: str) -> Dict[str, float]:
-    """从 quant_data.db 获取指定日期收盘价。"""
-    if not symbols:
-        return {}
-    placeholders = ",".join("?" for _ in symbols)
-    rows = quant_db.conn.execute(f"""
-        SELECT symbol, close FROM daily_bars
-        WHERE date = ? AND symbol IN ({placeholders})
-    """, [trade_date] + symbols).fetchall()
-    return {r[0]: float(r[1]) for r in rows}
-
-
-def get_latest_close(quant_db: Database, symbol: str, before_date: str) -> Optional[float]:
-    """获取某个日期前的最新收盘价（兜底）。"""
-    row = quant_db.conn.execute("""
-        SELECT close FROM daily_bars
-        WHERE symbol = ? AND date <= ?
-        ORDER BY date DESC LIMIT 1
-    """, [symbol, before_date]).fetchone()
-    return float(row[0]) if row else None
-
-
-def get_benchmark_return(quant_db: Database, trade_date: str) -> float:
-    """获取当日沪深300收益率（近似基准）。"""
-    row = quant_db.conn.execute("""
-        SELECT pct_change FROM daily_bars
-        WHERE symbol = '000300' AND date = ?
-    """, [trade_date]).fetchone()
-    return float(row[0]) / 100.0 if row else 0.0
-
-
-def calc_position_value(positions: Dict[str, int], prices: Dict[str, float],
-                        quant_db: Database, trade_date: str) -> float:
-    """计算持仓总市值。"""
-    total = 0.0
-    for sym, shares in positions.items():
-        price = prices.get(sym)
-        if price is None:
-            price = get_latest_close(quant_db, sym, trade_date) or 0
-        total += price * shares
-    return total
-
-
-def save_trades(live_db: Database, trades: List[Trade], strategy: str, trade_date: str):
-    """写入成交记录。"""
-    for t in trades:
-        tid = f"{trade_date}_{t.symbol}_{t.direction}_{abs(t.shares)}"
-        amount = t.price * t.shares
-        live_db.conn.execute("""
-            INSERT INTO trades
-            (trade_id, date, symbol, direction, price, shares, amount, strategy)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (trade_id) DO NOTHING
-        """, [tid, trade_date, t.symbol, t.direction, t.price, t.shares, amount, strategy])
-
-
-def save_snapshot(live_db: Database, trade_date: str, strategy: str,
-                  total_value: float, cash: float,
-                  positions: dict, orders: list):
-    """写入持仓快照。"""
-    live_db.conn.execute("""
-        INSERT INTO daily_snapshots (date, strategy, total_value, cash, positions, orders)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT (date, strategy) DO UPDATE SET
-            total_value = EXCLUDED.total_value,
-            cash = EXCLUDED.cash,
-            positions = EXCLUDED.positions,
-            orders = EXCLUDED.orders
-    """, [trade_date, strategy, total_value, cash,
-          json.dumps(positions), json.dumps(orders)])
-
-
-def save_performance(live_db: Database, trade_date: str,
-                     total_value: float, last_value: float,
-                     position_count: int, turnover: float,
-                     benchmark_ret: float, net_cashflow: float = 0):
-    """写入当日绩效（净 cashflow 已从收益率中剔除）。"""
-    net_asset_change = total_value - net_cashflow
-    daily_ret = (net_asset_change - last_value) / last_value if last_value > 0 else 0.0
-
-    # 累计收益率：从第一条记录累乘
-    prev = live_db.conn.execute("""
-        SELECT cumulative FROM daily_performance
-        ORDER BY date DESC LIMIT 1
-    """).fetchone()
-    prev_cum = float(prev[0]) if prev else 1.0
-    cumulative = prev_cum * (1 + daily_ret)
-
-    # 最大回撤（简单版）
-    max_cum = live_db.conn.execute("""
-        SELECT MAX(cumulative) FROM daily_performance
-    """).fetchone()
-    peak = max(float(max_cum[0]), cumulative) if max_cum and max_cum[0] else cumulative
-    max_dd = (cumulative - peak) / peak if peak > 0 else 0.0
-
-    live_db.conn.execute("""
-        INSERT INTO daily_performance
-        (date, total_value, daily_return, cumulative, max_drawdown,
-         positions_count, turnover, benchmark_ret)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT (date) DO UPDATE SET
-            total_value = EXCLUDED.total_value,
-            daily_return = EXCLUDED.daily_return,
-            cumulative = EXCLUDED.cumulative,
-            max_drawdown = EXCLUDED.max_drawdown,
-            positions_count = EXCLUDED.positions_count,
-            turnover = EXCLUDED.turnover,
-            benchmark_ret = EXCLUDED.benchmark_ret
-    """, [trade_date, total_value, daily_ret, cumulative, max_dd,
-          position_count, turnover, benchmark_ret])
-
-
-def parse_trade(text: str) -> Optional[Trade]:
-    """解析一条成交文本。"""
-    parts = text.strip().split()
-    if len(parts) < 4:
-        return None
-    sym = parts[0].zfill(6)
-    dir_raw = parts[1].upper()
-    direction = "B" if dir_raw in ("B", "BUY", "买入") else "S" if dir_raw in ("S", "SELL", "卖出", "卖") else ""
-    if not direction:
-        return None
-    try:
-        shares = int(parts[2])
-        price = float(parts[3])
-    except ValueError:
-        return None
-    return Trade(symbol=sym, direction=direction, shares=shares, price=price)
 
 
 def main():

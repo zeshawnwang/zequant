@@ -31,7 +31,7 @@ class MaxSingleWeightConstraint(IConstraint):
         for symbol, weight in weights.items():
             result[symbol] = min(weight, self.max_weight)
         total = sum(result.values())
-        if total > 0 and total != 1.0:
+        if total > 0 and abs(total - 1.0) > 1e-10:
             factor = 1.0 / total
             result = {k: v * factor for k, v in result.items()}
         return result

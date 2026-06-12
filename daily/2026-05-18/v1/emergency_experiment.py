@@ -159,8 +159,8 @@ class EmergencyPipeline(StrategyPipeline):
 def run_comparison():
     db = Database()
     all_factors = db.list_factor_columns()
-    from core.strategies.pipeline import DEFAULT_FACTORS
-    factors = [f for f in DEFAULT_FACTORS if f in all_factors]
+    from core.factors.defaults import DEFAULT_FACTOR_NAMES
+    factors = [f for f in DEFAULT_FACTOR_NAMES if f in all_factors]
     db.close()
 
     RESULTS_DIR = os.path.dirname(os.path.abspath(__file__))

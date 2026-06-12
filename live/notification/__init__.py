@@ -1,5 +1,5 @@
 """
-邮件通知模块 — V6 版本，支持 SMTP 和文件输出。
+邮件通知模块 — V7 版本，支持 SMTP 和文件输出。
 
 配置从 .env 或环境变量加载:
   MAIL_BACKEND  SMTP_HOST  SMTP_PORT  SMTP_USER  SMTP_PASS  MAIL_FROM  MAIL_TO
@@ -20,6 +20,8 @@ from email.mime.multipart import MIMEMultipart
 from typing import List, Dict, Optional
 from datetime import datetime, date, timedelta
 
+from dotenv import load_dotenv
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,20 +37,7 @@ def _next_trading_day(d: str | date) -> tuple[str, str]:
             return dt.isoformat(), _WD[dt.weekday()]
 
 
-def _load_dotenv(path: str = ".env"):
-    if not os.path.exists(path):
-        return
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, val = line.split("=", 1)
-            key, val = key.strip(), val.strip().strip("\"'")
-            if key not in os.environ:
-                os.environ[key] = val
-
-_load_dotenv()
+load_dotenv(override=False)
 
 
 class Mailer:
@@ -258,7 +247,7 @@ class Mailer:
 <body style="margin:0;padding:0;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table align="center" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;margin:24px auto;background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.08);">
 <tr><td style="padding:20px 28px 8px;">
-  <h1 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0 0 2px;">ZEquant V6 · 每日信号</h1>
+  <h1 style="font-size:20px;font-weight:600;color:#1a1a2e;margin:0 0 2px;">ZEquant V7 · 每日信号</h1>
   <p style="font-size:12px;color:#aaa;margin:0 0 14px;">发送时间 {now_str}</p>
 
   <table cellpadding="0" cellspacing="0" style="width:100%;background:#f8f9fb;border-radius:6px;padding:12px 16px;font-size:13px;color:#333;">
@@ -351,11 +340,15 @@ class Mailer:
 </td></tr>"""
 
         html += """<tr><td style="padding:14px 28px 18px;text-align:center;font-size:11px;color:#aaa;border-top:1px solid #eee;">
-  ZEquant V6 — 自动生成，仅供参考，不构成投资建议
+  ZEquant V7 — 自动生成，仅供参考，不构成投资建议
 </td></tr></table></body></html>"""
         return html
 
     def _send_smtp(self, subject: str, html: str, cfg: dict):
+        if not cfg["from_addr"] or not cfg["to_addr"]:
+            logger.error("SMTP发件人或收件人未配置，使用 file 兜底")
+            self._save_to_file(subject, html, [], cfg)
+            return
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"] = cfg["from_addr"]

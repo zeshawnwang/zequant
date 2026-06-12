@@ -39,6 +39,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional, Any
 import pandas as pd
 
+from core.timings.impl._trend_utils import calc_trend_score
+
 
 class IPositionSizer(ABC):
     """仓位确定器抽象基类。"""
@@ -135,33 +137,7 @@ class TrendPositionSizer(IPositionSizer):
         return position
 
     def _calc_trend_score(self, row) -> float:
-        scores = []
-
-        macd = row.get("macd")
-        macd_signal = row.get("macd_signal")
-        if pd.notna(macd) and pd.notna(macd_signal):
-            scores.append(1.0 if macd > macd_signal else 0.0)
-
-        m5 = row.get("momentum_5")
-        m20 = row.get("momentum_20")
-        if pd.notna(m5) and pd.notna(m20):
-            if m5 > 0 and m5 > m20:
-                scores.append(1.0)
-            elif m5 < 0:
-                scores.append(0.0)
-            else:
-                scores.append(0.5)
-
-        rsi = row.get("rsi_14")
-        if pd.notna(rsi):
-            if 50 <= rsi <= 70:
-                scores.append(1.0)
-            elif 30 <= rsi < 50:
-                scores.append(0.5)
-            else:
-                scores.append(0.0)
-
-        return sum(scores) / len(scores) if scores else 0.5
+        return calc_trend_score(row)
 
     def _calc_discrete_position(self, trend_score: float) -> float:
         if trend_score >= self.bullish_threshold:

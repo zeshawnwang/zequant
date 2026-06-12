@@ -20,11 +20,14 @@ FactorHub - 因子注册中心(可插拔)
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Set, Tuple
+import logging
 import os
 import time
 import warnings
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -148,7 +151,7 @@ class FactorHub:
         wide = meta.func(ctx)
         wide = wide.replace([np.inf, -np.inf], np.nan)
         if verbose:
-            print(f"  {name:>6s}  shape={wide.shape}  ({time.time()-t0:.2f}s)")
+            logger.info(f"  {name:>6s}  shape={wide.shape}  ({time.time()-t0:.2f}s)")
         return wide
 
     def compute_all(
@@ -191,13 +194,13 @@ class FactorHub:
         for n in names:
             if n not in self._registry:
                 if verbose:
-                    print(f"  [WARN] not registered: {n}")
+                    logger.warning(f"  [WARN] not registered: {n}")
                 continue
             try:
                 wide = self.compute(n, bars, ctx=ctx, verbose=verbose)
             except Exception as e:
                 if verbose:
-                    print(f"  [ERROR] {n} failed: {e}")
+                    logger.error(f"  [ERROR] {n} failed: {e}")
                 continue
             melted = wide.stack().reset_index()
             melted.columns = ["date", "symbol", "value"]
@@ -231,7 +234,7 @@ class FactorHub:
             wide = func(ctx)
             wide = wide.replace([np.inf, -np.inf], np.nan)
             if verbose:
-                print(f"  {name:>6s}  shape={wide.shape}  ({time.time()-t0:.2f}s)")
+                logger.info(f"  {name:>6s}  shape={wide.shape}  ({time.time()-t0:.2f}s)")
             return name, wide, None
         except Exception as e:
             return name, None, str(e)
@@ -257,7 +260,7 @@ class FactorHub:
         for n in names:
             if n not in self._registry:
                 if verbose:
-                    print(f"  [WARN] not registered: {n}")
+                    logger.warning(f"  [WARN] not registered: {n}")
                 continue
             meta = self._registry[n]
             tasks.append((n, meta.func, meta.requires, bars, verbose))
@@ -281,12 +284,12 @@ class FactorHub:
                         _, wide, err = future.result()
                         if err is not None:
                             if verbose:
-                                print(f"  [ERROR] {name} failed: {err}")
+                                logger.error(f"  [ERROR] {name} failed: {err}")
                             continue
                         results.append((name, wide))
                     except Exception as e:
                         if verbose:
-                            print(f"  [ERROR] {name} failed: {e}")
+                            logger.error(f"  [ERROR] {name} failed: {e}")
                         continue
         except (TypeError, AttributeError, ImportError, OSError) as exc:
             # 进程池启动失败(如函数不可 pickle、资源不足等),优雅回退到串行

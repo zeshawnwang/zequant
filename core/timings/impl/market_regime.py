@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from enum import IntEnum
-import numpy as np
 import pandas as pd
 
 from ..base.timing import ITimingGenerator
@@ -30,6 +29,9 @@ class Signal:
     price: float
     reason: str = ""
     factors: Optional[Dict[str, Any]] = None
+
+
+from ._trend_utils import calc_trend_score
 
 
 class MarketRegimeTiming(ITimingGenerator):
@@ -202,30 +204,4 @@ class MarketRegimeTiming(ITimingGenerator):
 
     def _calc_score(self, row) -> float:
         """对单只股票打分 [0, 1]。"""
-        scores = []
-
-        macd = row.get("macd") if hasattr(row, "get") else None
-        macd_sig = row.get("macd_signal") if hasattr(row, "get") else None
-        if pd.notna(macd) and pd.notna(macd_sig):
-            scores.append(1.0 if macd > macd_sig else 0.0)
-
-        m5 = row.get("momentum_5") if hasattr(row, "get") else None
-        m20 = row.get("momentum_20") if hasattr(row, "get") else None
-        if pd.notna(m5) and pd.notna(m20):
-            if m5 > 0 and m5 > m20:
-                scores.append(1.0)
-            elif m5 < 0:
-                scores.append(0.0)
-            else:
-                scores.append(0.5)
-
-        rsi = row.get("rsi_14") if hasattr(row, "get") else None
-        if pd.notna(rsi):
-            if 50 <= rsi <= 70:
-                scores.append(1.0)
-            elif 30 <= rsi < 50:
-                scores.append(0.5)
-            else:
-                scores.append(0.0)
-
-        return float(np.mean(scores)) if scores else 0.5
+        return calc_trend_score(row)

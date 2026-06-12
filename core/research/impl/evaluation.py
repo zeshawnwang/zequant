@@ -169,7 +169,10 @@ class FactorEvaluator(IFactorEvaluator):
         end_date: str,
         forward_days: int,
     ) -> pd.Series:
-        """计算 IC 序列。"""
+        """计算 IC 序列。
+
+        用 T 日因子值对 T+forward_days 日前瞻收益计算截面相关系数。
+        """
         factor_data = self.db.get_factors(
             start_date=start_date,
             end_date=end_date,
@@ -190,19 +193,30 @@ class FactorEvaluator(IFactorEvaluator):
         factor_data["date"] = pd.to_datetime(factor_data["date"])
         bars["date"] = pd.to_datetime(bars["date"])
 
+        # 对每个股票，将收盘价向前平移 forward_days 个交易日，
+        # 使得 (date, symbol) 对应的 close_future 是该股票在 T+forward_days 日的收盘价
+        bars = bars.sort_values(["symbol", "date"])
+        bars["close_future"] = bars.groupby("symbol")["close"].shift(-forward_days)
+
+        # 合并: factor_data 提供 T 日因子值和 T 日收盘价，
+        # bars 提供 T+forward_days 日收盘价
         merged = factor_data[["date", "symbol", factor_name, "close"]].merge(
-            bars[["date", "symbol", "close"]],
+            bars[["date", "symbol", "close_future"]],
             on=["date", "symbol"],
-            suffixes=("", "_future"),
             how="inner",
         )
 
-        if merged.empty or f"close_future" not in merged.columns:
+        if merged.empty or "close_future" not in merged.columns:
             return pd.Series()
 
+        # 前瞻收益 = (T+forward_days 收盘价 / T 收盘价) - 1
         merged["fwd_ret"] = (
             merged["close_future"] / merged["close"] - 1
-        ).fillna(0)
+        )
+        merged = merged.dropna(subset=["fwd_ret"])
+
+        if merged.empty:
+            return pd.Series()
 
         daily_ic = merged.groupby("date").apply(
             lambda x: x[factor_name].corr(x["fwd_ret"])
@@ -273,10 +287,13 @@ class FactorEvaluator(IFactorEvaluator):
         factor_data["date"] = pd.to_datetime(factor_data["date"])
         bars["date"] = pd.to_datetime(bars["date"])
 
+        # 对每个股票，将收盘价向前平移 forward_days 个交易日
+        bars = bars.sort_values(["symbol", "date"])
+        bars["close_future"] = bars.groupby("symbol")["close"].shift(-forward_days)
+
         merged = factor_data[["date", "symbol", factor_name, "close"]].merge(
-            bars[["date", "symbol", "close"]],
+            bars[["date", "symbol", "close_future"]],
             on=["date", "symbol"],
-            suffixes=("", "_future"),
             how="inner",
         )
 
@@ -285,7 +302,18 @@ class FactorEvaluator(IFactorEvaluator):
 
         merged["fwd_ret"] = (
             merged["close_future"] / merged["close"] - 1
-        ).fillna(0)
+        )
+        merged = merged.dropna(subset=["fwd_ret"])
+
+        # 按日期分组，对因子值分档；过滤掉因子值NaN和股票数不足的日期
+        merged = merged.dropna(subset=[factor_name])
+        # 只保留股票数 >= n_groups 的日期
+        counts = merged.groupby("date").size()
+        valid_dates = counts[counts >= n_groups].index
+        merged = merged[merged["date"].isin(valid_dates)]
+
+        if merged.empty:
+            return 0.0, 0.0, False
 
         merged["group"] = merged.groupby("date")[factor_name].transform(
             lambda x: pd.qcut(x, n_groups, labels=False, duplicates="drop")

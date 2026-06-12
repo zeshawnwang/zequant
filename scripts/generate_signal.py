@@ -76,7 +76,8 @@ def is_rebalance_day(strategy_dir, rebal_freq, signal_date):
     date_str = latest.replace('build_', '').replace('.json', '')
     try:
         last_date = datetime.strptime(date_str, '%Y%m%d').date()
-    except:
+    except ValueError as e:
+        logger.warning("日期解析失败 %s: %s", date_str, e)
         db.close()
         return True
 
@@ -118,7 +119,7 @@ def compute_scores(db, weights, top_n, signal_date):
     df = df.sort_values('score', ascending=False)
     return df, factor_cols
 
-def generate_orders(df, top_n, capital, holdings):
+def generate_orders(df, top_n, capital, holdings, strategy_name):
     """生成订单列表。"""
     top_candidates = df.head(40)
     selected = []
@@ -157,7 +158,7 @@ def generate_orders(df, top_n, capital, holdings):
         orders.append({
             'symbol': sym, 'direction': '买入',
             'shares': shares, 'price': round(price, 2),
-            'reason': f'{STRATEGY_CONFIGS[args.strategy]["name"]}调仓',
+            'reason': f'{strategy_name}调仓',
         })
 
     # 卖出信号：持仓中有但不在新买入列表的
@@ -166,7 +167,10 @@ def generate_orders(df, top_n, capital, holdings):
     sell_revenue = 0
     for sym, holding in holdings.items():
         if sym not in new_symbols:
-            price = float(df[df['symbol'] == sym]['close'].iloc[0]) if sym in df['symbol'].values else 0
+            price = 0
+            sym_data = df[df['symbol'] == sym]['close']
+            if not sym_data.empty and pd.notna(sym_data.iloc[0]):
+                price = float(sym_data.iloc[0])
             sell_price = round(price * 1.002, 2) if price > 0 else 0  # 模拟卖一价
             sell_orders.append({
                 'symbol': sym, 'direction': '卖出',
@@ -184,7 +188,6 @@ def main():
     parser.add_argument('--capital', type=float, default=50000, help='总资金')
     parser.add_argument('--date', help='信号日期(默认今天)，格式YYYY-MM-DD')
     parser.add_argument('--build', action='store_true', help='强制建仓(无视调仓日判定)')
-    global args
     args = parser.parse_args()
 
     if args.strategy not in STRATEGY_CONFIGS:
@@ -228,7 +231,7 @@ def main():
     logger.info(f'{signal_date} 调仓日，生成信号...')
     df, factor_cols = compute_scores(db, weights, top_n, signal_date)
     holdings = load_holdings(strategy_dir)
-    orders, sell_orders, total_cost, remain = generate_orders(df, top_n, args.capital, holdings)
+    orders, sell_orders, total_cost, remain = generate_orders(df, top_n, args.capital, holdings, config['name'])
 
     sym_df = db.get_symbols()
     name_map = dict(zip(sym_df['symbol'], sym_df['name'])) if not sym_df.empty else {}

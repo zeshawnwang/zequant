@@ -35,10 +35,11 @@ A 股横截面 / 多因子量化研究框架。**DuckDB 单文件数据库 + 注
 
 | 优化项 | 说明 |
 |---|---|
+| **🔥 mss_dynamic V7.1 状态冷却期上线 (2026-06-09)** | `state_cooldown_days=5`: Calmar +0.6% (64.27), 切换次数减少18次(356→338), 年化+2% |
 | **🔥 mss_dynamic V6 walk-forward 验证完成 (2026-05-27)** | Calmar **1.68 → 35.47 (×21)**，年化 135%, Sharpe 6.6, 回撤 3.81%，3个OOS窗口100%验证 |
 | **方法论沉淀** | 12条核心认知 + 实验框架 + walk-forward验证，见 [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) |
 | **参数调优 > 新功能** | trail从15%→3%贡献 +14.3 ΔCalmar, rf=5贡献 +1.3, 紧止损 +1.2，远超所有新模块总和 |
-| **实盘信号同步** | `live/signals/mss_dynamic.py` 已更新到 V6 最优(trail=3%, 止损6/8, rf=5, composite择时) |
+| **实盘信号同步** | `live/signals/mss_dynamic.py` 已更新到 V7.1 (cooldown=5天, 配置V7 allocation) |
 | MarketStateSelector (2026-05-18) | 新 `mss_dynamic` 动态策略切换，综合分 79.4 → **99.2**，9/9 窗口正收益 |
 | Pipeline 系统性修复 (2026-05-17) | Universe 过滤 + 真实 tx_cost=0.002，排除了旧回测的高估偏差 |
 

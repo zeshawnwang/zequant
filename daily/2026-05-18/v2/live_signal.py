@@ -218,8 +218,8 @@ def filter_buyable(df: pd.DataFrame, conn, date_str: str) -> pd.DataFrame:
                 "SELECT symbol FROM symbols WHERE UPPER(name) LIKE '%ST%'"
             ).fetchdf()
             st_syms = set(sym_df['symbol'].tolist())
-        except:
-            pass
+        except Exception as e:
+            logger.warning("ST 符号查询失败: %s", e)
         # 排除ST
         df = df[~df['symbol'].isin(st_syms)]
         # 排除涨停/停牌

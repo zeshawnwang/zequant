@@ -18,12 +18,16 @@ DuckDB 数据库管理器
 """
 from __future__ import annotations
 import duckdb
+import logging
 import numpy as np
 import os
 import pandas as pd
+import re
 import tempfile
 from pathlib import Path
 from typing import Iterable, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 # 日线主键列
@@ -62,9 +66,19 @@ class Database:
             self._init_tables()
 
     def _configure_duckdb(self):
-        """配置 DuckDB 连接参数以提升性能。"""
-        self.conn.execute("SET threads TO 8")
-        self.conn.execute("SET memory_limit='4GB'")
+        """配置 DuckDB 连接参数以提升性能。自动检测 CPU 核数，避免 OOM。"""
+        n_threads = max(1, os.cpu_count() or 4)
+        self.conn.execute(f"SET threads TO {n_threads}")
+
+        # 按可用物理内存的 50% 设置，不超 8 GB
+        try:
+            import psutil
+            mem_gb = psutil.virtual_memory().total / (1024**3)
+            mem_limit = min(mem_gb * 0.5, 8)
+        except ImportError:
+            mem_limit = 2  # fallback: 2 GB
+            logger.warning("psutil 未安装，无法检测物理内存，内存限制缺省 %d GB", mem_limit)
+        self.conn.execute(f"SET memory_limit='{mem_limit:.0f}GB'")
 
     # ============================================================
     # Schema 初始化
@@ -301,8 +315,10 @@ class Database:
             fn = str(fn).strip()
             if not fn or fn in existed:
                 continue
-            if not fn.replace("_", "").isalnum():
-                raise ValueError(f"非法因子名: {fn}(只允许字母/数字/下划线)")
+            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', fn):
+                raise ValueError(
+                    f"非法因子名: '{fn}' (只允许字母/数字/下划线, 且不能以数字开头)"
+                )
             to_add.append(fn)
             existed.add(fn)
         if not to_add:
@@ -549,6 +565,13 @@ class Database:
 
     def execute(self, sql: str, *args, **kwargs):
         return self.conn.execute(sql, *args, **kwargs)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 
     def close(self):
         self.conn.close()

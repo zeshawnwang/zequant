@@ -68,7 +68,7 @@ class DataQualityChecker:
         ).fetchall()
         symbols = [r[0] for r in rows]
 
-        cond = f"WHERE date >= '{start}'" if start else ""
+        cond = f"AND date >= '{start}'" if start else ""
         for sym in symbols[:500]:
             df = self.db.conn.execute(
                 f"SELECT * FROM daily_bars WHERE symbol = ? {cond} ORDER BY date",

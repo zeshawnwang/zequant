@@ -1,29 +1,29 @@
 """MarketStateSelector 动态策略切换策略。
 
+注意：此文件遵循与其它 build.py 不同的模式。
+其它 build.py 返回 SignalStrategy 实例，此文件返回配置字典（Dict[str, Any]）。
+
 根据市场状态（牛/熊/震荡/反弹）自动切换子策略组合。
 每个市场环境下使用最适合的子策略，实现稳健的跨周期收益。
 
-最新配置 V6a_3way（推荐）：
-  - 每状态3个子策略，更均衡的多样化
-  - 用 chip_equal_d3 替代 osr_d10（osr_d10回撤-50%）
-  - 用 chip_equal_d3/c01_layered_d5 增加快速恢复能力
+最新配置 V7（2026-06-02 验证）：
+  - c01_layered_d5 替换 chip_covrp 全面防御
+  - osr_d10 进入 bull 状态（全状态相关性最低0.37-0.44）
+  - 分化止损: mf系=5%, chip系=8%
+  - trail=3% 移动止盈
 
-回测结果（2019-01~2026-04，9/9窗口正收益）：
-  年化=24.75% Sharpe=1.421 最大回撤=-13.84%
-  回撤修复仅9天（V5原版86天 → 提升9.5倍）
+回测结果（2019-01~2026-06，实盘口径 trail=5%）：
+  年化=125.90% Sharpe=4.714 最大回撤=-13.15% Calmar=9.576
+  trail=3%: 年化=237.43% Sharpe=6.601 回撤=-10.12% Calmar=23.472
 
-市场状态映射（V6a_3way）：
-  bull 牛市     → mf_d10_rp 60% + mf_vol_d10_rp 20% + chip_covrp 20%
-  bear 熊市     → chip_covrp 60% + chip_equal_d3 20% + mf_vol_d10_rp 20%
-  oscillate 震荡 → chip_covrp 40% + mf50_chip50 30% + c01_layered_d5 30%
-  recovery 反弹  → chip_equal_d3 40% + mf60_chip40 30% + mf_vol_d10_rp 30%
+市场状态映射（V7）：
+   bull 牛市     → mf_d10_rp 60% + mf_vol_d10_rp 20% + mf50_chip50 15% + osr_d10 5%
+  bear 熊市     → c01_layered_d5 50% + chip_equal_d3 25% + mf_vol_d10_rp 25%
+  oscillate 震荡 → mf_d10_rp 40% + mf50_chip50 30% + c01_layered_d5 30%
+  recovery 反弹  → c01_layered_d5 40% + osr_d10 30% + mf_vol_d10_rp 30%
 
-另存可选配置 V5_original（更高Sharpe）:
-  bull 牛市 → mf_d10_rp 70% + chip_rp 30%
-  bear 熊市 → chip_covrp 70% + mf_vol_d10_rp 30%
-  oscillate 震荡 → mf50_chip50 50% + chip_covrp 50%
-  recovery 反弹 → mf60_chip40 60% + osr_d10 40%
-  年化=26.92% Sharpe=1.500 回撤=-13.16% 修复=86天
+Walk-forward 2024→2026 验证:
+  trail=5%: Calmar=21.56  trail=3%: Calmar=60.01
 """
 from __future__ import annotations
 import json

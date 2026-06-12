@@ -41,7 +41,7 @@ class FeeCalculator:
         """买入费用（无印花税）"""
         amount = price * quantity
         commission = max(amount * self.commission_rate, self.min_commission)
-        transfer_fee = amount * self.transfer_fee_rate if symbol.startswith('6') else 0
+        transfer_fee = amount * self.transfer_fee_rate  # 2022年起沪深统一收取
         slippage = amount * self.slippage_rate
         total = commission + transfer_fee + slippage
         return TradeCost(
@@ -56,7 +56,7 @@ class FeeCalculator:
         """卖出费用（含印花税）"""
         amount = price * quantity
         stamp_tax = amount * self.stamp_tax_rate
-        transfer_fee = amount * self.transfer_fee_rate if symbol.startswith('6') else 0
+        transfer_fee = amount * self.transfer_fee_rate  # 2022年起沪深统一收取
         commission = max(amount * self.commission_rate, self.min_commission)
         slippage = amount * self.slippage_rate
         total = stamp_tax + transfer_fee + commission + slippage

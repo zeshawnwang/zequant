@@ -15,58 +15,117 @@ Fama-French 三因子模型 (1993):
     long_df = FactorHub.compute_all(bars, names=["ff_mkt", "ff_smb", "ff_hml"])
 """
 from __future__ import annotations
+import time
 import numpy as np
 import pandas as pd
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, Any
 import warnings
 
 from core.factors.base.factor_hub import register_factor, FactorContext
 
-warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-_rb_CACHE: Dict[str, pd.DataFrame] = {}
+class _TTLCache:
+    """TTL 缓存,避免重复网络请求。
+
+    每个条目缓存 ttl 秒,超时后自动失效。
+    函数级实例而非模块级可变 dict。
+    """
+    def __init__(self, ttl: int = 3600):
+        self._ttl = ttl
+        self._data: Dict[str, Tuple[Any, float]] = {}
+
+    def get(self, key: str):
+        if key in self._data:
+            value, timestamp = self._data[key]
+            if time.monotonic() - timestamp < self._ttl:
+                return value
+            del self._data[key]
+        return None
+
+    def set(self, key: str, value):
+        self._data[key] = (value, time.monotonic())
+
+    def clear(self):
+        self._data.clear()
+
+
+_cache = _TTLCache()
 
 
 def _get_risk_free_rate() -> pd.DataFrame:
-    """获取国债收益率作为无风险利率(年化,转日频)。
-
-    缓存以避免重复请求。
-    """
-    if "_rf" in _rb_CACHE:
-        return _rb_CACHE["_rf"]
+    """获取国债收益率作为无风险利率(年化,转日频)。"""
+    cached = _cache.get("_rf")
+    if cached is not None:
+        return cached
 
     try:
         import akshare as ak
         bond_df = ak.bond_china_treasury_yield()
         rf_series = bond_df.set_index("日期")["收益率"]
         rf_daily = rf_series / 252 / 100
-        _rb_CACHE["_rf"] = rf_daily
+        _cache.set("_rf", rf_daily)
         return rf_daily
     except Exception:
         warnings.warn("无法获取国债收益率,使用固定无风险利率 0.03")
         dates = pd.date_range("2019-01-01", pd.Timestamp.today().strftime("%Y-%m-%d"))
-        _rb_CACHE["_rf"] = pd.Series(0.03 / 252, index=dates)
-        return _rb_CACHE["_rf"]
+        fallback = pd.Series(0.03 / 252, index=dates)
+        _cache.set("_rf", fallback)
+        return fallback
 
 
 def _get_market_return() -> pd.DataFrame:
-    """获取沪深300日收益率。
-
-    缓存以避免重复请求。
-    """
-    if "_mkt" in _rb_CACHE:
-        return _rb_CACHE["_mkt"]
+    """获取沪深300日收益率。"""
+    cached = _cache.get("_mkt")
+    if cached is not None:
+        return cached
 
     try:
         import akshare as ak
         hs300 = ak.stock_zh_index_daily(symbol="sh000300")
         hs300["returns"] = hs300["close"].pct_change()
         hs300.index = pd.to_datetime(hs300["date"])
-        _rb_CACHE["_mkt"] = hs300["returns"]
-        return _rb_CACHE["_mkt"]
+        result = hs300["returns"]
+        _cache.set("_mkt", result)
+        return result
     except Exception as e:
         warnings.warn(f"无法获取沪深300数据: {e}")
         return pd.Series(dtype=float)
+
+
+def _batch_daily_basic(symbols: list, dates: pd.DatetimeIndex) -> pd.DataFrame:
+    """批量获取 A 股每日基本面数据（单次 API 调用替代 N+1 逐股请求）。
+
+    使用 ak.stock_zh_a_daily_basic() 不带 symbol 参数一次性获取全市场数据，
+    避免 for 循环逐只股票 HTTP 请求。
+
+    Returns:
+        MultiIndex DataFrame: (date, symbol) → columns
+    """
+    cached = _cache.get("_batch_basic")
+    if cached is not None:
+        return cached
+
+    try:
+        import akshare as ak
+        # 不传 symbol 拉取全市场，一次请求
+        all_basic = ak.stock_zh_a_daily_basic(
+            start_date=dates.min().strftime("%Y%m%d"),
+            end_date=dates.max().strftime("%Y%m%d"),
+        )
+        if all_basic is None or all_basic.empty:
+            raise ValueError("空结果")
+
+        all_basic["date"] = pd.to_datetime(all_basic["date"])
+        all_basic = all_basic[all_basic["symbol"].isin(symbols)].copy()
+        all_basic.set_index(["date", "symbol"], inplace=True)
+
+        _cache.set("_batch_basic", all_basic)
+        return all_basic
+    except Exception as e:
+        warnings.warn(f"批量基本面数据获取失败: {e}")
+        result = pd.DataFrame()
+        _cache.set("_batch_basic", result)
+        return result
 
 
 def _get_market_capitalization(symbols: list, dates: pd.DatetimeIndex) -> pd.DataFrame:
@@ -75,37 +134,29 @@ def _get_market_capitalization(symbols: list, dates: pd.DatetimeIndex) -> pd.Dat
     Returns:
         DataFrame: index=date, columns=symbol, values=市值(亿元)
     """
-    cache_key = "_mcaps"
-    if cache_key in _rb_CACHE:
-        return _rb_CACHE[cache_key]
+    cached = _cache.get("_mcaps")
+    if cached is not None:
+        return cached
 
-    try:
-        import akshare as ak
-        mcaps = {}
-        for sym in symbols[:100]:
-            try:
-                basic = ak.stock_zh_a_daily_basic(
-                    symbol=sym,
-                    start_date=dates.min().strftime("%Y%m%d"),
-                    end_date=dates.max().strftime("%Y%m%d"),
-                )
-                if basic is not None and not basic.empty:
-                    if "total_market_cap" in basic.columns:
-                        mcaps[sym] = basic.set_index("date")["total_market_cap"] / 1e8
-                    elif "total_share" in basic.columns and "close" in basic.columns:
-                        mcaps[sym] = basic.set_index("date")["total_share"] * basic.set_index("date")["close"] / 1e8
-            except Exception:
-                continue
-        if mcaps:
-            result = pd.DataFrame(mcaps)
-            _rb_CACHE[cache_key] = result
-            return result
-    except Exception:
-        pass
+    all_basic = _batch_daily_basic(symbols, dates)
+    if all_basic.empty:
+        warnings.warn("市值数据为空,SMB因子可能不准确")
+        _cache.set("_mcaps", pd.DataFrame())
+        return pd.DataFrame()
 
-    warnings.warn("无法获取市值数据,SMB因子可能不准确")
-    _rb_CACHE[cache_key] = pd.DataFrame()
-    return _rb_CACHE[cache_key]
+    mcaps = {}
+    for sym in symbols:
+        if sym not in all_basic.index.get_level_values("symbol"):
+            continue
+        sym_data = all_basic.xs(sym, level="symbol")
+        if "total_market_cap" in sym_data.columns:
+            mcaps[sym] = sym_data["total_market_cap"] / 1e8
+        elif "total_share" in sym_data.columns and "close" in sym_data.columns:
+            mcaps[sym] = sym_data["total_share"] * sym_data["close"] / 1e8
+
+    result = pd.DataFrame(mcaps) if mcaps else pd.DataFrame()
+    _cache.set("_mcaps", result)
+    return result
 
 
 def _get_pb_ratio(symbols: list, dates: pd.DatetimeIndex) -> pd.DataFrame:
@@ -114,45 +165,26 @@ def _get_pb_ratio(symbols: list, dates: pd.DatetimeIndex) -> pd.DataFrame:
     Returns:
         DataFrame: index=date, columns=symbol, values=PB
     """
-    cache_key = "_pb"
-    if cache_key in _rb_CACHE:
-        return _rb_CACHE[cache_key]
+    cached = _cache.get("_pb")
+    if cached is not None:
+        return cached
 
-    try:
-        import akshare as ak
-        pbs = {}
-        for sym in symbols[:100]:
-            try:
-                basic = ak.stock_zh_a_daily_basic(
-                    symbol=sym,
-                    start_date=dates.min().strftime("%Y%m%d"),
-                    end_date=dates.max().strftime("%Y%m%d"),
-                )
-                if basic is not None and not basic.empty and "pb" in basic.columns:
-                    pbs[sym] = basic.set_index("date")["pb"]
-            except Exception:
-                continue
-        if pbs:
-            result = pd.DataFrame(pbs)
-            _rb_CACHE[cache_key] = result
-            return result
-    except Exception:
-        pass
+    all_basic = _batch_daily_basic(symbols, dates)
+    if all_basic.empty or "pb" not in all_basic.columns:
+        warnings.warn("PB数据为空,HML因子可能不准确")
+        _cache.set("_pb", pd.DataFrame())
+        return pd.DataFrame()
 
-    warnings.warn("无法获取PB数据,HML因子可能不准确")
-    _rb_CACHE[cache_key] = pd.DataFrame()
-    return _rb_CACHE[cache_key]
+    pbs = {}
+    for sym in symbols:
+        if sym not in all_basic.index.get_level_values("symbol"):
+            continue
+        sym_data = all_basic.xs(sym, level="symbol")
+        pbs[sym] = sym_data["pb"]
 
-
-def _rank_normalize(x: pd.DataFrame) -> pd.DataFrame:
-    """截面排名归一化到 [0, 1]。
-
-    Args:
-        x: 原始因子值
-    Returns:
-        归一化后的因子值
-    """
-    return x.rank(axis=1, pct=True, method="average")
+    result = pd.DataFrame(pbs) if pbs else pd.DataFrame()
+    _cache.set("_pb", result)
+    return result
 
 
 @register_factor(
@@ -179,11 +211,13 @@ def ff_mkt(ctx: FactorContext) -> pd.DataFrame:
     mkt_series = market_ret.reindex(close_index).fillna(0)
     rf_series = rf.reindex(close_index).fillna(0)
 
-    mkt_factor = (mkt_series - rf_series).to_frame().T
-    for col in ctx.close.columns:
-        mkt_factor[col] = mkt_factor[0]
-
-    return mkt_factor.drop(columns=[0])
+    mkt_values = (mkt_series - rf_series).values
+    mkt_factor = pd.DataFrame(
+        np.tile(mkt_values, (len(ctx.close.columns), 1)).T,
+        index=ctx.close.index,
+        columns=ctx.close.columns,
+    )
+    return mkt_factor
 
 
 @register_factor(
@@ -216,7 +250,6 @@ def ff_smb(ctx: FactorContext) -> pd.DataFrame:
         warnings.warn("市值数据为空,返回0因子值")
         return pd.DataFrame(0, index=ctx.close.index, columns=ctx.close.columns)
 
-    close_aligned = ctx.close.align(market_cap, join="left")[0].fillna(method="ffill")
     mcap_aligned = ctx.close.align(market_cap, join="left")[1].fillna(method="ffill")
 
     returns = ctx.close.pct_change()
@@ -286,7 +319,6 @@ def ff_hml(ctx: FactorContext) -> pd.DataFrame:
         warnings.warn("PB数据为空,返回0因子值")
         return pd.DataFrame(0, index=ctx.close.index, columns=ctx.close.columns)
 
-    close_aligned = ctx.close.align(pb_ratio, join="left")[0].fillna(method="ffill")
     pb_aligned = ctx.close.align(pb_ratio, join="left")[1].fillna(method="ffill")
 
     inv_pb = 1 / pb_aligned.replace(0, np.nan)
@@ -399,5 +431,4 @@ def ff_value(ctx: FactorContext) -> pd.DataFrame:
 
 def clear_cache():
     """清除因子缓存(用于测试或重置)。"""
-    global _rb_CACHE
-    _rb_CACHE = {}
+    _cache.clear()

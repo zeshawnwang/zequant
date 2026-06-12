@@ -17,6 +17,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.pytest_cache/
 
 # Virtual environments
 venv/
@@ -26,6 +27,8 @@ env/
 # IDE
 .vscode/
 .idea/
+.joycode/
+.reasonix/
 *.swp
 *.swo
 

@@ -121,10 +121,10 @@ def main():
 
     # Load factors once
     from core.database import Database
-    from core.strategies.pipeline import DEFAULT_FACTORS
+    from core.factors.defaults import DEFAULT_FACTOR_NAMES
     db = Database()
     all_factors = db.list_factor_columns()
-    factors = [f for f in DEFAULT_FACTORS if f in all_factors]
+    factors = [f for f in DEFAULT_FACTOR_NAMES if f in all_factors]
     db.close()
     logger.info(f"Using {len(factors)} factors")
 

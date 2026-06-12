@@ -7,12 +7,10 @@ V8实验Chip_无择时_D3结果：年化14.50%, Sharpe 1.071, 回撤-14.58%。
 """
 from __future__ import annotations
 import json, os
-from ...base.strategy import SignalStrategy
 from ....screening.impl.momentum_breakout import ChipConcentrationSelector
-from ....signals import LayeredComposer, MaxSingleWeightConstraint
-from ....risk import RiskManager
+from .._factory import _build_signal_strategy
 
-def build_chip_rp(top_n: int = 40, **kwargs) -> SignalStrategy:
+def build_chip_rp(top_n: int = 40, **kwargs):
     cfg_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(cfg_dir, "config.json")) as f:
         cfg = json.load(f)
@@ -20,8 +18,4 @@ def build_chip_rp(top_n: int = 40, **kwargs) -> SignalStrategy:
         max_volume_contraction=cfg["selector"].get("max_volume_contraction", 0.5),
         max_chip_concentration=cfg["selector"].get("max_chip_concentration", 0.05),
         max_ma_convergence=cfg["selector"].get("max_ma_convergence", 0.05))
-    composer = LayeredComposer(top_n=top_n, constraints=[
-        MaxSingleWeightConstraint(max_weight=cfg["composer"]["constraints"][0]["max_single_weight"])])
-    risk = RiskManager(config=cfg.get("risk", {}))
-    return SignalStrategy(name=cfg["strategy"]["name"], selector=selector,
-        position_sizer=None, composer=composer, risk_manager=risk, top_n=top_n)
+    return _build_signal_strategy(cfg_dir, selector, top_n=top_n)

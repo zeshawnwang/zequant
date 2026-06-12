@@ -37,7 +37,9 @@ import numpy as np
 import pandas as pd
 
 from core.database import Database
+from core.factors.defaults import DEFAULT_FACTOR_NAMES
 from core.positioners import RPPortfolioWeights
+from core.screening.universe import get_price_limit_pct
 
 logger = logging.getLogger(__name__)
 
@@ -50,28 +52,6 @@ WINDOWS = [
     ("2024反弹",   "2024-01-02", "2024-12-31"),
     ("2025至今",   "2025-01-02", "2026-04-30"),
 ]
-
-DEFAULT_FACTORS = list(set([
-    'a27','a30','a31','a41','a42','a64','a69','a8','a80','a85',
-    'a88','a91','a97','a98','a99','ff_mkt','gtja103','gtja104','gtja105',
-    'gtja108','gtja113','gtja117','gtja12','gtja120','gtja121','gtja123',
-    'gtja127','gtja13','gtja139','gtja141','gtja142','gtja144','gtja148',
-    'gtja164','gtja168','gtja171','gtja176','gtja185','gtja34','gtja49',
-    'gtja62','gtja76','gtja83','gtja85','gtja90','gtja91','gtja99',
-    'returns','rsi_14','volatility_20','macd','macd_signal','momentum_5',
-    'momentum_20','volume_ratio','boll_position',
-]))
-
-
-def get_price_limit_pct(symbol: str, is_st: bool = False) -> float:
-    """按板块返回涨跌停幅度。"""
-    if is_st:
-        return 5.0
-    if symbol.startswith(("688", "689", "300", "301")):
-        return 20.0
-    if symbol.startswith(("43", "83", "87", "88", "92")) or symbol.startswith("4"):
-        return 30.0
-    return 10.0
 
 
 @dataclass
@@ -155,7 +135,7 @@ class StrategyPipeline:
         self.min_hold_days = min_hold_days
         self.positioner_type = positioner_type
         self.tx_cost = tx_cost
-        self.factor_names = factor_names or list(DEFAULT_FACTORS)
+        self.factor_names = factor_names or list(DEFAULT_FACTOR_NAMES)
         self.use_universe_filter = use_universe_filter
         self.min_listed_days = min_listed_days
 
@@ -189,7 +169,19 @@ class StrategyPipeline:
         )
         df['date'] = pd.to_datetime(df['date'])
         ds = sorted(df['date'].unique())
-        tks = db.get_symbols()['symbol'].tolist()
+        
+        # 过滤上市日期在回测起始日之后的股票，消除前瞻偏差
+        all_symbols = db.get_symbols()
+        tks = all_symbols['symbol'].tolist()
+        if 'list_date' in all_symbols.columns and start_date:
+            ld_series = pd.to_datetime(all_symbols['list_date'], errors='coerce')
+            ld_map = dict(zip(all_symbols['symbol'], ld_series))
+            start_dt = pd.Timestamp(start_date)
+            tks = [s for s in tks
+                   if s in ld_map and (pd.isna(ld_map[s]) or ld_map[s] <= start_dt)]
+            logger.info("上市日期过滤: 剩余 %d 只 (排除 %d 只尚未上市的股票)",
+                        len(tks), len(all_symbols) - len(tks))
+        
         nd, ns, nf = len(ds), len(tks), len(self.factor_names)
         t2i = {t: i for i, t in enumerate(tks)}
         d2i = {d: i for i, d in enumerate(ds)}
@@ -311,26 +303,35 @@ class StrategyPipeline:
                     st_msk = sym_df['name'].fillna('').str.upper().str.contains('ST', na=False)
                     st_set = set(sym_df.loc[st_msk, 'symbol'].tolist())
 
-                # 批量处理
-                for _, r in bars.iterrows():
-                    d, sym = r['date'], r['symbol']
-                    if d not in d2i or sym not in t2i:
-                        continue
-                    di, si = d2i[d], t2i[sym]
+                # 向量化过滤: 只保留在 t2i/d2i 中的行
+                bars = bars[bars['symbol'].isin(t2i) & bars['date'].isin(d2i)]
+                if not bars.empty:
+                    di_arr = bars['date'].map(d2i).values
+                    si_arr = bars['symbol'].map(t2i).values
 
-                    vol = r.get('volume')
-                    if pd.notna(vol) and float(vol) <= 0:
-                        um[di, si] = False
-                        continue
+                    # 停牌: volume <= 0
+                    vol = bars['volume'].values
+                    halted = pd.notna(vol) & (vol <= 0)
+                    um[di_arr[halted], si_arr[halted]] = False
 
-                    pct = r.get('pct_change')
-                    if pd.notna(pct):
-                        pv = float(pct)
-                        is_st = sym in st_set
-                        limit = get_price_limit_pct(sym, is_st=is_st)
+                    # 涨跌停: |pct_change| >= (limit - buf)
+                    pct = bars['pct_change'].values.astype(float)
+                    pct_valid = pd.notna(bars['pct_change'].values) & ~halted
+
+                    if np.any(pct_valid):
+                        syms_valid = bars['symbol'].values[pct_valid]
+                        pct_vals = pct[pct_valid]
+
+                        # 按板块计算涨跌停幅度
+                        limits = np.array([
+                            get_price_limit_pct(s, is_st=(s in st_set))
+                            for s in syms_valid
+                        ])
                         buf = 0.2
-                        if pv >= (limit - buf) or pv <= -(limit - buf):
-                            um[di, si] = False
+                        hit_limit = (pct_vals >= (limits - buf)) | (pct_vals <= -(limits - buf))
+                        di_valid = di_arr[pct_valid]
+                        si_valid = si_arr[pct_valid]
+                        um[di_valid[hit_limit], si_valid[hit_limit]] = False
 
                 logger.info("  日线过滤: 停牌+涨跌停")
         except Exception as e:

@@ -1,0 +1,68 @@
+[
+  {
+    "name": "chip_v2_t5",
+    "metrics": {
+      "name": "chip_v2_t5",
+      "annual_return": 0.7325,
+      "sharpe": 3.8091,
+      "max_drawdown": -0.0958,
+      "calmar": 7.6484,
+      "win_rate": 0.6074
+    }
+  },
+  {
+    "name": "chip_v2_t3",
+    "metrics": {
+      "name": "chip_v2_t3",
+      "annual_return": 1.2881,
+      "sharpe": 5.3721,
+      "max_drawdown": -0.0842,
+      "calmar": 15.3009,
+      "win_rate": 0.6515
+    }
+  },
+  {
+    "name": "chip_replace_c01_t5",
+    "metrics": {
+      "name": "chip_replace_c01_t5",
+      "annual_return": 0.9891,
+      "sharpe": 4.3679,
+      "max_drawdown": -0.1187,
+      "calmar": 8.3322,
+      "win_rate": 0.6149
+    }
+  },
+  {
+    "name": "chip_replace_c01_t3",
+    "metrics": {
+      "name": "chip_replace_c01_t3",
+      "annual_return": 1.8079,
+      "sharpe": 6.1267,
+      "max_drawdown": -0.1012,
+      "calmar": 17.8727,
+      "win_rate": 0.6676
+    }
+  },
+  {
+    "name": "wf_2024_t5",
+    "metrics": {
+      "name": "wf_2024_t5",
+      "annual_return": 0.8826,
+      "sharpe": 3.7186,
+      "max_drawdown": -0.0608,
+      "calmar": 14.5178,
+      "win_rate": 0.5913
+    }
+  },
+  {
+    "name": "wf_2024_t3",
+    "metrics": {
+      "name": "wf_2024_t3",
+      "annual_return": 1.2527,
+      "sharpe": 5.0863,
+      "max_drawdown": -0.0482,
+      "calmar": 25.9787,
+      "win_rate": 0.6123
+    }
+  }
+]

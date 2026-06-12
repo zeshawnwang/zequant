@@ -75,7 +75,8 @@ class RealtimeMonitor:
         self._trades_today.append(trade)
 
         if self.config.alert_on_trade:
-            msg = f"交易: {trade['direction']} {trade['symbol']} {trade['quantity']}股 @ {trade['price']}"
+            qty = trade.get('shares', trade.get('quantity', 0))
+            msg = f"交易: {trade['direction']} {trade['symbol']} {qty}股 @ {trade['price']}"
             self._add_alert(AlertLevel.INFO, msg, trade)
 
     def record_snapshot(self, snapshot: PortfolioSnapshot):
@@ -90,7 +91,8 @@ class RealtimeMonitor:
 
         if self._last_value > 0:
             snapshot.daily_return = (snapshot.total_value - self._last_value) / self._last_value
-        snapshot.cumulative_return = (snapshot.total_value - self._peak_value) / self._peak_value if self._peak_value > 0 else 0
+        cumulative = (snapshot.total_value - self._snapshots[0].total_value) / self._snapshots[0].total_value if len(self._snapshots) > 1 and self._snapshots[0].total_value > 0 else 0
+        snapshot.cumulative_return = cumulative
 
         self._check_alerts(snapshot)
         self._last_value = snapshot.total_value

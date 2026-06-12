@@ -1,0 +1,139 @@
+{
+  "run_date": "2026-06-12",
+  "end_date": "2026-06-11",
+  "n_factors": 20,
+  "n_windows": 67,
+  "window_days": 60,
+  "alerts": [
+    {
+      "factor": "gtja142",
+      "type": "dead",
+      "severity": "critical",
+      "message": "因子近乎失效: IR从0.637衰减到0.067 (衰减89%)",
+      "current_ir": 0.0672,
+      "historical_ir": 0.6373,
+      "decay_ratio": 0.1055
+    },
+    {
+      "factor": "gtja49",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.251 → 近期IR=-0.105",
+      "current_ir": -0.1048,
+      "historical_ir": 0.251,
+      "decay_ratio": -0.4175
+    },
+    {
+      "factor": "gtja117",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.348 → 近期IR=-0.312",
+      "current_ir": -0.3118,
+      "historical_ir": 0.3477,
+      "decay_ratio": -0.8967
+    },
+    {
+      "factor": "a41",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.171 → 近期IR=-0.676",
+      "current_ir": -0.676,
+      "historical_ir": 0.1708,
+      "decay_ratio": -3.9581
+    },
+    {
+      "factor": "gtja141",
+      "type": "dead",
+      "severity": "critical",
+      "message": "因子近乎失效: IR从0.335衰减到-0.004 (衰减99%)",
+      "current_ir": -0.0044,
+      "historical_ir": 0.3351,
+      "decay_ratio": 0.0131
+    },
+    {
+      "factor": "gtja144",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.173 → 近期IR=-0.979",
+      "current_ir": -0.9792,
+      "historical_ir": 0.173,
+      "decay_ratio": -5.6594
+    },
+    {
+      "factor": "a80",
+      "type": "decay",
+      "severity": "warning",
+      "message": "因子衰减: IR从0.265降到0.127 (衰减52%)",
+      "current_ir": 0.1275,
+      "historical_ir": 0.2653,
+      "decay_ratio": 0.4805
+    },
+    {
+      "factor": "volatility_20",
+      "type": "decay",
+      "severity": "warning",
+      "message": "因子衰减: IR从-0.205降到-0.057 (衰减72%)",
+      "current_ir": -0.0566,
+      "historical_ir": -0.205,
+      "decay_ratio": 0.276
+    },
+    {
+      "factor": "a69",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.327 → 近期IR=-0.038",
+      "current_ir": -0.0378,
+      "historical_ir": 0.327,
+      "decay_ratio": -0.1157
+    },
+    {
+      "factor": "gtja13",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.173 → 近期IR=-0.629",
+      "current_ir": -0.6295,
+      "historical_ir": 0.1729,
+      "decay_ratio": -3.6412
+    },
+    {
+      "factor": "gtja113",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.211 → 近期IR=-0.128",
+      "current_ir": -0.128,
+      "historical_ir": 0.2109,
+      "decay_ratio": -0.6067
+    },
+    {
+      "factor": "gtja34",
+      "type": "reversal",
+      "severity": "critical",
+      "message": "IC方向反转! 历史IR=0.323 → 近期IR=-0.199",
+      "current_ir": -0.1987,
+      "historical_ir": 0.3229,
+      "decay_ratio": -0.6152
+    }
+  ],
+  "health_scores": {
+    "gtja142": 0.5156,
+    "gtja168": 0.6376,
+    "gtja49": 0.5085,
+    "gtja117": 0.6691,
+    "a41": 0.5313,
+    "gtja141": 0.4692,
+    "gtja144": 0.5313,
+    "a42": 0.6421,
+    "gtja12": 0.5313,
+    "a80": 0.6003,
+    "gtja123": 0.7236,
+    "gtja83": 0.8386,
+    "a85": 0.5815,
+    "gtja104": 0.3972,
+    "gtja62": 0.7248,
+    "volatility_20": 0.4503,
+    "a69": 0.4754,
+    "gtja13": 0.5313,
+    "gtja113": 0.5198,
+    "gtja34": 0.5965
+  }
+}

@@ -310,8 +310,6 @@ class BacktestEngine:
         elif order.direction == 'SELL':
             if self._buy_date_map.get(order.symbol) == date_str:
                 return None
-            if self.universe is not None:
-                return None
         return order
 
     def _update_daily_values(self, today_only: pd.DataFrame):

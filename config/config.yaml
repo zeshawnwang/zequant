@@ -23,8 +23,8 @@ universe:
 # ---- 交易费用 (A 股实盘标准) -------------------------------------
 # 对应 core.fee.FeeCalculator
 fees:
-  stamp_tax: 0.001          # 印花税,卖出收 0.1%
-  transfer_fee: 0.00002     # 过户费,沪市 0.002%
+  stamp_tax: 0.0005          # 印花税,卖出收 0.05%（2023-08-28 起）
+  transfer_fee: 0.00001      # 过户费,沪深统一 0.001%（2022 年起）
   commission: 0.0003        # 佣金,默认万三
   min_commission: 5         # 最低佣金(元)
   slippage: 0.0005          # 滑点,0.05%
