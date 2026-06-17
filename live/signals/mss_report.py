@@ -224,7 +224,7 @@ def _sync_hold_snapshot(today: str, used_capital: float, remain: float):
         positions = json.loads(last[3]) if last[3] else {}
         cash = float(last[2]) if last[2] else 0
 
-        # 用最新收盘价算持仓市值
+        # 用最新收盘价算持仓市值（兼容 dict 和 int 格式）
         position_value = 0.0
         if positions:
             symbols = list(positions.keys())
@@ -243,7 +243,23 @@ def _sync_hold_snapshot(today: str, used_capital: float, remain: float):
                     ).fetchone()
                     if r:
                         prices[sym] = float(r[0])
-            for sym, shares in positions.items():
+            # 从 trades 表更新成本价
+            for sym in symbols:
+                buys = live_db.conn.execute(
+                    "SELECT price, shares FROM trades WHERE symbol=? AND direction=? AND date<=?",
+                    [sym, 'B', today]
+                ).fetchall()
+                if buys:
+                    total_amount = sum(float(b[0]) * b[1] for b in buys)
+                    total_shares = sum(b[1] for b in buys)
+                    avg_cost = total_amount / total_shares if total_shares > 0 else 0
+                    info = positions[sym]
+                    if isinstance(info, dict):
+                        info["cost"] = round(avg_cost, 3)
+                    else:
+                        positions[sym] = {"shares": int(info), "cost": round(avg_cost, 3)}
+            for sym, info in positions.items():
+                shares = info["shares"] if isinstance(info, dict) else info
                 position_value += prices.get(sym, 0) * shares
 
         total_value = position_value + cash

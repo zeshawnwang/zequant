@@ -230,5 +230,53 @@ def _trading_days_between(qconn, d1: str, d2: str) -> int:
 
 
 
+def _build_signal_symbol_map():
+    """从最新信号文件重建 symbol → sub_strategy 归属映射。
+
+    build.json 中 buy_orders 按子策略调仓顺序写入，
+    sub_details[].n_buy 记录了每个子策略的买入数，
+    按此比例切分 buy_orders 即可还原归属。
+    """
+    import glob
+    dirs = sorted(glob.glob(os.path.join(SIGNAL_DIR, "20*/")), reverse=True)
+    for d in dirs:
+        f = os.path.join(d, "build.json")
+        if not os.path.exists(f):
+            continue
+        try:
+            with open(f) as fp:
+                sig = json.load(fp)
+        except Exception:
+            continue
+        orders = sig.get("buy_orders", [])
+        if not orders:
+            return {}
+        result = {}
+        idx = 0
+        for sd in sig.get("sub_details", []):
+            name = sd.get("name")
+            n_buy = sd.get("n_buy", 0)
+            if name and n_buy > 0 and sd.get("status") == "rebalanced":
+                for o in orders[idx:idx + n_buy]:
+                    result[o["symbol"]] = name
+                idx += n_buy
+        if result:
+            return result
+    return {}
+
+
+def _build_symbol_sub_map_from_db():
+    """从 sub_strategy_state 表读取 symbol → sub_strategy 映射。"""
+    db = _live_db()
+    result = {}
+    rows = db.conn.execute("SELECT name, holdings FROM sub_strategy_state").fetchall()
+    for name, h_json in rows:
+        h = json.loads(h_json) if h_json else {}
+        for sym in h:
+            result[sym] = name
+    db.close()
+    return result
+
+
 def _qdb():
     return duckdb.connect("./data/quant_data.db", read_only=True)

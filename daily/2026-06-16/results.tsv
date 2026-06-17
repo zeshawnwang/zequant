@@ -1,0 +1,13 @@
+时间戳	方案	改动摘要	综合评分	全区间Calmar	WF_OOS_min	2022_2024_avg	kept|discarded
+2026-06-16T11:00	V7_baseline	原始V7权重	8.535	7.05	0	19.05	baseline
+2026-06-16T11:05	dead_only	gtja142=0,gtja141=0	8.141	8.09	0	16.35	kept
+2026-06-16T11:10	partial_flip	gtja144/a41翻转+dead	7.212	8.67	0	12.48	discarded
+2026-06-16T11:15	V8_full_flip	8个reversal全翻转+dead	-1.008	4.96	0	0	discarded
+2026-06-16T11:20	regime_p50	波动率>P50翻转+dead	-0.630	5.30	0	2.07	discarded
+2026-06-16T11:25	regime_p60	波动率>P60翻转+dead	6.477	8.01	0	10.91	discarded
+2026-06-16T11:30	regime_p70	波动率>P70翻转+dead	8.141	9.44	0	14.55	discarded
+2026-06-16T11:35	regime_p80	波动率>P80翻转+dead	10.569	10.62	0	21.07	kept
+2026-06-16T11:40	regime_p85	波动率>P85翻转+dead	10.939	11.08	0	21.69	kept★
+2026-06-16T11:45	regime_p90	波动率>P90翻转+dead	9.634	10.24	0	18.46	discarded
+2026-06-16T11:50	regime_p92	波动率>P92翻转+dead	10.674	10.56	0	21.50	discarded
+2026-06-16T11:55	regime_p95	波动率>P95翻转+dead	9.174	8.94	0	18.66	discarded

@@ -1,0 +1,18 @@
+{
+  "score": 7.212,
+  "full_calmar": 8.67,
+  "full_sharpe": 3.58,
+  "full_ret": 5.5173,
+  "full_dd": -0.0346,
+  "wf_oos_calmars": [
+    0,
+    45.43,
+    3.99,
+    0
+  ],
+  "wf_min": 0,
+  "wf_nonneg": 2,
+  "c2022_2024_calmar": 12.48,
+  "constraints_met": true,
+  "label": "partial_flip_v2"
+}

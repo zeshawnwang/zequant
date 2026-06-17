@@ -54,6 +54,13 @@ def _init_live_db(db: Database):
     db.conn.commit()
 
 
+def _normalize_position(v):
+    """统一 positions 格式: 旧 {sym: shares} → 新 {sym: {shares, cost}}"""
+    if isinstance(v, dict):
+        return v
+    return {"shares": int(v), "cost": 0.0}
+
+
 def get_last_snapshot(live_db: Database, strategy: Optional[str] = None) -> dict:
     if strategy:
         row = live_db.conn.execute("""
@@ -66,9 +73,10 @@ def get_last_snapshot(live_db: Database, strategy: Optional[str] = None) -> dict
             FROM daily_snapshots ORDER BY date DESC LIMIT 1
         """).fetchone()
     if row:
+        raw_positions = json.loads(row[3]) if row[3] else {}
         return {
             "date": row[0], "total_value": row[1], "cash": row[2],
-            "positions": json.loads(row[3]) if row[3] else {},
+            "positions": {k: _normalize_position(v) for k, v in raw_positions.items()},
             "orders": json.loads(row[4]) if row[4] else [],
         }
     return {"date": None, "total_value": 0, "cash": 0, "positions": {}, "orders": []}
@@ -105,8 +113,9 @@ def calc_position_value(positions: Dict[str, int], prices: Dict[str, float],
                         quant_db: Database, trade_date: str) -> float:
     total = 0.0
     for sym, shares in positions.items():
+        s = shares["shares"] if isinstance(shares, dict) else shares
         p = prices.get(sym) or get_latest_close(quant_db, sym, trade_date) or 0
-        total += p * shares
+        total += p * s
     return total
 
 

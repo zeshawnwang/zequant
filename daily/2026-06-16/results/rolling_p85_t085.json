@@ -1,0 +1,18 @@
+{
+  "score": 7.516,
+  "full_calmar": 7.66,
+  "full_sharpe": 3.79,
+  "full_ret": 5.3162,
+  "full_dd": -0.0384,
+  "wf_oos_calmars": [
+    15.53,
+    22.99,
+    9.51,
+    0
+  ],
+  "wf_min": 0,
+  "wf_nonneg": 3,
+  "c2022_2024_calmar": 14.84,
+  "constraints_met": true,
+  "label": "rolling_p85_t085"
+}

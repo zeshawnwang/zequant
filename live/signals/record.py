@@ -40,7 +40,7 @@ def _verify_execution(trade_date: str, strategy: str):
                   reverse=True)
     sig_dir = None
     for d in dirs:
-        if d < trade_date.replace('-', ''):
+        if d <= trade_date.replace('-', ''):
             sig_dir = os.path.join(sig_base, d)
             break
 
@@ -163,17 +163,29 @@ def main():
     else:
         logger.info(f"上次快照: {last['date']}, 总资产={last['total_value']:,.0f}, 现金={last['cash']:,.0f}")
 
-    positions = dict(last["positions"])
+    positions = {}
+    for k, v in last["positions"].items():
+        if isinstance(v, dict):
+            positions[k] = dict(v)
+        else:
+            positions[k] = {"shares": int(v), "cost": 0.0}
     orders = []
     for t in trades:
         orders.append({"symbol": t.symbol, "direction": "买入" if t.direction == "B" else "卖出",
                         "shares": t.shares, "price": t.price, "reason": "实盘录入"})
         if t.direction == "B":
-            positions[t.symbol] = positions.get(t.symbol, 0) + t.shares
+            if t.symbol in positions:
+                old = positions[t.symbol]
+                total_shares = old["shares"] + t.shares
+                total_cost = old["shares"] * old["cost"] + t.shares * t.price
+                positions[t.symbol] = {"shares": total_shares, "cost": round(total_cost / total_shares, 3)}
+            else:
+                positions[t.symbol] = {"shares": t.shares, "cost": t.price}
         else:
-            positions[t.symbol] = positions.get(t.symbol, 0) - t.shares
-            if positions[t.symbol] <= 0:
-                del positions[t.symbol]
+            if t.symbol in positions:
+                positions[t.symbol]["shares"] -= t.shares
+                if positions[t.symbol]["shares"] <= 0:
+                    del positions[t.symbol]
 
     symbols = list(positions.keys()) + [t.symbol for t in trades]
     prices = get_closing_prices(quant_db, list(set(symbols)), trade_date)
@@ -218,9 +230,9 @@ def main():
     bought_symbols = [t for t in trades if t.direction == "B"]
     sold_symbols = [t.symbol for t in trades if t.direction == "S"]
 
-    # 复用 mss_dynamic 的信号归属映射（避免重复维护相同逻辑）
+    # 从最新信号文件读取 symbol → sub_strategy 归属（处理新买入归属）
     try:
-        from live.signals.mss_dynamic import _build_signal_symbol_map
+        from live.signals.mss_state import _build_signal_symbol_map
         sig_map = _build_signal_symbol_map()
     except Exception:
         sig_map = {}
@@ -262,10 +274,12 @@ def main():
     logger.info(f"\n✅ 已保存到 {LIVE_DB_PATH}")
     if positions:
         logger.info("\n📦 当前持仓:")
-        logger.info(f"   {'代码':<8} {'股数':<6} {'收盘价':<8} {'市值':<10}")
-        for sym, shr in sorted(positions.items()):
+        logger.info(f"   {'代码':<8} {'股数':<6} {'成本价':<8} {'收盘价':<8} {'市值':<10}")
+        for sym, info in sorted(positions.items()):
+            shares = info["shares"] if isinstance(info, dict) else info
+            cost = info.get("cost", 0) if isinstance(info, dict) else 0
             p = prices.get(sym, 0)
-            logger.info(f"   {sym:<8} {shr:<6} {p:<8.2f} {p*shr:<10,.0f}")
+            logger.info(f"   {sym:<8} {shares:<6} {cost:<8.3f} {p:<8.2f} {p*shares:<10,.0f}")
 
 
 if __name__ == "__main__":

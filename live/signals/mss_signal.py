@@ -116,19 +116,28 @@ def run(capital: float = 50000, signal_date: str = None,
 
     _init_live_db()
 
-    # capital <= 0 时自动从 DB 读取总资产
+    # capital <= 0 时自动从 DB 读取总资产和实际现金
+    _cash_from_db = None
     if capital <= 0:
         try:
             _ldb = _live_db()
             r = _ldb.conn.execute(
-                "SELECT total_value FROM daily_performance ORDER BY date DESC LIMIT 1"
+                "SELECT cash, total_value FROM daily_snapshots ORDER BY date DESC LIMIT 1"
             ).fetchone()
-            if r:
-                capital = float(r[0])
-                logger.info(f"  自动读取总资产: {capital:.0f}")
+            if r and r[1]:
+                capital = float(r[1])
+                _cash_from_db = float(r[0])
+                logger.info(f"  从快照读取: 总资产={capital:.0f}  现金={_cash_from_db:.0f}")
+            else:
+                r = _ldb.conn.execute(
+                    "SELECT total_value FROM daily_performance ORDER BY date DESC LIMIT 1"
+                ).fetchone()
+                if r:
+                    capital = float(r[0])
+                    logger.info(f"  从绩效表读取总资产: {capital:.0f}")
             _ldb.close()
         except Exception as e:
-            logger.warning(f"  自动读取总资产失败: {e}，使用默认 {capital}")
+            logger.warning(f"  自动读取数据失败: {e}，使用默认 {capital}")
     logger.info(f"  资金: {capital:.0f}")
 
     qconn = _qdb()
@@ -144,6 +153,20 @@ def run(capital: float = 50000, signal_date: str = None,
             ds = str(latest_data)
     except Exception:
         pass
+
+    # 止损/止盈始终使用 daily_bars 最新可用数据（以信号日期为准）
+    bars_ds = ds
+    try:
+        lb_max = qconn.execute(
+            "SELECT MAX(date) FROM daily_bars WHERE close>0 AND date<=?",
+            [signal_date]
+        ).fetchone()[0]
+        if lb_max and str(lb_max) > bars_ds:
+            bars_ds = str(lb_max)
+    except Exception:
+        pass
+    if bars_ds != ds:
+        logger.info(f"  止损数据日期: {bars_ds} (因子数据: {ds})")
 
     state, conf = market_state(qconn, ds)
 
@@ -307,7 +330,7 @@ def run(capital: float = 50000, signal_date: str = None,
             stop_sold = set()
             if old_h:
                 try:
-                    bars_today = _bars(qconn, ds, ds)
+                    bars_today = _bars(qconn, bars_ds, bars_ds)
                     if not bars_today.empty:
                         pm = dict(zip(bars_today['symbol'].astype(str), bars_today['close'].astype(float)))
                         sl_pct = STOP_LOSS_CONFIG.get(name, 0.08)
@@ -325,12 +348,12 @@ def run(capital: float = 50000, signal_date: str = None,
                                     logger.info(f"  ⛔ {name}: {sym} 止损触发 (亏损{loss*100:.1f}%)")
                                     stop_sold.add(sym)
                                     continue
-                                # V6 移动止盈: 从峰值回撤 > trail_pct 时卖出
+                                # V6 移动止盈: 从峰值回撤 > trail_pct 时卖出（仅当前仍有利润时）
                                 peak = h.get('peak', entry)
                                 if cp > peak:
                                     peak = cp
                                     old_h[sym]['peak'] = peak
-                                if peak > 0 and cp < peak * (1.0 - trail_pct):
+                                if peak > entry and cp > entry and cp < peak * (1.0 - trail_pct):
                                     drawdown = (cp - peak) / peak
                                     all_sell.append({'symbol': sym, 'direction': '卖出',
                                                      'shares': h['shares'], 'price': cp,
@@ -349,7 +372,15 @@ def run(capital: float = 50000, signal_date: str = None,
                 if sym not in stop_sold:
                     global_bought.add(sym)
 
-            total_capital_used += kept_cap
+            # 止损后调整占用：从 kept_cap 中扣除已止损股票的原始买入成本
+            actual_kept_cap = kept_cap
+            if stop_sold:
+                for sym in stop_sold:
+                    h = old_h.get(sym)
+                    if h:
+                        actual_kept_cap -= h['shares'] * h['price']
+                actual_kept_cap = max(0, actual_kept_cap)
+            total_capital_used += actual_kept_cap
             next_rebal = _next_rebal_date(qconn, last_date_s, ds, meta["rebal_freq"])
             logger.info(f"  {name}: 未到期，维持 {len(old_h)} 只持仓"
                         + (f" (止损{len(stop_sold)}只)" if stop_sold else "")
@@ -393,7 +424,7 @@ def run(capital: float = 50000, signal_date: str = None,
         'breadth': round(float(br), 3) if br is not None else None,
         'capital': capital, 'total_cost': occupied,
         'total_capital_used': occupied,
-        'remain': round(capital - occupied, 2),
+        'remain': round(_cash_from_db, 2) if _cash_from_db is not None else round(capital - occupied, 2),
         'orders': all_buy,
         'sell_orders': all_sell,
         'allocations': {n: w for n, w in current_alloc},

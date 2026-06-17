@@ -2,27 +2,35 @@
   "meta": {
     "strategy": "mss_dynamic",
     "config": "v2b",
-    "signal_date": "2026-06-12",
+    "signal_date": "2026-06-15",
     "data_date": "2026-06-12",
     "market_state": "oscillate",
     "state_changed": false,
     "last_state": "oscillate",
     "confidence": 0.249,
     "capital": 50000.0,
-    "total_cost": 32350.7,
-    "total_capital_used": 32350.7,
-    "remain": 17649.3,
+    "total_cost": 31860.3,
+    "total_capital_used": 31860.3,
+    "remain": 18139.7,
     "breadth": null,
     "n_buy": 0,
-    "n_sell": 0,
-    "is_hold": true
+    "n_sell": 1,
+    "is_hold": false
   },
   "allocation": {
     "mf_d10_rp": 0.4,
     "mf50_chip50": 0.3,
     "c01_layered_d5": 0.3
   },
-  "sell_orders": [],
+  "sell_orders": [
+    {
+      "symbol": "002251",
+      "direction": "卖出",
+      "shares": 100,
+      "price": 4.06,
+      "reason": "mf50_chip50: 止损6%"
+    }
+  ],
   "buy_orders": [],
   "sub_details": [
     {
@@ -30,27 +38,27 @@
       "status": "hold",
       "weight": 0.4,
       "n_hold": 4,
-      "last_date": "2026-06-12",
+      "last_date": "2026-06-15",
       "rebal_freq": 5,
-      "next_rebalance": "2026-06-15+"
+      "next_rebalance": "2026-06-17+"
     },
     {
       "name": "mf50_chip50",
       "status": "hold",
       "weight": 0.3,
       "n_hold": 3,
-      "last_date": "2026-06-12",
+      "last_date": "2026-06-15",
       "rebal_freq": 5,
-      "next_rebalance": "2026-06-15+"
+      "next_rebalance": "2026-06-17+"
     },
     {
       "name": "c01_layered_d5",
       "status": "hold",
       "weight": 0.3,
       "n_hold": 0,
-      "last_date": "2026-06-12",
+      "last_date": "2026-06-15",
       "rebal_freq": 5,
-      "next_rebalance": "2026-06-15+"
+      "next_rebalance": "2026-06-17+"
     }
   ],
   "names": {

@@ -1,7 +1,7 @@
 # ZEquant 文档索引
 
 > 项目级文档导航，覆盖架构、方法论、迁移指南、代码审查等。
-> 最后更新：2026-06-10（优化记录 + CODE_REVIEW）
+> 最后更新：2026-06-15（盘中止损巡检 + 实时行情多源兜底）
 
 ---
 
@@ -16,6 +16,7 @@
 | [METHODOLOGY.md](METHODOLOGY.md) | mss_dynamic 策略研究方法论沉淀（V1→V6 迭代经验） | 2026-05-27 |
 | [CODE_REVIEW.md](CODE_REVIEW.md) | 全项目 Code Review 报告（架构/质量/因子/实盘审查） | 2026-06-10 |
 | [2025-06-10-optimization-record.md](2025-06-10-optimization-record.md) | 2025-06-10 全面优化记录（12 项改动的实施与验证） | 2026-06-10 |
+| [REALTIME_STOP_MONITOR.md](REALTIME_STOP_MONITOR.md) | 盘中止损巡检 — 实时行情多数据源兜底（新浪/腾讯/akshare） | 2026-06-15 |
 
 ## 策略相关
 

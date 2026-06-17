@@ -1,0 +1,18 @@
+{
+  "score": 8.141,
+  "full_calmar": 8.09,
+  "full_sharpe": 3.81,
+  "full_ret": 5.9232,
+  "full_dd": -0.0384,
+  "wf_oos_calmars": [
+    6.64,
+    25.65,
+    23.35,
+    0
+  ],
+  "wf_min": 0,
+  "wf_nonneg": 3,
+  "c2022_2024_calmar": 16.35,
+  "constraints_met": true,
+  "label": "dead_only"
+}
