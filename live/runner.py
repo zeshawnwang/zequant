@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 import subprocess
+from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -85,6 +86,17 @@ def _check_hard_stop():
         logger.warning("无法检查硬止损(非关键): %s", e)
 
 
+def _get_strategy_module() -> str:
+    """从 config.yaml 读取策略模块路径。"""
+    import yaml
+    config_path = os.path.join(PROJECT_DIR, "live", "config.yaml")
+    if os.path.exists(config_path):
+        with open(config_path, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        return cfg.get("strategies", {}).get("module", "live.signals.risk_off_mf")
+    return "live.signals.risk_off_mf"
+
+
 def run_full(capital: float, extra_args: list, skip_data: bool = False):
     """全流程：拉数据 → 信号 → 邮件。
 
@@ -96,6 +108,9 @@ def run_full(capital: float, extra_args: list, skip_data: bool = False):
     # 硬止损检查：实盘累计回撤 > 10% 时阻断
     _check_hard_stop()
 
+    # 读取策略模块
+    strategy_module = _get_strategy_module()
+
     # 数据更新
     if not skip_data:
         data_ok = run_step("数据更新", ["-m", "live.data_updater"], fatal=False)
@@ -103,7 +118,7 @@ def run_full(capital: float, extra_args: list, skip_data: bool = False):
             logger.warning("⚠️  数据更新失败, 跳过当天信号生成 (阻断)")
             return
 
-    sig_args = ["-m", "live.signals.mss_dynamic", "--capital", str(capital), "--email"] + extra_args
+    sig_args = ["-m", strategy_module, "--capital", str(capital), "--email"] + extra_args
     ok = run_step("信号生成", sig_args, fatal=True)
     if not ok:
         return
@@ -114,12 +129,12 @@ def run_full(capital: float, extra_args: list, skip_data: bool = False):
 def run_email_only(capital: float):
     """只发邮件（重新发送最新信号）。"""
     from live.notification import Mailer
-    from live.performance.tracker import load_latest_signal
+    from live.performance.tracker import load_latest_signal, SIGNAL_DIR
 
     sig = load_latest_signal()
     if sig:
         sig_date = sig.get("meta", {}).get("signal_date", "")
-        sig_dir = f"data_live/mss_dynamic/{sig_date.replace('-', '')}"
+        sig_dir = f"{SIGNAL_DIR}/{sig_date.replace('-', '')}"
         sig_path = os.path.join(sig_dir, "build.json")
         if os.path.exists(sig_path):
             mailer = Mailer()
@@ -129,6 +144,19 @@ def run_email_only(capital: float):
             logger.error("信号文件不存在: %s", sig_path)
     else:
         logger.error("未找到信号文件")
+
+
+def _notify_failure(error_msg: str):
+    """发送失败告警邮件（如果配置可用）。"""
+    try:
+        from live.notification import Mailer
+        mailer = Mailer()
+        subject = f"[risk_off_mf] 信号生成失败 {date.today()}"
+        body = f"信号生成失败，请手动检查。\n\n错误信息:\n{error_msg}"
+        mailer.send_raw(subject, body)
+        logger.info("已发送告警邮件")
+    except Exception as e:
+        logger.warning("告警邮件发送失败: %s", e)
 
 
 def main():
@@ -146,12 +174,17 @@ def main():
     if args.date:
         extra.extend(["--date", args.date])
 
-    if args.mode == "email":
-        run_email_only(args.capital)
-    elif args.mode == "quick":
-        run_full(args.capital, extra, skip_data=True)
-    else:
-        run_full(args.capital, extra, skip_data=False)
+    try:
+        if args.mode == "email":
+            run_email_only(args.capital)
+        elif args.mode == "quick":
+            run_full(args.capital, extra, skip_data=True)
+        else:
+            run_full(args.capital, extra, skip_data=False)
+    except Exception as e:
+        logger.exception("❌ 未捕获异常: %s", e)
+        _notify_failure(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

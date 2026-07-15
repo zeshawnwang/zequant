@@ -56,6 +56,16 @@ class Mailer:
             "output_dir": os.getenv("MAIL_OUTPUT_DIR", "./data_live/signals"),
         }
 
+    def send_raw(self, subject: str, body: str):
+        """发送纯文本告警邮件。"""
+        html = f"<html><body><h2>{subject}</h2><pre>{body}</pre></body></html>"
+        cfg = self.config
+        if cfg["backend"] == "smtp":
+            self._send_smtp(subject, html, cfg)
+        else:
+            self._save_to_file(subject, html, [], cfg)
+        logger.info("告警邮件已发送/保存: %s", subject)
+
     def send_signal_from_file(self, signal_path: str):
         if not os.path.exists(signal_path):
             logger.error("信号文件不存在: %s", signal_path)

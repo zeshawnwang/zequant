@@ -13,7 +13,8 @@ account:
 
 strategies:
   primary: "mss_dynamic"
-  note: "mss_dynamic V7 — MarketStateSelector 动态切换，子策略权重按市场状态分布"
+  module: "live.signals.mss_dynamic"
+  note: "mss_dynamic V7 — 动态切换策略，根据市场状态自动调整配置"
 
 execution:
   slippage: 0.002
